@@ -94,7 +94,7 @@ const SignIn = () => {
 				<div className="w-full h-full bg-gradient-radial from-[var(--primary-accent)]/10 to-transparent"></div>
 			</div>
 
-			<div className="relative max-w-md w-full mx-auto bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-10">
+			<div className="relative max-w-md w-full mx-auto bg-white/80 backdrop-blur-xl border border-white/40 shadow-2xl rounded-2xl p-10">
 				<div className="text-center mb-10">
 					<h2 className="text-3xl font-bold text-gray-800 mb-3">Sign In as {role === "company" ? "Company" : "Expert"}</h2>
 					<p className="text-gray-500">

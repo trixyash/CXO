@@ -22,7 +22,7 @@ const OTPInput = ({ otp, setOtp }) => {
           value={digit}
           onChange={(e) => handleChange(e.target.value, i)}
           maxLength="1"
-          className="w-12 h-12 text-center text-xl rounded-lg bg-black/30 border border-gray-500 focus:border-blue-400 outline-none"
+          className="w-11 h-12 text-center text-lg font-semibold border border-gray-300 rounded-lg bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
         />
       ))}
     </div>

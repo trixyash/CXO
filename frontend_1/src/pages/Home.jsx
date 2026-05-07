@@ -4,6 +4,7 @@ import { Twitter, Facebook, Instagram, Briefcase, ChevronLeft, ChevronRight, Che
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthModal } from '../components/AuthModalContext';
 import Footer from '../components/Footer';
+import Toast from '../components/Toast';
 
 const slides = [
     {
@@ -53,6 +54,7 @@ const Home = () => {
     const navigate = useNavigate();
     const [currentSlide, setCurrentSlide] = useState(0);
     const { openModal } = useAuthModal();
+    const [showToast, setShowToast] = useState(false);
 
     useEffect(() => {
         if (location.hash) {
@@ -566,7 +568,7 @@ const Home = () => {
                             <h3 className="text-3xl font-bold text-white mb-2 relative z-10 tracking-tight">Stay Updated</h3>
                             <p className="text-gray-400 font-light mb-10 relative z-10 text-lg">Subscribe for platform updates and exclusive insights.</p>
 
-                            <form className="flex flex-col gap-6 relative z-10" onSubmit={(e) => { e.preventDefault(); alert("Subscribed!"); }}>
+                            <form className="flex flex-col gap-6 relative z-10" onSubmit={(e) => { e.preventDefault(); setShowToast(true); }}>
                                 <div className="space-y-2 group">
                                     <label className="text-gray-300 text-xs font-bold uppercase tracking-widest ml-1">Email Address <span className="text-[#0eb59a]">*</span></label>
                                     <div className="relative">
@@ -583,6 +585,12 @@ const Home = () => {
             </AnimatedSection>
 
             <Footer />
+            <Toast 
+                isVisible={showToast} 
+                message="Successfully subscribed to our newsletter!" 
+                type="success"
+                onClose={() => setShowToast(false)} 
+            />
 
             {/* Chat Bubble Sleek */}
             <motion.div

@@ -16,13 +16,13 @@ const AuthModal = () => {
     return (
         <AnimatePresence>
             {isMenuOpen && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={closeModal}>
+                <div className="fixed inset-0 z-40 backdrop-blur-md bg-black/20 flex items-center justify-center p-4" onClick={closeModal}>
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         transition={{ duration: 0.3, ease: "easeOut" }}
-                        className="bg-white rounded-xl shadow-2xl p-10 w-full max-w-4xl relative flex flex-col md:flex-row gap-8 items-stretch" 
+                        className="bg-white/80 backdrop-blur-xl border border-white/40 shadow-2xl rounded-2xl p-10 z-50 w-full max-w-4xl relative flex flex-col md:flex-row gap-8 items-stretch" 
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 transition-colors" onClick={closeModal}>

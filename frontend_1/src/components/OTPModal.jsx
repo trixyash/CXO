@@ -1,8 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Toast from "./Toast";
+import { X, AlertCircle } from "lucide-react";
 
 
 const OTPModal = ({ isOpen, onClose, onVerify }) => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [error, setError] = useState("");
+  const [showToast, setShowToast] = useState(false);
   const inputRefs = useRef([]);
 
   useEffect(() => {
@@ -30,6 +35,7 @@ const OTPModal = ({ isOpen, onClose, onVerify }) => {
     if (value && index < 5) {
       inputRefs.current[index + 1].focus();
     }
+    if (error) setError(""); // Clear error on input
   };
 
   const handleKeyDown = (e, index) => {
@@ -44,24 +50,27 @@ const OTPModal = ({ isOpen, onClose, onVerify }) => {
     if (otpValue.length === 6) {
       onVerify(otpValue);
     } else {
-      alert("Please enter all 6 digits");
+      setError("Please enter all 6 digits");
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
-      <form className="w-80 bg-white flex flex-col items-center justify-center p-8 gap-5 rounded-xl shadow-lg relative animate-scale-up" onSubmit={handleSubmit}>
-        <span className="text-xl font-bold mb-2">Enter OTP</span>
-        <p className="text-gray-600 text-sm mb-2 text-center">We have sent a verification code to your email</p>
+    <div className="fixed inset-0 z-40 backdrop-blur-md bg-black/20 flex items-center justify-center">
+      <form 
+        className="bg-white/80 backdrop-blur-xl border border-white/40 shadow-2xl rounded-2xl p-8 z-50 w-full max-w-md mx-4 relative animate-scale-up flex flex-col items-center" 
+        onSubmit={handleSubmit}
+      >
+        <h2 className="text-xl font-bold text-gray-900 text-center mb-2">Enter OTP</h2>
+        <p className="text-sm text-gray-500 text-center mb-6">We have sent a verification code to your email</p>
 
-        <div className="flex gap-2 mb-2">
+        <div className="flex justify-center gap-3 mb-6">
           {[0, 1, 2, 3, 4, 5].map((index) => (
             <input
               key={index}
               required
               maxLength="1"
               type="text"
-              className="w-10 h-12 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg font-semibold"
+              className="w-11 h-12 text-center text-lg font-semibold border border-gray-300 rounded-lg bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
               value={otp[index]}
               onChange={(e) => handleChange(e, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
@@ -70,18 +79,52 @@ const OTPModal = ({ isOpen, onClose, onVerify }) => {
           ))}
         </div>
 
-        <button className="w-full bg-teal-500 hover:bg-teal-600 text-white font-medium py-2 px-4 rounded transition" type="submit">
+        <button 
+          className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-3 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.98] mt-2" 
+          type="submit"
+        >
           Verify
         </button>
-        <button className="absolute top-2 right-3 text-2xl text-gray-400 hover:text-gray-700" type="button" onClick={onClose}>
+
+        <AnimatePresence>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-center gap-2 text-red-500 text-xs font-bold mt-3"
+            >
+              <AlertCircle size={14} />
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <button 
+          className="absolute top-4 right-4 text-2xl text-gray-400 hover:text-gray-700 transition-colors" 
+          type="button" 
+          onClick={onClose}
+        >
           ×
         </button>
 
-        <p className="text-xs text-gray-500 mt-2">Didn't receive the code?
-          <button className="ml-1 text-teal-600 hover:underline" type="button" onClick={() => alert("Code resent!")}>
+        <p className="text-center text-sm text-gray-400 mt-4">
+          Didn't receive the code?
+          <button 
+            className="ml-1 text-teal-600 cursor-pointer hover:underline font-medium" 
+            type="button" 
+            onClick={() => setShowToast(true)}
+          >
             Resend Code
           </button>
         </p>
+
+        <Toast 
+          isVisible={showToast} 
+          message="Verification code resent!" 
+          type="success"
+          onClose={() => setShowToast(false)} 
+        />
       </form>
     </div>
   );

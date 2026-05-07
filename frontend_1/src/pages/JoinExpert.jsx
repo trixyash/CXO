@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { CheckCircle2, ChevronRight, ChevronLeft, AlertCircle } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import OTPModal from "../components/OTPModal";
-import SuccessModal from "../components/SuccessModal";
+import StatusModal from "../components/StatusModal";
 
 const JOIN_STEPS = ["Basic Info", "Experience", "Skills", "Pricing", "Account Setup"];
 
@@ -16,7 +16,8 @@ const JoinExpert = () => {
 	const [otpVerified, setOtpVerified] = useState(false);
 	const [showOtpModal, setShowOtpModal] = useState(false);
 	const [showErrorBanner, setShowErrorBanner] = useState(false);
-	const [showSuccessModal, setShowSuccessModal] = useState(false);
+	const [showStatusModal, setShowStatusModal] = useState(false);
+	const [statusConfig, setStatusConfig] = useState({ type: "success", title: "", message: "" });
 
 	const {
 		register,
@@ -105,7 +106,12 @@ const JoinExpert = () => {
 				if (error) throw error;
 				setShowOtpModal(true);
 			} catch (error) {
-				alert("Error sending OTP: " + error.message);
+				setStatusConfig({
+					type: "error",
+					title: "OTP Error",
+					message: error.message
+				});
+				setShowStatusModal(true);
 			}
 		} else {
 			trigger("email");
@@ -124,9 +130,19 @@ const JoinExpert = () => {
 
 			setOtpVerified(true);
 			setShowOtpModal(false);
-			alert("Email verified successfully!");
+			setStatusConfig({
+				type: "success",
+				title: "Email Verified!",
+				message: "Your email has been successfully verified.\nYou're all set to continue."
+			});
+			setShowStatusModal(true);
 		} catch (error) {
-			alert("Invalid OTP: " + error.message);
+			setStatusConfig({
+				type: "error",
+				title: "Invalid OTP",
+				message: error.message
+			});
+			setShowStatusModal(true);
 		}
 	};
 
@@ -134,7 +150,12 @@ const JoinExpert = () => {
 		const isFinalValid = await trigger(["email", "phone", "govId", "terms"]);
 
 		if (!otpVerified) {
-			alert("Please verify your email address before submitting the application.");
+			setStatusConfig({
+				type: "warning",
+				title: "Verification Required",
+				message: "Please verify your email address before submitting the application."
+			});
+			setShowStatusModal(true);
 			return;
 		}
 
@@ -217,11 +238,21 @@ const JoinExpert = () => {
 
 			if (dbError) throw dbError;
 
-			alert("Expert application submitted successfully! 🎉\nWelcome to CXOConnect.");
-			navigate('/expert-dashboard');
+			setStatusConfig({
+				type: "success",
+				title: "Application Submitted!",
+				message: "Your expert application has been successfully submitted! 🎉\nWelcome to CXOConnect."
+			});
+			setShowStatusModal(true);
+			// Navigation will happen when they click "Continue" in the modal
 		} catch (error) {
 			console.error(error);
-			alert("Error submitting application: " + error.message);
+			setStatusConfig({
+				type: "error",
+				title: "Submission Failed",
+				message: error.message
+			});
+			setShowStatusModal(true);
 		} finally {
 			setLoading(false);
 		}
@@ -250,7 +281,7 @@ const JoinExpert = () => {
 				<div className="absolute inset-0 z-0 pointer-events-none md:hidden bg-gradient-to-br from-teal-400/10 to-transparent"></div>
 
 				{/* Form Card */}
-				<div className="relative z-10 w-full max-w-2xl bg-white/95 backdrop-blur-xl rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 p-6 md:p-8 border border-gray-100 animate-in fade-in zoom-in-95 duration-700">
+				<div className="relative z-10 w-full max-w-2xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-6 md:p-8 hover:shadow-teal-500/10 transition-all duration-500 animate-in fade-in zoom-in-95 duration-700">
 					<div className="mb-6">
 						<h2 className="text-2xl font-bold mb-2">Expert Onboarding</h2>
 						<p className="text-gray-600">Join our premium network of verified professionals and unlock fractional, full-time, and advisory opportunities.</p>
@@ -586,7 +617,18 @@ const JoinExpert = () => {
 				onClose={() => setShowOtpModal(false)}
 				onVerify={handleVerifyOTP}
 			/>
-			<SuccessModal isOpen={showSuccessModal} role="expert" />
+			<StatusModal
+				isOpen={showStatusModal}
+				onClose={() => {
+					setShowStatusModal(false);
+					if (statusConfig.title === "Application Submitted!") {
+						navigate('/expert-dashboard');
+					}
+				}}
+				type={statusConfig.type}
+				title={statusConfig.title}
+				message={statusConfig.message}
+			/>
 		</div>
 	);
 };

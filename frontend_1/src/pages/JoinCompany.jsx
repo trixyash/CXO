@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { CheckCircle2, ChevronRight, ChevronLeft, AlertCircle } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import OTPModal from "../components/OTPModal";
-import SuccessModal from "../components/SuccessModal";
+import StatusModal from "../components/StatusModal";
 
 const JOIN_STEPS = ["Basic Details", "Company Info", "Online Presence", "Account Setup"];
 
@@ -18,7 +18,9 @@ const JoinCompany = () => {
 	const [showAdminOtpModal, setShowAdminOtpModal] = useState(false);
 	const [adminOtpVerified, setAdminOtpVerified] = useState(false);
 	const [showErrorBanner, setShowErrorBanner] = useState(false);
-	const [showSuccessModal, setShowSuccessModal] = useState(false);
+	const [showStatusModal, setShowStatusModal] = useState(false);
+	const [statusConfig, setStatusConfig] = useState({ type: "success", title: "", message: "" });
+	const [additionalLinks, setAdditionalLinks] = useState([]);
 
 	const {
 		register,
@@ -71,6 +73,22 @@ const JoinCompany = () => {
 		}
 	};
 
+	const addAdditionalLink = () => {
+		if (additionalLinks.length < 3) {
+			setAdditionalLinks([...additionalLinks, { platform: "Website", url: "" }]);
+		}
+	};
+
+	const removeAdditionalLink = (index) => {
+		setAdditionalLinks(additionalLinks.filter((_, i) => i !== index));
+	};
+
+	const updateAdditionalLink = (index, field, value) => {
+		const updated = [...additionalLinks];
+		updated[index][field] = value;
+		setAdditionalLinks(updated);
+	};
+
 	const handleNext = async () => {
 		let fieldsToValidate = [];
 		if (currentStep === 0) {
@@ -78,14 +96,34 @@ const JoinCompany = () => {
 		} else if (currentStep === 1) {
 			fieldsToValidate = ["about", "orgType", "orgSize", "companyAge"];
 		} else if (currentStep === 2) {
-			fieldsToValidate = ["website", "email", "contactNumber", "linkedin", "instagram", "twitter", "github"];
+			fieldsToValidate = ["website", "email", "contactNumber", "linkedin", "github"];
 		}
 
 		const isStepValid = await trigger(fieldsToValidate);
 
-		if (currentStep === 2 && !otpVerified) {
-			alert("Please verify your email address before proceeding to the next step.");
-			return;
+		if (currentStep === 2) {
+			if (!otpVerified) {
+				setStatusConfig({
+					type: "warning",
+					title: "Verification Required",
+					message: "Please verify your email address before proceeding to the next step."
+				});
+				setShowStatusModal(true);
+				return;
+			}
+
+			// Validate additional links start with https://
+			for (const link of additionalLinks) {
+				if (link.url && !link.url.startsWith("https://")) {
+					setStatusConfig({
+						type: "error",
+						title: "Invalid URL",
+						message: "All additional link URLs must start with https://"
+					});
+					setShowStatusModal(true);
+					return;
+				}
+			}
 		}
 
 		if (isStepValid) {
@@ -113,7 +151,12 @@ const JoinCompany = () => {
 				if (error) throw error;
 				setShowOtpModal(true);
 			} catch (error) {
-				alert("Error sending OTP: " + error.message);
+				setStatusConfig({
+					type: "error",
+					title: "OTP Error",
+					message: error.message
+				});
+				setShowStatusModal(true);
 			}
 		} else {
 			trigger("email");
@@ -132,9 +175,19 @@ const JoinCompany = () => {
 
 			setOtpVerified(true);
 			setShowOtpModal(false);
-			alert("Email verified successfully!");
+			setStatusConfig({
+				type: "success",
+				title: "Email Verified!",
+				message: "Your email has been successfully verified.\nYou're all set to continue."
+			});
+			setShowStatusModal(true);
 		} catch (error) {
-			alert("Invalid OTP: " + error.message);
+			setStatusConfig({
+				type: "error",
+				title: "Invalid OTP",
+				message: error.message
+			});
+			setShowStatusModal(true);
 		}
 	};
 
@@ -148,7 +201,12 @@ const JoinCompany = () => {
 				if (error) throw error;
 				setShowAdminOtpModal(true);
 			} catch (error) {
-				alert("Error sending OTP: " + error.message);
+				setStatusConfig({
+					type: "error",
+					title: "OTP Error",
+					message: error.message
+				});
+				setShowStatusModal(true);
 			}
 		} else {
 			trigger("adminEmail");
@@ -167,9 +225,19 @@ const JoinCompany = () => {
 
 			setAdminOtpVerified(true);
 			setShowAdminOtpModal(false);
-			alert("Admin Email verified successfully!");
+			setStatusConfig({
+				type: "success",
+				title: "Admin Email Verified!",
+				message: "Your administrative email has been successfully verified."
+			});
+			setShowStatusModal(true);
 		} catch (error) {
-			alert("Invalid OTP: " + error.message);
+			setStatusConfig({
+				type: "error",
+				title: "Invalid OTP",
+				message: error.message
+			});
+			setShowStatusModal(true);
 		}
 	};
 
@@ -178,7 +246,12 @@ const JoinCompany = () => {
 		const isFinalValid = await trigger(["adminName", "adminEmail", "cinNumber", "gstin", "terms"]);
 
 		if (!adminOtpVerified) {
-			alert("Please verify your Admin Email address before submitting the application.");
+			setStatusConfig({
+				type: "warning",
+				title: "Admin Verification",
+				message: "Please verify your Admin Email address before submitting the application."
+			});
+			setShowStatusModal(true);
 			return;
 		}
 
@@ -237,13 +310,8 @@ const JoinCompany = () => {
 							admin_name: data.adminName,
 							admin_email: data.adminEmail,
 							gstin: data.gstin,
-							cin_number: data.cinNumber,
-							contact_number: data.contactNumber,
-							company_age: data.companyAge,
-							instagram: data.instagram,
-							linkedin: data.linkedin,
-							github: data.github,
-							twitter: data.twitter
+							company_handle: data.companyHandle,
+							additional_links: additionalLinks
 						},
 					]);
 				dbError = response.error;
@@ -251,12 +319,21 @@ const JoinCompany = () => {
 				dbError = null; // Catch to allow offline test
 			}
 
-			if (dbError) throw dbError;
-
-			setShowSuccessModal(true);
+			setStatusConfig({
+				type: "success",
+				title: "Application Submitted!",
+				message: "Your company application has been successfully submitted! ✅\nOur team will review it and get back to you soon."
+			});
+			setShowStatusModal(true);
+			// Navigation will happen when they click "Continue" in the modal
 		} catch (error) {
 			console.error(error);
-			alert("Error submitting application: " + error.message);
+			setStatusConfig({
+				type: "error",
+				title: "Submission Failed",
+				message: error.message
+			});
+			setShowStatusModal(true);
 		} finally {
 			setLoading(false);
 		}
@@ -285,7 +362,7 @@ const JoinCompany = () => {
 				<div className="absolute inset-0 z-0 pointer-events-none md:hidden bg-gradient-to-br from-teal-400/10 to-transparent"></div>
 
 				{/* Form Card */}
-				<div className="relative z-10 w-full max-w-2xl bg-white/95 backdrop-blur-xl rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 p-6 md:p-8 border border-gray-100 animate-in fade-in zoom-in-95 duration-700">
+				<div className="relative z-10 w-full max-w-2xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-6 md:p-8 hover:shadow-teal-500/10 transition-all duration-500 animate-in fade-in zoom-in-95 duration-700">
 					<div className="mb-6">
 						<h2 className="text-2xl font-bold mb-2">Company Onboarding</h2>
 						<p className="text-gray-600">Join our network and unlock opportunities for your organization.</p>
@@ -525,14 +602,15 @@ const JoinCompany = () => {
 								</div>
 
 								<div className="group flex flex-col gap-1.5 mb-4">
-									<label className="text-sm font-semibold text-gray-700 group-focus-within:text-teal-600 transition-colors duration-150">LinkedIn Page URL (Optional)</label>
+									<label className="text-sm font-semibold text-gray-700 group-focus-within:text-teal-600 transition-colors duration-150">LinkedIn Page *</label>
 									<input
 										className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 focus:bg-white focus:scale-[1.01] transition-all duration-200 ease-in-out text-gray-800"
 										placeholder="https://linkedin.com/company/yourcompany"
 										{...register("linkedin", {
+											required: "LinkedIn page is required",
 											pattern: {
-												value: /^https:\/\/(www\.)?linkedin\.com\/.+/,
-												message: "Must be a valid LinkedIn URL starting with https://"
+												value: /^https:\/\/linkedin\.com\/company\/.+/,
+												message: "Must start with https://linkedin.com/company/"
 											}
 										})}
 									/>
@@ -540,48 +618,63 @@ const JoinCompany = () => {
 								</div>
 
 								<div className="group flex flex-col gap-1.5 mb-4">
-									<label className="text-sm font-semibold text-gray-700 group-focus-within:text-teal-600 transition-colors duration-150">Instagram Profile URL (Optional)</label>
-									<input
-										className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 focus:bg-white focus:scale-[1.01] transition-all duration-200 ease-in-out text-gray-800"
-										placeholder="https://instagram.com/yourcompany"
-										{...register("instagram", {
-											pattern: {
-												value: /^https:\/\/(www\.)?instagram\.com\/.+/,
-												message: "Must be a valid Instagram URL starting with https://"
-											}
-										})}
-									/>
-									{errors.instagram && <span className="text-red-500 text-xs font-medium mt-1 animate-pulse">{errors.instagram.message}</span>}
-								</div>
-
-								<div className="group flex flex-col gap-1.5 mb-4">
-									<label className="text-sm font-semibold text-gray-700 group-focus-within:text-teal-600 transition-colors duration-150">X (Twitter) Profile URL (Optional)</label>
-									<input
-										className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 focus:bg-white focus:scale-[1.01] transition-all duration-200 ease-in-out text-gray-800"
-										placeholder="https://x.com/yourcompany"
-										{...register("twitter", {
-											pattern: {
-												value: /^https:\/\/(www\.)?(twitter\.com|x\.com)\/.+/,
-												message: "Must be a valid Twitter/X URL starting with https://"
-											}
-										})}
-									/>
-									{errors.twitter && <span className="text-red-500 text-xs font-medium mt-1 animate-pulse">{errors.twitter.message}</span>}
-								</div>
-
-								<div className="group flex flex-col gap-1.5 mb-4">
-									<label className="text-sm font-semibold text-gray-700 group-focus-within:text-teal-600 transition-colors duration-150">GitHub Organization URL (Optional)</label>
+									<label className="text-sm font-semibold text-gray-700 group-focus-within:text-teal-600 transition-colors duration-150">GitHub URL (Optional)</label>
 									<input
 										className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 focus:bg-white focus:scale-[1.01] transition-all duration-200 ease-in-out text-gray-800"
 										placeholder="https://github.com/yourcompany"
-										{...register("github", {
-											pattern: {
-												value: /^https:\/\/(www\.)?github\.com\/.+/,
-												message: "Must be a valid GitHub URL starting with https://"
-											}
-										})}
+										{...register("github")}
 									/>
-									{errors.github && <span className="text-red-500 text-xs font-medium mt-1 animate-pulse">{errors.github.message}</span>}
+								</div>
+
+								{/* Additional Links Section */}
+								<div className="mt-6 border-t pt-6">
+									<label className="text-sm font-semibold text-gray-700 block mb-2">Additional Links</label>
+
+									{additionalLinks.map((link, index) => (
+										<div key={index} className="flex items-center gap-3 mt-3 animate-in fade-in slide-in-from-left-2 duration-300">
+											<select
+												value={link.platform}
+												onChange={(e) => updateAdditionalLink(index, 'platform', e.target.value)}
+												className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-teal-400 focus:outline-none"
+											>
+												<option value="Website">🌐 Company Website</option>
+												<option value="Twitter">𝕏 X (Twitter)</option>
+												<option value="Instagram">📸 Instagram</option>
+												<option value="Facebook">📘 Facebook</option>
+												<option value="YouTube">▶️ YouTube</option>
+												<option value="TikTok">🎵 TikTok</option>
+												<option value="AngelList">💼 AngelList / Wellfound</option>
+												<option value="Crunchbase">📊 Crunchbase</option>
+												<option value="Medium">🗞️ Medium / Blog</option>
+												<option value="GitHub">📁 GitHub (for tech companies)</option>
+												<option value="Other">🔗 Other</option>
+											</select>
+											<input
+												type="url"
+												placeholder="https://..."
+												value={link.url}
+												onChange={(e) => updateAdditionalLink(index, 'url', e.target.value)}
+												className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 focus:outline-none"
+											/>
+											<button
+												type="button"
+												onClick={() => removeAdditionalLink(index)}
+												className="text-gray-400 hover:text-red-500 transition-colors"
+											>✕</button>
+										</div>
+									))}
+
+									{additionalLinks.length < 3 ? (
+										<button
+											type="button"
+											onClick={addAdditionalLink}
+											className="mt-3 flex items-center gap-2 text-teal-600 hover:text-teal-700 text-sm font-medium transition-colors"
+										>
+											<span className="text-lg">+</span> Add Social / Professional Link
+										</button>
+									) : (
+										<p className="mt-3 text-xs text-gray-400">Maximum 3 links reached</p>
+									)}
 								</div>
 							</div>
 						)}
@@ -728,7 +821,18 @@ const JoinCompany = () => {
 				onClose={() => setShowAdminOtpModal(false)}
 				onVerify={handleVerifyAdminOTP}
 			/>
-			<SuccessModal isOpen={showSuccessModal} role="company" />
+			<StatusModal
+				isOpen={showStatusModal}
+				onClose={() => {
+					setShowStatusModal(false);
+					if (statusConfig.title === "Application Submitted!") {
+						navigate('/company-dashboard');
+					}
+				}}
+				type={statusConfig.type}
+				title={statusConfig.title}
+				message={statusConfig.message}
+			/>
 		</div>
 	);
 };
