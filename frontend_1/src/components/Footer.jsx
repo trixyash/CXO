@@ -51,16 +51,15 @@ const Footer = () => {
                 className="max-w-7xl mx-auto relative z-10"
             >
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 mb-20">
-                    {/* Brand Column */}
                     <motion.div variants={itemVariants} className="lg:col-span-4 max-w-md">
                         <div 
-                            className="inline-block cursor-pointer mb-8 group" 
+                            className="inline-block cursor-pointer mb-8 group flex items-center shrink-0" 
                             onClick={(e) => handleNavigation(e, '/')}
                         >
                             <img 
-                                src="/LOGO_FINAL.png" 
+                                src="/assets/images/LOGO_WHITE.png" 
                                 alt="CXO Connect" 
-                                className="h-12 w-auto object-contain transition-opacity duration-200 hover:opacity-80 [filter:brightness(0)_saturate(100%)_invert(55%)_sepia(60%)_saturate(400%)_hue-rotate(120deg)]"
+                                className="h-10 md:h-12 w-auto object-contain"
                             />
                         </div>
                         <p className="text-gray-400 text-lg leading-relaxed font-light mb-10 transition-colors">

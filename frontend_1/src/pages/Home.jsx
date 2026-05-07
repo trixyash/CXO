@@ -201,9 +201,9 @@ const Home = () => {
             </AnimatedSection>
 
             {/* How It Works Section */}
-            <AnimatedSection className="py-20 w-full relative overflow-hidden bg-[#fafafa]" id="about-us">
+            <AnimatedSection className="py-12 w-full relative overflow-hidden bg-[#fafafa]" id="about-us">
                 <div className="max-w-7xl mx-auto px-6 relative z-10">
-                    <div className="bg-white rounded-[2.5rem] border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] py-16 px-8 lg:px-16 relative overflow-hidden">
+                    <div className="bg-white rounded-[2.5rem] border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] py-12 px-6 lg:px-12 relative overflow-hidden">
                         {/* Background Ambient Blurs for Light Theme */}
                         <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#0eb59a]/5 rounded-full blur-[100px] pointer-events-none"></div>
                         <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#134e40]/5 rounded-full blur-[100px] pointer-events-none"></div>
@@ -214,114 +214,114 @@ const Home = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                             >
-                                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight font-serif">How It Works</h2>
-                                <p className="text-xl text-gray-500 font-light">Two distinct journeys, one perfect match</p>
+                                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 tracking-tight font-serif">How It Works</h2>
+                                <p className="text-base text-gray-500 font-light">Two distinct journeys, one perfect match</p>
                             </motion.div>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-0 relative z-10">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-0 relative z-10">
                             {/* Vertical Divider for Desktop */}
                             <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gray-200 to-transparent -translate-x-1/2"></div>
 
                             {/* For CXOs Column */}
-                            <div className="lg:pr-16 flex flex-col gap-10">
+                            <div className="lg:pr-10 flex flex-col gap-8">
                                 <div className="text-center lg:text-left">
-                                    <h3 className="text-3xl font-bold text-[#0eb59a] mb-3 tracking-tight">For CXOs</h3>
-                                    <p className="text-gray-500 text-lg font-light">Your path to meaningful leadership roles</p>
+                                    <h3 className="text-2xl font-bold text-[#0eb59a] mb-2 tracking-tight">For CXOs</h3>
+                                    <p className="text-gray-500 text-sm font-light">Your path to meaningful leadership roles</p>
                                 </div>
 
-                                <div className="space-y-12">
+                                <div className="space-y-6">
                                     {/* Item 1 */}
                                     <motion.div 
-                                        whileHover={{ x: 10 }}
-                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-5 group text-center sm:text-left"
+                                        whileHover={{ x: 8 }}
+                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-4 group text-center sm:text-left"
                                     >
-                                        <div className="shrink-0 w-14 h-14 rounded-2xl bg-[#f0fdfa] border border-[#ccfbf1] flex items-center justify-center text-[#0eb59a] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#0eb59a] group-hover:text-white transition-all duration-300">
-                                            <Edit size={24} />
+                                        <div className="shrink-0 w-10 h-10 rounded-xl bg-[#f0fdfa] border border-[#ccfbf1] flex items-center justify-center text-[#0eb59a] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#0eb59a] group-hover:text-white transition-all duration-300">
+                                            <Edit size={20} />
                                         </div>
                                         <div>
-                                            <h4 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#0eb59a] transition-colors">Build your leadership profile, your way</h4>
-                                            <p className="text-gray-600 leading-relaxed text-base font-light">Share your expertise, past outcomes, and availability, guided step-by-step with personal assistant support</p>
+                                            <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-[#0eb59a] transition-colors">Build your leadership profile, your way</h4>
+                                            <p className="text-gray-600 leading-relaxed text-sm font-light">Share your expertise, past outcomes, and availability, guided step-by-step with personal assistant support</p>
                                         </div>
                                     </motion.div>
                                     
                                     {/* Item 2 */}
                                     <motion.div 
-                                        whileHover={{ x: 10 }}
-                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-5 group text-center sm:text-left"
+                                        whileHover={{ x: 8 }}
+                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-4 group text-center sm:text-left"
                                     >
-                                        <div className="shrink-0 w-14 h-14 rounded-2xl bg-[#f0fdfa] border border-[#ccfbf1] flex items-center justify-center text-[#0eb59a] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#0eb59a] group-hover:text-white transition-all duration-300">
-                                            <Search size={24} />
+                                        <div className="shrink-0 w-10 h-10 rounded-xl bg-[#f0fdfa] border border-[#ccfbf1] flex items-center justify-center text-[#0eb59a] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#0eb59a] group-hover:text-white transition-all duration-300">
+                                            <Search size={20} />
                                         </div>
                                         <div>
-                                            <h4 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#0eb59a] transition-colors">Get discovered by the right companies</h4>
-                                            <p className="text-gray-600 leading-relaxed text-base font-light">Our AI matching engine scores your leadership style and culture fit against founder needs before any introduction is made</p>
+                                            <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-[#0eb59a] transition-colors">Get discovered by the right companies</h4>
+                                            <p className="text-gray-600 leading-relaxed text-sm font-light">Our AI matching engine scores your leadership style and culture fit against founder needs before any introduction is made</p>
                                         </div>
                                     </motion.div>
 
                                     {/* Item 3 */}
                                     <motion.div 
-                                        whileHover={{ x: 10 }}
-                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-5 group text-center sm:text-left"
+                                        whileHover={{ x: 8 }}
+                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-4 group text-center sm:text-left"
                                     >
-                                        <div className="shrink-0 w-14 h-14 rounded-2xl bg-[#f0fdfa] border border-[#ccfbf1] flex items-center justify-center text-[#0eb59a] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#0eb59a] group-hover:text-white transition-all duration-300">
-                                            <Lock size={24} />
+                                        <div className="shrink-0 w-10 h-10 rounded-xl bg-[#f0fdfa] border border-[#ccfbf1] flex items-center justify-center text-[#0eb59a] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#0eb59a] group-hover:text-white transition-all duration-300">
+                                            <Lock size={20} />
                                         </div>
                                         <div>
-                                            <h4 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#0eb59a] transition-colors">Unlock high-value engagements</h4>
-                                            <p className="text-gray-600 leading-relaxed text-base font-light">Access pre-qualified fractional, interim, and advisory roles with contracts and payments built in</p>
+                                            <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-[#0eb59a] transition-colors">Unlock high-value engagements</h4>
+                                            <p className="text-gray-600 leading-relaxed text-sm font-light">Access pre-qualified fractional, interim, and advisory roles with contracts and payments built in</p>
                                         </div>
                                     </motion.div>
                                 </div>
                             </div>
 
                             {/* For Companies Column */}
-                            <div className="lg:pl-16 flex flex-col gap-10 mt-12 lg:mt-0">
+                            <div className="lg:pl-10 flex flex-col gap-8 mt-12 lg:mt-0">
                                 <div className="text-center lg:text-left">
-                                    <h3 className="text-3xl font-bold text-[#134e40] mb-3 tracking-tight">For Companies</h3>
-                                    <p className="text-gray-500 text-lg font-light">Find your next strategic leader</p>
+                                    <h3 className="text-2xl font-bold text-[#134e40] mb-2 tracking-tight">For Companies</h3>
+                                    <p className="text-gray-500 text-sm font-light">Find your next strategic leader</p>
                                 </div>
 
-                                <div className="space-y-12">
+                                <div className="space-y-6">
                                     {/* Item 1 */}
                                     <motion.div 
-                                        whileHover={{ x: 10 }}
-                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-5 group text-center sm:text-left"
+                                        whileHover={{ x: 8 }}
+                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-4 group text-center sm:text-left"
                                     >
-                                        <div className="shrink-0 w-14 h-14 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-[#134e40] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#134e40] group-hover:text-white transition-all duration-300">
-                                            <Monitor size={24} />
+                                        <div className="shrink-0 w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[#134e40] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#134e40] group-hover:text-white transition-all duration-300">
+                                            <Monitor size={20} />
                                         </div>
                                         <div>
-                                            <h4 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#134e40] transition-colors">Define your leadership need in minutes</h4>
-                                            <p className="text-gray-600 leading-relaxed text-base font-light">Use our guided requirement wizard to articulate your real business challenge — not just a job title</p>
+                                            <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-[#134e40] transition-colors">Define your leadership need in minutes</h4>
+                                            <p className="text-gray-600 leading-relaxed text-sm font-light">Use our guided requirement wizard to articulate your real business challenge — not just a job title</p>
                                         </div>
                                     </motion.div>
                                     
                                     {/* Item 2 */}
                                     <motion.div 
-                                        whileHover={{ x: 10 }}
-                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-5 group text-center sm:text-left"
+                                        whileHover={{ x: 8 }}
+                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-4 group text-center sm:text-left"
                                     >
-                                        <div className="shrink-0 w-14 h-14 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-[#134e40] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#134e40] group-hover:text-white transition-all duration-300">
-                                            <Users size={24} />
+                                        <div className="shrink-0 w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[#134e40] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#134e40] group-hover:text-white transition-all duration-300">
+                                            <Users size={20} />
                                         </div>
                                         <div>
-                                            <h4 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#134e40] transition-colors">Get matched with verified senior leaders</h4>
-                                            <p className="text-gray-600 leading-relaxed text-base font-light">AI-powered shortlisting of CXOs who fit your industry, stage, and culture, not just keywords</p>
+                                            <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-[#134e40] transition-colors">Get matched with verified senior leaders</h4>
+                                            <p className="text-gray-600 leading-relaxed text-sm font-light">AI-powered shortlisting of CXOs who fit your industry, stage, and culture, not just keywords</p>
                                         </div>
                                     </motion.div>
 
                                     {/* Item 3 */}
                                     <motion.div 
-                                        whileHover={{ x: 10 }}
-                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-5 group text-center sm:text-left"
+                                        whileHover={{ x: 8 }}
+                                        className="flex flex-col sm:flex-row items-center sm:items-start gap-4 group text-center sm:text-left"
                                     >
-                                        <div className="shrink-0 w-14 h-14 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-[#134e40] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#134e40] group-hover:text-white transition-all duration-300">
-                                            <CheckCircle2 size={24} />
+                                        <div className="shrink-0 w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[#134e40] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#134e40] group-hover:text-white transition-all duration-300">
+                                            <CheckCircle2 size={20} />
                                         </div>
                                         <div>
-                                            <h4 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#134e40] transition-colors">Onboard with confidence and governance</h4>
-                                            <p className="text-gray-600 leading-relaxed text-base font-light">Kick off engagements with structured milestones, escrow-backed payments, and PMO oversight from day one</p>
+                                            <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-[#134e40] transition-colors">Onboard with confidence and governance</h4>
+                                            <p className="text-gray-600 leading-relaxed text-sm font-light">Kick off engagements with structured milestones, escrow-backed payments, and PMO oversight from day one</p>
                                         </div>
                                     </motion.div>
                                 </div>

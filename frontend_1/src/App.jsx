@@ -14,6 +14,7 @@ import AuthModal from './components/AuthModal';
 const AppContent = () => {
   const location = useLocation();
   const showNavbar = location.pathname === '/' || location.pathname === '/privacy-policy' || location.pathname === '/terms-of-service';
+  const isDashboard = location.pathname === '/company-dashboard' || location.pathname === '/expert-dashboard';
 
   return (
     <AuthModalProvider>
@@ -27,6 +28,7 @@ const AppContent = () => {
             <Route path="/join-expert" element={<JoinExpert />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/company-dashboard" element={<CompanyDashboard />} />
+            <Route path="/expert-dashboard" element={<ExpertDashboard />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/expert-dashboard" element={<ExpertDashboard />} />

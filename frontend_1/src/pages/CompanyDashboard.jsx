@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Search, Briefcase, LayoutDashboard, CreditCard, 
   Bell, MessageSquare, Settings, User, Zap, 
@@ -8,6 +9,7 @@ import {
 } from 'lucide-react';
 
 const CompanyDashboard = () => {
+  const navigate = useNavigate();
   // State
   const [activeMenu, setActiveMenu] = useState('Search Experts');
   const [isPanelOpen, setIsPanelOpen] = useState(true);
@@ -77,11 +79,11 @@ const CompanyDashboard = () => {
       <aside className="w-16 bg-[#0B1437] flex flex-col justify-between shrink-0 z-50 py-4 shadow-xl">
         <div className="flex flex-col items-center gap-4">
           {/* Logo Mark */}
-          <div className="w-10 h-10 flex items-center justify-center mb-4 border-b border-white/10 pb-4">
+          <div className="w-10 h-10 flex items-center justify-center mb-4 border-b border-white/10 pb-4 flex items-center shrink-0">
              <img 
-                src="/LOGO_FINAL.png" 
-                alt="CXO" 
-                className="h-7 w-auto object-contain [filter:brightness(0)_saturate(100%)_invert(55%)_sepia(60%)_saturate(400%)_hue-rotate(120deg)]"
+                src="/assets/images/LOGO_WHITE.png" 
+                alt="CXO Connect" 
+                className="h-9 md:h-11 w-auto object-contain"
              />
           </div>
 
@@ -213,11 +215,11 @@ const CompanyDashboard = () => {
                 <button onClick={() => setIsPanelOpen(!isPanelOpen)} className="md:hidden text-gray-500 hover:text-[#0B1437]">
                     <LayoutDashboard size={24} />
                 </button>
-                <div className="flex items-center md:hidden">
+                <div className="flex items-center md:hidden flex items-center shrink-0">
                     <img 
-                        src="/LOGO_FINAL.png" 
+                        src="/assets/images/LOGO_WHITE.png" 
                         alt="CXO Connect" 
-                        className="h-8 w-auto object-contain [filter:brightness(0)_saturate(100%)_invert(55%)_sepia(60%)_saturate(400%)_hue-rotate(120deg)]"
+                        className="h-10 w-auto object-contain"
                     />
                 </div>
             </div>
@@ -235,7 +237,10 @@ const CompanyDashboard = () => {
                 </div>
             </div>
 
-            <button className="hidden sm:flex relative overflow-hidden items-center gap-2 text-white font-semibold transition-transform duration-150 text-[14px] group px-6 py-2.5 rounded-full bg-[#134e40] hover:bg-[#0eb59a] hover:scale-105 active:scale-95 shadow-md">
+            <button 
+                onClick={() => navigate('/expert-dashboard')}
+                className="hidden sm:flex relative overflow-hidden items-center gap-2 text-white font-semibold transition-transform duration-150 text-[14px] group px-6 py-2.5 rounded-full bg-[#134e40] hover:bg-[#0eb59a] hover:scale-105 active:scale-95 shadow-md"
+            >
                 <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></span>
                 <span className="relative z-10 tracking-wide">I am an Expert</span>
             </button>

@@ -265,17 +265,17 @@ const JoinCompany = () => {
 	return (
 		<div className="flex min-h-screen bg-gray-50 flex-col lg:flex-row">
 			{/* Left Side: Branding Panel */}
-			<div className="hidden lg:flex flex-col w-[35%] bg-slate-100 p-12 justify-center items-center text-center z-20">
-				<Link to="/" className="mb-auto">
+			<div className="hidden lg:flex flex-col w-[35%] bg-[#0d1a18] p-12 justify-center items-center text-center z-20">
+				<Link to="/" className="mb-auto flex items-center shrink-0">
 					<img 
-						src="/LOGO_FINAL.png" 
+						src="/assets/images/LOGO_WHITE.png" 
 						alt="CXO Connect" 
-						className="h-10 w-auto object-contain transition-opacity duration-200 hover:opacity-80"
+						className="h-10 md:h-12 w-auto object-contain"
 					/>
 				</Link>
 				<div className="mb-auto mt-20 flex flex-col items-center">
-					<p className="text-gray-500 font-bold uppercase tracking-wider text-sm mb-4">Sign up</p>
-					<h1 className="text-5xl font-extrabold text-slate-800 leading-tight">Welcome to <br/>our Company<br/>Site</h1>
+					<p className="text-[#0eb59a] font-bold uppercase tracking-wider text-sm mb-4">Sign up</p>
+					<h1 className="text-5xl font-extrabold text-white leading-tight">Welcome to <br/>our Company<br/>Site</h1>
 				</div>
 			</div>
 
