@@ -4,7 +4,7 @@ import Home from './pages/Home';
 import JoinCompany from './pages/JoinCompany';
 import JoinExpert from './pages/JoinExpert';
 import SignIn from './pages/SignIn';
-import PrivacyPolicy from './pages/PrivacyPolicy';
+import PrivacyDoc from './pages/PrivacyDoc';
 import TermsOfService from './pages/TermsOfService';
 import CompanyDashboard from './pages/CompanyDashboard';
 import ExpertDashboard from './pages/ExpertDashboard';
@@ -29,7 +29,7 @@ const AppContent = () => {
             <Route path="/signin" element={<SignIn />} />
             <Route path="/company-dashboard" element={<CompanyDashboard />} />
             <Route path="/expert-dashboard" element={<ExpertDashboard />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/privacy-policy" element={<PrivacyDoc />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/expert-dashboard" element={<ExpertDashboard />} />
           </Routes>
