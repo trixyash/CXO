@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import OTPBox from "../components/OTPBox";
@@ -17,19 +17,6 @@ const SignIn = () => {
 	const [otp, setOtp] = useState("");
 	const [showOtp, setShowOtp] = useState(false);
 	const [resolvedEmail, setResolvedEmail] = useState("");
-
-	useEffect(() => {
-		const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-			if (event === "SIGNED_IN" && session) {
-				// Automatically redirect the original tab when login completes in another tab
-				navigate(role === "company" ? "/company-dashboard" : "/expert-dashboard");
-			}
-		});
-
-		return () => {
-			subscription.unsubscribe();
-		};
-	}, [navigate, role]);
 
 	const handleSendOTP = async (e) => {
 		e.preventDefault();
