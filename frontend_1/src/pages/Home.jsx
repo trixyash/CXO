@@ -4,7 +4,7 @@ import { Twitter, Facebook, Instagram, Briefcase, ChevronLeft, ChevronRight, Che
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthModal } from '../components/AuthModalContext';
 import Footer from '../components/Footer';
-import Toast from '../components/Toast';
+import TarsChatbot from '../components/TarsChatbot';
 
 const slides = [
     {
@@ -594,15 +594,7 @@ const Home = () => {
             />
 
             {/* Ask Tars Chat Bubble */}
-            <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                style={{ position: 'fixed', bottom: '30px', right: '30px', backgroundColor: '#000000', color: '#ffffff', cursor: 'pointer', zIndex: 1000 }}
-                className="hover:-translate-y-1 transition-all flex items-center justify-center gap-3 px-6 py-4 shadow-2xl rounded-full border border-gray-800 group"
-            >
-                <Crown size={24} className="text-white group-hover:scale-110 transition-transform" />
-                <span className="font-bold tracking-widest text-sm uppercase">Ask Tars</span>
-            </motion.div>
+            <TarsChatbot />
         </div>
     );
 };
