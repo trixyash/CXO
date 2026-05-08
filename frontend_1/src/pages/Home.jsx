@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthModal } from '../components/AuthModalContext';
 import Footer from '../components/Footer';
 import TarsChatbot from '../components/TarsChatbot';
+import Toast from '../components/Toast';
 
 const slides = [
     {
