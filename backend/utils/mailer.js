@@ -7,7 +7,7 @@ export const sendOtpMail = async (email, otp) => {
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const otpDisplay = otp.toString().split('').map(digit => 
-    '<span style="display: inline-block; width: 45px; height: 45px; line-height: 45px; text-align: center; background-color: #70938A; color: white; border-radius: 50%; font-size: 24px; font-weight: bold; margin: 0 4px;">' + digit + '</span>'
+    '<span style="display: inline-block; width: 50px; height: 50px; line-height: 50px; text-align: center; background-color: #88A99E; color: #1A1A1A; border-radius: 50%; font-size: 24px; font-weight: bold; margin: 0 5px;">' + digit + '</span>'
   ).join('');
 
   const { data, error } = await resend.emails.send({
@@ -15,39 +15,43 @@ export const sendOtpMail = async (email, otp) => {
     to: email,
     subject: "CXOConnect - OTP Verification",
     html: `
-      <div style="font-family: sans-serif; background-color: #FAF9F6; padding: 40px 20px;">
-        <div style="max-width: 500px; margin: 0 auto; background-color: #FFFFFF; border: 1px solid #000000; border-radius: 8px; padding: 40px;">
-          <!-- Header -->
-          <div style="text-align: center; margin-bottom: 30px;">
-            <div style="display: inline-block; vertical-align: middle; width: 40px; height: 40px; background-color: #70938A; border-radius: 50%; color: white; font-weight: bold; font-size: 20px; line-height: 40px;">C</div>
-            <h1 style="display: inline-block; vertical-align: middle; color: #1f2937; margin: 0 0 0 10px; font-size: 24px; letter-spacing: 1px;">CXO CONNECT</h1>
-          </div>
-          
-          <!-- Content -->
-          <p style="color: #4b5563; font-size: 16px; margin-bottom: 20px;">Dear Applicant,</p>
-          <p style="color: #4b5563; font-size: 16px; line-height: 1.5; margin-bottom: 30px;">
-            Please use the One Time Verification code to validate your registered email ID and proceed to complete your application.
-          </p>
-          
-          <!-- OTP Display -->
-          <div style="text-align: center; margin-bottom: 30px;">
-            ${otpDisplay}
-          </div>
-          
-          <p style="color: #4b5563; font-size: 14px; line-height: 1.5; margin-bottom: 40px; text-align: center;">
-            Above OTP will remain active for <strong>05:00 minutes</strong> only. Do not share this OTP with anyone.
-          </p>
-          
-          <!-- Footer -->
-          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px;">
-            <p style="color: #4b5563; font-size: 14px; margin: 0 0 10px 0;">Best regards,<br>CXO Connect Team</p>
-            <a href="https://cxoconnect.com" style="color: #004AAD; text-decoration: none; font-size: 14px; font-weight: bold;">CXO Connect</a>
-            <p style="color: #9ca3af; font-size: 12px; margin-top: 20px;">
-              This is an auto-generated email. Do not reply to this email.
-            </p>
-          </div>
-        </div>
-      </div>
+<div style="background-color: #F8F4EE; padding: 40px 20px; font-family: Arial, sans-serif; color: #1A1A1A;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #F8F4EE; border: 3px solid #2B2D42; padding: 40px;">
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 30px;">
+      <img src="${process.env.FRONTEND_URL}/LOGO_FINAL.png" alt="CXO Connect" style="height: 100px; display: inline-block;" />
+    </div>
+    
+    <!-- Content -->
+    <p style="font-size: 18px; margin-bottom: 10px; margin-top: 0;">Dear Applicant,</p>
+    <p style="font-size: 18px; line-height: 1.5; margin-top: 0; margin-bottom: 30px;">
+      Please use the One Time Verification code to validate your registered email ID and proceed to complete your application.
+    </p>
+    
+    <!-- OTP Display -->
+    <div style="text-align: center; margin-bottom: 30px;">
+      ${otpDisplay}
+    </div>
+    
+    <p style="font-size: 16px; line-height: 1.5; margin-bottom: 30px; text-align: center;">
+      Above OTP will remain active for 05:00 minutes only. Do not<br>share this OTP with anyone.
+    </p>
+    
+    <p style="font-size: 16px; margin-bottom: 5px;">
+      This is an auto-generated email. Do not reply to this email.
+    </p>
+    <p style="font-size: 16px; margin-top: 0; margin-bottom: 40px;">
+      If you did not request this OTP, please connect with us immediately at <a href="mailto:support@cxoconnect.com" style="color: #004AAD; font-weight: bold; text-decoration: underline;">CXO Connect</a>.
+    </p>
+    
+    <!-- Footer -->
+    <div style="margin-top: 40px;">
+      <p style="font-size: 16px; margin: 0 0 5px 0;">Best regards,</p>
+      <p style="font-size: 16px; margin: 0;">CXO Connect Team</p>
+    </div>
+  </div>
+</div>
     `,
   });
 
@@ -65,39 +69,43 @@ export const sendMagicLinkMail = async (email, magicLink) => {
     to: email,
     subject: "CXOConnect - Secure Sign In",
     html: `
-      <div style="font-family: sans-serif; background-color: #FAF9F6; padding: 40px 20px;">
-        <div style="max-width: 500px; margin: 0 auto; background-color: #FFFFFF; border: 1px solid #000000; border-radius: 8px; padding: 40px;">
-          <!-- Header -->
-          <div style="text-align: center; margin-bottom: 30px;">
-            <div style="display: inline-block; vertical-align: middle; width: 40px; height: 40px; background-color: #70938A; border-radius: 50%; color: white; font-weight: bold; font-size: 20px; line-height: 40px;">C</div>
-            <h1 style="display: inline-block; vertical-align: middle; color: #1f2937; margin: 0 0 0 10px; font-size: 24px; letter-spacing: 1px;">CXO CONNECT</h1>
-          </div>
-          
-          <!-- Content -->
-          <h2 style="color: #000000; font-size: 22px; font-weight: bold; margin-bottom: 20px; text-align: center;">Let's get you signed in</h2>
-          <p style="color: #4b5563; font-size: 16px; margin-bottom: 30px; text-align: center;">
-            Sign in with the secure link below :
-          </p>
-          
-          <!-- Button -->
-          <div style="text-align: center; margin-bottom: 40px;">
-            <a href="${magicLink}" style="background-color: #70938A; color: white; padding: 14px 32px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px; display: inline-block;">Sign in to CXO</a>
-          </div>
-          
-          <p style="color: #4b5563; font-size: 14px; line-height: 1.5; margin-bottom: 40px; text-align: center;">
-            Above link will remain active for <strong>10 hours</strong> only.
-          </p>
-          
-          <!-- Footer -->
-          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px;">
-            <p style="color: #4b5563; font-size: 14px; margin: 0 0 10px 0;">Best regards,<br>CXO Connect Team</p>
-            <a href="https://cxoconnect.com" style="color: #004AAD; text-decoration: none; font-size: 14px; font-weight: bold;">CXO Connect</a>
-            <p style="color: #9ca3af; font-size: 12px; margin-top: 20px;">
-              If you didn't request this email, you can safely ignore it.
-            </p>
-          </div>
-        </div>
-      </div>
+<div style="background-color: #F8F4EE; padding: 40px 20px; font-family: Arial, sans-serif; color: #1A1A1A;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #F8F4EE; border: 3px solid #2B2D42; padding: 40px;">
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 30px;">
+      <img src="${process.env.FRONTEND_URL}/LOGO_FINAL.png" alt="CXO Connect" style="height: 100px; display: inline-block;" />
+    </div>
+    
+    <!-- Content -->
+    <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 10px; text-align: center; margin-top: 0;">Let's get you signed in</h2>
+    <p style="font-size: 20px; margin-top: 0; margin-bottom: 30px; text-align: center;">
+      Sign in with the secure link below :
+    </p>
+    
+    <!-- Button -->
+    <div style="text-align: center; margin-bottom: 40px;">
+      <a href="${magicLink}" style="background-color: #88A99E; color: #1A1A1A; padding: 14px 40px; text-decoration: none; border-radius: 50px; font-size: 18px; display: inline-block;">Sign in to CXO</a>
+    </div>
+    
+    <p style="font-size: 16px; margin-bottom: 30px; text-align: center;">
+      Above link will remain active for 10 hours only.
+    </p>
+    
+    <p style="font-size: 16px; margin-bottom: 5px; text-align: center;">
+      If you didn't request this email, you can safely ignore it.
+    </p>
+    <p style="font-size: 16px; margin-top: 0; margin-bottom: 40px; text-align: center;">
+      If you're experiencing issues, please contact <a href="mailto:support@cxoconnect.com" style="color: #004AAD; font-weight: bold; text-decoration: underline;">CXO Connect</a>.
+    </p>
+    
+    <!-- Footer -->
+    <div style="margin-top: 40px;">
+      <p style="font-size: 16px; margin: 0 0 5px 0;">Best regards,</p>
+      <p style="font-size: 16px; margin: 0;">CXO Connect Team</p>
+    </div>
+  </div>
+</div>
     `,
   });
 
