@@ -89,6 +89,21 @@ const SignIn = () => {
 		}
 	};
 
+	const handleOAuthSignIn = async (provider) => {
+		try {
+			const { data, error } = await supabase.auth.signInWithOAuth({
+				provider: provider,
+				options: {
+					redirectTo: window.location.origin + (role === "company" ? "/company-dashboard" : "/expert-dashboard")
+				}
+			});
+			if (error) throw error;
+		} catch (err) {
+			console.error("OAuth Error:", err);
+			setError(err.message);
+		}
+	};
+
 	return (
 		<div className="relative min-h-screen bg-gray-50 flex items-center justify-center">
 			<SignIn2
@@ -103,6 +118,7 @@ const SignIn = () => {
 				role={role}
 				loginMethod={loginMethod}
 				setLoginMethod={setLoginMethod}
+				onOAuthSignIn={handleOAuthSignIn}
 			/>
 
 			{showOtp && (
