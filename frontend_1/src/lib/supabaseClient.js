@@ -19,7 +19,10 @@ if (supabaseUrl && supabaseAnonKey) {
         getPublicUrl: () => ({ data: { publicUrl: '' } }),
       }),
     },
-    auth: { signInWithOtp: async () => ({ user: null, error: null }) },
+    auth: { 
+      signInWithOtp: async () => ({ user: null, error: null }),
+      signInWithOAuth: async () => ({ data: null, error: new Error('Supabase is not configured') })
+    },
   };
 }
 

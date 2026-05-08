@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabaseClient';
 import { 
   Search, Briefcase, LayoutDashboard, CreditCard, 
   Bell, MessageSquare, Settings, User, Zap, 
@@ -10,6 +11,36 @@ import {
 
 const CompanyDashboard = () => {
   const navigate = useNavigate();
+
+  // Authentication Guard
+  useEffect(() => {
+    // Check if OAuth was cancelled (LinkedIn, Google, etc.)
+    if (window.location.hash.includes('error=')) {
+      navigate('/signin?role=company');
+      return;
+    }
+
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/signin?role=company');
+      }
+    };
+    checkAuth();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate('/signin?role=company');
+      }
+    });
+
+    return () => {
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
+  }, [navigate]);
+
   // State
   const [activeMenu, setActiveMenu] = useState('Search Experts');
   const [isPanelOpen, setIsPanelOpen] = useState(true);
