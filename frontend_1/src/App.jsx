@@ -13,6 +13,10 @@ import CreateRequirement from './pages/CreateRequirement';
 import ExpertDiscovery from './pages/ExpertDiscovery';
 import ExpertProfile from './pages/ExpertProfile';
 import EngagementWorkspace from './pages/EngagementWorkspace';
+import Contracts from './pages/Contracts';
+import Payments from './pages/Payments';
+
+
 import { AuthModalProvider } from './components/AuthModalContext';
 import AuthModal from './components/AuthModal';
 
@@ -39,6 +43,11 @@ const AppContent = () => {
             <Route path="/experts/:expertId" element={<ExpertProfile />} />
             <Route path="/engagements/:engagementId" element={<EngagementWorkspace />} />
             <Route path="/engagements" element={<EngagementWorkspace />} />
+            <Route path="/contracts" element={<Contracts />} />
+            <Route path="/contracts/:contractId" element={<Contracts />} />
+            <Route path="/payments" element={<Payments />} />
+
+
             <Route path="/expert-dashboard" element={<ExpertDashboard />} />
             <Route path="/privacy-policy" element={<PrivacyDoc />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
