@@ -15,6 +15,12 @@ import ExpertProfile from './pages/ExpertProfile';
 import EngagementWorkspace from './pages/EngagementWorkspace';
 import Contracts from './pages/Contracts';
 import Payments from './pages/Payments';
+import Settings from './pages/Settings';
+import ExpertOpportunities from './pages/ExpertOpportunities';
+import ExpertEngagements from './pages/ExpertEngagements';
+import ExpertEarnings from './pages/ExpertEarnings';
+import ExpertProfileBuilder from './pages/ExpertProfileBuilder';
+
 
 
 import { AuthModalProvider } from './components/AuthModalContext';
@@ -23,7 +29,8 @@ import AuthModal from './components/AuthModal';
 const AppContent = () => {
   const location = useLocation();
   const showNavbar = location.pathname === '/' || location.pathname === '/privacy-policy' || location.pathname === '/terms-of-service';
-  const isDashboard = location.pathname === '/company-dashboard' || location.pathname === '/expert-dashboard' || location.pathname === '/requirements' || location.pathname === '/requirements/create' || location.pathname === '/experts' || location.pathname.startsWith('/experts/') || location.pathname.startsWith('/engagements');
+  const isDashboard = location.pathname === '/company-dashboard' || location.pathname === '/expert-dashboard' || location.pathname === '/requirements' || location.pathname === '/requirements/create' || location.pathname === '/experts' || location.pathname.startsWith('/experts/') || location.pathname.startsWith('/engagements') || location.pathname === '/settings' || location.pathname.startsWith('/expert-opportunities') || location.pathname.startsWith('/expert-engagements') || location.pathname === '/expert-earnings' || location.pathname === '/expert-profile';
+
 
   return (
     <AuthModalProvider>
@@ -46,9 +53,17 @@ const AppContent = () => {
             <Route path="/contracts" element={<Contracts />} />
             <Route path="/contracts/:contractId" element={<Contracts />} />
             <Route path="/payments" element={<Payments />} />
+            <Route path="/settings" element={<Settings />} />
+
 
 
             <Route path="/expert-dashboard" element={<ExpertDashboard />} />
+            <Route path="/expert-opportunities" element={<ExpertOpportunities />} />
+            <Route path="/expert-opportunities/:opportunityId" element={<ExpertOpportunities />} />
+            <Route path="/expert-engagements" element={<ExpertEngagements />} />
+            <Route path="/expert-engagements/:engagementId" element={<ExpertEngagements />} />
+            <Route path="/expert-earnings" element={<ExpertEarnings />} />
+            <Route path="/expert-profile" element={<ExpertProfileBuilder />} />
             <Route path="/privacy-policy" element={<PrivacyDoc />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
           </Routes>
