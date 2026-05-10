@@ -495,14 +495,14 @@ const ExpertProfile = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/20 transition-all"
+                className="hidden sm:block p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/20 transition-all"
               >
                 <Share2 size={16} />
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/20 transition-all"
+                className="hidden sm:block p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/20 transition-all"
               >
                 <Download size={16} />
               </motion.button>
@@ -627,7 +627,7 @@ const ExpertProfile = () => {
                   </div>
 
                   {/* Engagement Stats */}
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {[
                       { label: 'Engagements', value: expert.completedEngagements, icon: Briefcase, color: 'text-teal-500', bg: 'bg-teal-50', border: 'border-l-[#0eb59a]' },
                       { label: 'Avg Rating', value: expert.rating, icon: Star, color: 'text-amber-500', bg: 'bg-amber-50', border: 'border-l-amber-400' },
@@ -938,7 +938,7 @@ const ExpertProfile = () => {
 
                   {/* Trust signals */}
                   <div className="bg-teal-50 rounded-3xl border border-teal-100 p-6">
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {[
                         { icon: Shield, title: 'Escrow-backed', desc: 'Payments held securely until milestones approved' },
                         { icon: CheckCircle, title: 'PMO governed', desc: 'Platform team monitors every engagement' },
@@ -1016,7 +1016,7 @@ const ExpertProfile = () => {
                     <MessageSquare size={14} className="inline mr-1.5" />
                     Send Message
                   </motion.button>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -1112,14 +1112,14 @@ const ExpertProfile = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <AnimatePresence mode="wait">
                 {!inviteSent ? (
@@ -1237,14 +1237,14 @@ const ExpertProfile = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">

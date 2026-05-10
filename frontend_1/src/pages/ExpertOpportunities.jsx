@@ -340,12 +340,27 @@ const ExpertOpportunities = () => {
               ))}
             </div>
 
-            {/* Filter toggle */}
+            {/* Mobile filter button — shows only on mobile */}
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border bg-white text-gray-600 border-gray-200 md:hidden"
+            >
+              <SlidersHorizontal size={15} />
+              Filters
+              {totalActiveFilters > 0 && (
+                <span className="bg-[#0eb59a] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                  {totalActiveFilters}
+                </span>
+              )}
+            </motion.button>
+
+            {/* Desktop Filter toggle — hidden on mobile */}
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${
+              className={`hidden md:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${
                 showFilters
                   ? 'bg-[#134e40] text-white border-[#134e40]'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-[#0eb59a]/40'
@@ -395,7 +410,7 @@ const ExpertOpportunities = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08 }}
-          className="flex gap-2 flex-wrap mb-6"
+          className="flex gap-2 mb-6 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden"
         >
           {statusFilters.map(filter => (
             <motion.button
@@ -403,7 +418,7 @@ const ExpertOpportunities = () => {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setActiveFilter(filter)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
                 activeFilter === filter
                   ? 'bg-[#134e40] text-white shadow-md'
                   : 'bg-white text-gray-500 border border-gray-200 hover:border-[#0eb59a]/40 hover:text-[#0eb59a]'
@@ -427,14 +442,36 @@ const ExpertOpportunities = () => {
           {/* ── FILTER PANEL ── */}
           <AnimatePresence>
             {showFilters && (
-              <motion.aside
-                initial={{ opacity: 0, width: 0, x: -20 }}
-                animate={{ opacity: 1, width: 260, x: 0 }}
-                exit={{ opacity: 0, width: 0, x: -20 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="shrink-0 overflow-hidden"
-              >
-                <div className="w-[260px] bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sticky top-6">
+              <>
+                {/* Mobile backdrop */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowFilters(false)}
+                  className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 md:hidden"
+                />
+
+                {/* Filter panel */}
+                <motion.aside
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className={`
+                    shrink-0 overflow-hidden
+                    fixed left-0 top-0 h-full z-50 w-72 md:static md:h-auto md:z-auto md:w-[260px]
+                    md:block
+                  `}
+                >
+                  <div className="w-full h-full md:h-auto bg-white md:rounded-3xl border border-gray-100 shadow-sm p-5 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+                    {/* Mobile close button */}
+                    <div className="flex items-center justify-between mb-4 md:hidden">
+                      <h3 className="font-black text-gray-900 text-sm">Filters</h3>
+                      <button onClick={() => setShowFilters(false)} className="p-1.5 rounded-lg bg-gray-100">
+                        <X size={16} />
+                      </button>
+                    </div>
 
                   {/* Header */}
                   <div className="flex items-center justify-between mb-5">
@@ -553,8 +590,9 @@ const ExpertOpportunities = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.aside>
+                  </div>
+                </motion.aside>
+              </>
             )}
           </AnimatePresence>
 
@@ -733,36 +771,38 @@ const ExpertOpportunities = () => {
                           )}
                         </div>
 
-                        {/* Action buttons */}
-                        <div className="flex gap-2 mt-3">
+                        {/* Action buttons — stack on mobile */}
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 mt-3 sm:mt-0">
                           <motion.button
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
                             onClick={() => setShowApplyModal(opp)}
-                            className="flex-1 py-2.5 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl transition-all shadow-sm"
+                            className="flex-1 py-2.5 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl transition-all shadow-sm w-full sm:w-auto text-center"
                           >
                             Apply Now
                           </motion.button>
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => navigate(`/expert-opportunities/${opp.id}`)}
-                            className="px-3 py-2.5 bg-gray-50 border border-gray-100 text-gray-400 hover:text-[#0eb59a] hover:bg-teal-50 rounded-xl transition-all"
-                          >
-                            <Eye size={14} />
-                          </motion.button>
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => toggleSaved(opp.id)}
-                            className={`px-3 py-2.5 rounded-xl transition-all border ${
-                              savedOpportunities.includes(opp.id)
-                                ? 'bg-red-50 text-red-500 border-red-100'
-                                : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-red-400'
-                            }`}
-                          >
-                            <Heart size={14} fill={savedOpportunities.includes(opp.id) ? 'currentColor' : 'none'} />
-                          </motion.button>
+                          <div className="flex gap-2 justify-center">
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => navigate(`/expert-opportunities/${opp.id}`)}
+                              className="px-3 py-2.5 bg-gray-50 border border-gray-100 text-gray-400 hover:text-[#0eb59a] hover:bg-teal-50 rounded-xl transition-all"
+                            >
+                              <Eye size={14} />
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => toggleSaved(opp.id)}
+                              className={`px-3 py-2.5 rounded-xl transition-all border ${
+                                savedOpportunities.includes(opp.id)
+                                  ? 'bg-red-50 text-red-500 border-red-100'
+                                  : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-red-400'
+                              }`}
+                            >
+                              <Heart size={14} fill={savedOpportunities.includes(opp.id) ? 'currentColor' : 'none'} />
+                            </motion.button>
+                          </div>
                         </div>
                       </div>
                     </motion.div>
@@ -840,37 +880,39 @@ const ExpertOpportunities = () => {
                         </div>
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex flex-col gap-2 shrink-0">
+                      {/* Action buttons — stack on mobile */}
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 mt-3 sm:mt-0">
                         <motion.button
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
                           onClick={() => setShowApplyModal(opp)}
-                          className="px-5 py-2.5 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl transition-all shadow-sm"
+                          className="px-5 py-2.5 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl transition-all shadow-sm w-full sm:w-auto text-center"
                         >
                           Apply Now
                         </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => navigate(`/expert-opportunities/${opp.id}`)}
-                          className="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-50 transition-all"
-                        >
-                          View Details
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => toggleSaved(opp.id)}
-                          className={`py-2.5 rounded-xl transition-all border flex items-center justify-center gap-1.5 text-xs font-bold ${
-                            savedOpportunities.includes(opp.id)
-                              ? 'bg-red-50 text-red-500 border-red-100'
-                              : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-red-400'
-                          }`}
-                        >
-                          <Heart size={13} fill={savedOpportunities.includes(opp.id) ? 'currentColor' : 'none'} />
-                          {savedOpportunities.includes(opp.id) ? 'Saved' : 'Save'}
-                        </motion.button>
+                        <div className="flex gap-2 justify-center">
+                          <motion.button
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => navigate(`/expert-opportunities/${opp.id}`)}
+                            className="flex-1 px-5 py-2.5 bg-white border border-gray-200 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-50 transition-all"
+                          >
+                            View Details
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => toggleSaved(opp.id)}
+                            className={`px-4 py-2.5 rounded-xl transition-all border flex items-center justify-center gap-1.5 text-xs font-bold ${
+                              savedOpportunities.includes(opp.id)
+                                ? 'bg-red-50 text-red-500 border-red-100'
+                                : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-red-400'
+                            }`}
+                          >
+                            <Heart size={13} fill={savedOpportunities.includes(opp.id) ? 'currentColor' : 'none'} />
+                            <span className="sm:hidden">{savedOpportunities.includes(opp.id) ? 'Saved' : 'Save'}</span>
+                          </motion.button>
+                        </div>
                       </div>
                     </motion.div>
                   ))}
@@ -888,7 +930,7 @@ const ExpertOpportunities = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}

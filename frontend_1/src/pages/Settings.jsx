@@ -307,44 +307,39 @@ const Settings = () => {
             transition={{ delay: 0.1 }}
             className="md:w-56 shrink-0"
           >
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-3 sticky top-6">
-              {tabs.map((tab) => (
+            <div className="bg-white rounded-2xl md:rounded-3xl border border-gray-100 shadow-sm p-2 md:p-3 md:sticky md:top-6">
+              <div className="flex md:flex-col gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+                {tabs.map((tab) => (
+                  <motion.button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex items-center gap-2 px-3 md:px-4 py-2.5 md:py-3 rounded-xl md:rounded-2xl
+                      text-xs md:text-sm font-bold transition-all whitespace-nowrap shrink-0
+                      md:w-full md:text-left
+                      ${activeTab === tab.id
+                        ? 'bg-teal-50 text-[#134e40]'
+                        : 'text-gray-500 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    <tab.icon size={14} className={activeTab === tab.id ? 'text-[#0eb59a]' : 'text-gray-400'} />
+                    {tab.id}
+                  </motion.button>
+                ))}
+              </div>
+
+              <div className="hidden md:block">
+                <div className="h-px bg-gray-100 my-2" />
                 <motion.button
-                  key={tab.id}
                   whileHover={{ x: 3 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all mb-1 text-left ${
-                    activeTab === tab.id
-                      ? 'bg-teal-50 text-[#134e40]'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
-                  }`}
+                  onClick={async () => { navigate('/signin?role=company'); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-red-400 hover:bg-red-50 hover:text-red-600 transition-all text-left"
                 >
-                  <tab.icon
-                    size={16}
-                    className={activeTab === tab.id ? 'text-[#0eb59a]' : 'text-gray-400'}
-                  />
-                  {tab.id}
-                  {activeTab === tab.id && (
-                    <motion.div
-                      layoutId="settingsDot"
-                      className="ml-auto w-1.5 h-1.5 rounded-full bg-[#0eb59a]"
-                    />
-                  )}
+                  <LogOut size={16} />
+                  Sign Out
                 </motion.button>
-              ))}
-
-              <div className="h-px bg-gray-100 my-2" />
-
-              {/* Danger zone */}
-              <motion.button
-                whileHover={{ x: 3 }}
-                onClick={async () => { navigate('/signin?role=company'); }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-red-400 hover:bg-red-50 hover:text-red-600 transition-all text-left"
-              >
-                <LogOut size={16} />
-                Sign Out
-              </motion.button>
+              </div>
             </div>
           </motion.aside>
 
@@ -597,64 +592,67 @@ const Settings = () => {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.06 }}
-                        className={`flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors group ${
+                        className={`flex flex-col sm:flex-row sm:items-center gap-3 px-4 sm:px-6 py-4 hover:bg-gray-50 transition-colors group ${
                           idx < teamMembers.length - 1 ? 'border-b border-gray-50' : ''
                         }`}
                       >
                         {/* Avatar */}
-                        <div className="relative shrink-0">
-                          <img
-                            src={member.avatar}
-                            className="w-11 h-11 rounded-2xl object-cover shadow-sm"
-                          />
-                          <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${
-                            member.status === 'Active' ? 'bg-emerald-500' : 'bg-amber-400'
-                          }`} />
-                        </div>
-
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-black text-gray-900 text-sm">{member.name}</p>
-                            {member.isOwner && (
-                              <span className="flex items-center gap-0.5 text-[9px] font-black text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
-                                <Crown size={8} /> Owner
-                              </span>
-                            )}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="relative shrink-0">
+                            <img
+                              src={member.avatar}
+                              className="w-11 h-11 rounded-2xl object-cover shadow-sm"
+                            />
+                            <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${
+                              member.status === 'Active' ? 'bg-emerald-500' : 'bg-amber-400'
+                            }`} />
                           </div>
-                          <p className="text-xs text-gray-400 font-semibold">{member.email}</p>
+
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-black text-gray-900 text-sm truncate">{member.name}</p>
+                              {member.isOwner && (
+                                <span className="flex items-center gap-0.5 text-[9px] font-black text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200 shrink-0">
+                                  <Crown size={8} /> Owner
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-400 font-semibold truncate">{member.email}</p>
+                          </div>
                         </div>
 
-                        {/* Role */}
-                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border shrink-0 ${roleColors[member.role] || roleColors.HR}`}>
-                          {member.role}
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* Role */}
+                          <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border shrink-0 ${roleColors[member.role] || roleColors.HR}`}>
+                            {member.role}
+                          </span>
 
-                        {/* Status */}
-                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border shrink-0 ${
-                          member.status === 'Active'
-                            ? 'text-emerald-600 bg-emerald-50 border-emerald-200'
-                            : 'text-amber-600 bg-amber-50 border-amber-200'
-                        }`}>
-                          {member.status}
-                        </span>
+                          {/* Status */}
+                          <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border shrink-0 ${
+                            member.status === 'Active'
+                              ? 'text-emerald-600 bg-emerald-50 border-emerald-200'
+                              : 'text-amber-600 bg-amber-50 border-amber-200'
+                          }`}>
+                            {member.status}
+                          </span>
 
-                        {/* Last active */}
-                        <span className="text-xs text-gray-400 font-semibold shrink-0 hidden md:block w-24 text-right">
-                          {member.lastActive}
-                        </span>
+                          {/* Last active */}
+                          <span className="text-xs text-gray-400 font-semibold shrink-0 hidden md:block w-24 text-right">
+                            {member.lastActive}
+                          </span>
 
-                        {/* Remove */}
-                        {!member.isOwner && (
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setShowRemoveMemberModal(member)}
-                            className="p-2 rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 shrink-0"
-                          >
-                            <Trash2 size={14} />
-                          </motion.button>
-                        )}
+                          {/* Remove */}
+                          {!member.isOwner && (
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => setShowRemoveMemberModal(member)}
+                              className="p-2 rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all md:opacity-0 group-hover:opacity-100 shrink-0"
+                            >
+                              <Trash2 size={14} />
+                            </motion.button>
+                          )}
+                        </div>
                       </motion.div>
                     ))}
                   </div>
@@ -969,14 +967,14 @@ const Settings = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <AnimatePresence mode="wait">
                 {!inviteSent ? (
@@ -1100,14 +1098,14 @@ const Settings = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-sm w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-red-100">
                 <Trash2 size={24} className="text-red-500" />
@@ -1149,14 +1147,14 @@ const Settings = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-sm w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <div className="w-14 h-14 bg-gradient-to-br from-[#134e40] to-[#0eb59a] rounded-2xl flex items-center justify-center mx-auto mb-5">
                 <Crown size={24} className="text-white" />

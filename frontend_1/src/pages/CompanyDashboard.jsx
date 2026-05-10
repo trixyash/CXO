@@ -7,7 +7,7 @@ import {
   Bell, Settings, User, ChevronRight, ChevronLeft, 
   Clock, LogOut, Plus, Users, Activity, FileText, 
   Star, DollarSign, Target, MoreVertical, ArrowUpRight, 
-  ShieldCheck, Menu, AlertCircle, MapPin
+  ShieldCheck, Menu, AlertCircle, MapPin, X
 } from 'lucide-react';
 
 const CompanyDashboard = () => {
@@ -16,6 +16,7 @@ const CompanyDashboard = () => {
   // State
   const [activeMenu, setActiveMenu] = useState('Dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expertCarouselIndex, setExpertCarouselIndex] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationCount, setNotificationCount] = useState(3);
@@ -218,13 +219,42 @@ const CompanyDashboard = () => {
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans text-[#1e293b] overflow-hidden">
       
+      {/* ── MOBILE BACKDROP ── */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* ── SIDEBAR ── */}
       <motion.aside
         initial={false}
-        animate={{ width: isSidebarOpen ? 260 : 68 }}
+        animate={{
+          width: isSidebarOpen ? 260 : 68,
+          x: 0,
+        }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        className="relative bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm"
+        className={`
+          bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm
+          fixed md:relative inset-y-0 left-0
+          transition-transform duration-300
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+        style={{ width: typeof window !== 'undefined' && window.innerWidth < 768 ? 260 : undefined }}
       >
+        {/* Close button — mobile only */}
+        <button
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="absolute top-4 right-4 p-1.5 rounded-lg bg-gray-100 text-gray-500 md:hidden z-50"
+        >
+          <X size={16} />
+        </button>
 
         {/* Logo Area */}
         <div className={`flex items-center border-b border-gray-100 overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'px-5 py-4 gap-3' : 'px-0 py-4 justify-center'}`}>
@@ -385,7 +415,7 @@ const CompanyDashboard = () => {
       </motion.aside>
 
       {/* 2. Main Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden md:ml-0">
         
         {/* Enhanced Header */}
         <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-6 shrink-0 z-40 sticky top-0">
@@ -395,13 +425,16 @@ const CompanyDashboard = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setIsMobileMenuOpen(!isMobileMenuOpen);
+                } else {
+                  setIsSidebarOpen(!isSidebarOpen);
+                }
+              }}
               className="p-2.5 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-[#134e40] transition-all"
             >
-              <motion.div
-                animate={{ rotate: isSidebarOpen ? 0 : 180 }}
-                transition={{ duration: 0.3 }}
-              >
+              <motion.div animate={{ rotate: isSidebarOpen ? 0 : 180 }} transition={{ duration: 0.3 }}>
                 <Menu size={20} />
               </motion.div>
             </motion.button>

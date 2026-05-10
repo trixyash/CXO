@@ -850,35 +850,35 @@ const CreateRequirement = () => {
           className="mb-8"
         >
           {/* Step indicators */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 overflow-x-auto [&::-webkit-scrollbar]:hidden">
             {steps.map((step, idx) => {
               const isCompleted = currentStep > step.number;
               const isCurrent = currentStep === step.number;
               return (
                 <React.Fragment key={step.number}>
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center shrink-0">
                     <motion.div
                       animate={{
                         backgroundColor: isCompleted ? '#0eb59a' : isCurrent ? '#134e40' : '#f3f4f6',
                         scale: isCurrent ? 1.1 : 1
                       }}
                       transition={{ duration: 0.3 }}
-                      className="w-9 h-9 rounded-full flex items-center justify-center mb-2 shadow-sm"
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center mb-1.5 shadow-sm"
                     >
                       {isCompleted ? (
-                        <Check size={15} className="text-white" strokeWidth={3} />
+                        <Check size={14} className="text-white" strokeWidth={3} />
                       ) : (
-                        <span className={`text-xs font-black ${isCurrent ? 'text-white' : 'text-gray-400'}`}>
+                        <span className={`text-[10px] sm:text-xs font-black ${isCurrent ? 'text-white' : 'text-gray-400'}`}>
                           {step.number}
                         </span>
                       )}
                     </motion.div>
-                    <span className={`text-[10px] font-bold hidden md:block ${isCurrent ? 'text-[#134e40]' : isCompleted ? 'text-[#0eb59a]' : 'text-gray-400'}`}>
+                    <span className={`text-[9px] sm:text-[10px] font-bold hidden sm:block ${isCurrent ? 'text-[#134e40]' : isCompleted ? 'text-[#0eb59a]' : 'text-gray-400'}`}>
                       {step.title}
                     </span>
                   </div>
                   {idx < steps.length - 1 && (
-                    <div className="flex-1 h-0.5 mx-2 bg-gray-100 rounded-full overflow-hidden mb-5">
+                    <div className="w-8 sm:flex-1 h-0.5 mx-1 sm:mx-2 bg-gray-100 rounded-full overflow-hidden mb-4 sm:mb-5 shrink-0">
                       <motion.div
                         animate={{ width: isCompleted ? '100%' : '0%' }}
                         transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -981,14 +981,14 @@ const CreateRequirement = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-sm w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
                 <Save size={24} className="text-[#0eb59a]" />

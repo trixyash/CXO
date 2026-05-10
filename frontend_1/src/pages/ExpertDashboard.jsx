@@ -9,7 +9,7 @@ import {
   ChevronRight, ChevronLeft, Clock, MapPin,
   Briefcase, TrendingUp, Eye, CheckCircle,
   Zap, Award, BarChart2, MessageSquare,
-  BookOpen, User, Heart, Check
+  BookOpen, User, Heart, Check, X
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -35,6 +35,7 @@ const ExpertDashboard = () => {
   const [activeMenu, setActiveMenu] = useState('Dashboard');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [opportunityCarouselIndex, setOpportunityCarouselIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(3);
@@ -267,15 +268,15 @@ const ExpertDashboard = () => {
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans text-gray-800 overflow-hidden">
 
-      {/* ── MOBILE SIDEBAR OVERLAY ── */}
+      {/* ── MOBILE BACKDROP ── */}
       <AnimatePresence>
-        {isSidebarOpen && isMobile && (
+        {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setIsSidebarOpen(false)}
-            className="fixed inset-0 bg-black/20 z-40 md:hidden backdrop-blur-sm"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
           />
         )}
       </AnimatePresence>
@@ -283,13 +284,26 @@ const ExpertDashboard = () => {
       {/* ── SIDEBAR ── */}
       <motion.aside
         initial={false}
-        animate={{ 
-          width: isMobile ? 260 : (isSidebarOpen ? 260 : 68),
-          x: isMobile ? (isSidebarOpen ? 0 : -260) : 0
+        animate={{
+          width: isSidebarOpen ? 260 : 68,
+          x: 0,
         }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed md:relative h-full"
+        className={`
+          bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm
+          fixed md:relative inset-y-0 left-0
+          transition-transform duration-300
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+        style={{ width: typeof window !== 'undefined' && window.innerWidth < 768 ? 260 : undefined }}
       >
+        {/* Close button — mobile only */}
+        <button
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="absolute top-4 right-4 p-1.5 rounded-lg bg-gray-100 text-gray-500 md:hidden z-50"
+        >
+          <X size={16} />
+        </button>
         {/* Logo */}
         <div className={`flex items-center border-b border-gray-100 overflow-hidden transition-all duration-300 ${sidebarExpanded ? 'px-5 py-5 gap-3' : 'px-0 py-5 justify-center'}`}>
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center shrink-0 shadow-md">
@@ -434,7 +448,7 @@ const ExpertDashboard = () => {
       </motion.aside>
 
       {/* ── MAIN AREA ── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden md:ml-0">
 
         {/* ── HEADER ── */}
         <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-6 shrink-0 z-40 sticky top-0">
@@ -443,7 +457,13 @@ const ExpertDashboard = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setIsMobileMenuOpen(!isMobileMenuOpen);
+                } else {
+                  setIsSidebarOpen(!isSidebarOpen);
+                }
+              }}
               className="p-2.5 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-[#134e40] transition-all"
             >
               <motion.div animate={{ rotate: isSidebarOpen ? 0 : 180 }} transition={{ duration: 0.3 }}>

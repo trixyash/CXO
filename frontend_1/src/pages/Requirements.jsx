@@ -281,14 +281,14 @@ const Requirements = () => {
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 mb-5 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
             {filters.map((filter) => (
               <motion.button
                 key={filter}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
                   activeFilter === filter
                     ? 'bg-[#134e40] text-white shadow-md shadow-teal-900/15'
                     : 'bg-white text-gray-500 border border-gray-200 hover:border-[#0eb59a]/40 hover:text-[#0eb59a]'
@@ -441,14 +441,14 @@ const Requirements = () => {
                           </div>
                         )}
 
-                        {/* Action Buttons */}
-                        <div className="flex gap-2 lg:mt-2">
+                        {/* Action buttons — stack on mobile */}
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 mt-3 sm:mt-0">
                           {req.status === 'Draft' ? (
                             <motion.button
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               onClick={() => navigate(`/requirements/create?draft=${req.id}`)}
-                              className="flex items-center gap-2 px-4 py-2 bg-[#134e40] text-white text-xs font-bold rounded-xl hover:bg-[#0eb59a] transition-all shadow-sm"
+                              className="flex items-center gap-2 px-4 py-2 bg-[#134e40] text-white text-xs font-bold rounded-xl hover:bg-[#0eb59a] transition-all shadow-sm w-full sm:w-auto justify-center"
                             >
                               <Edit size={13} /> Continue Draft
                             </motion.button>
@@ -457,7 +457,7 @@ const Requirements = () => {
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               onClick={() => navigate(`/requirements/${req.id}`)}
-                              className="flex items-center gap-2 px-4 py-2 bg-[#134e40] text-white text-xs font-bold rounded-xl hover:bg-[#0eb59a] transition-all shadow-sm"
+                              className="flex items-center gap-2 px-4 py-2 bg-[#134e40] text-white text-xs font-bold rounded-xl hover:bg-[#0eb59a] transition-all shadow-sm w-full sm:w-auto justify-center"
                             >
                               <Eye size={13} /> View Details
                             </motion.button>
@@ -544,14 +544,14 @@ const Requirements = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-sm w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
                 <Trash2 size={24} className="text-red-500" />

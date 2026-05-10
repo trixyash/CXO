@@ -325,62 +325,65 @@ const ExpertProfileBuilder = () => {
             transition={{ delay: 0.1 }}
             className="lg:w-64 shrink-0"
           >
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sticky top-6 space-y-1">
-
-              {/* Profile strength */}
-              <div className="bg-gradient-to-br from-[#0d1f2d] to-[#134e40] rounded-2xl p-4 text-white mb-3 relative overflow-hidden">
-                <div className="absolute -right-3 -top-3 w-16 h-16 bg-white/5 rounded-full" />
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5">
-                      <Award size={14} className="text-[#0eb59a]" />
-                      <p className="font-black text-xs">Profile Strength</p>
-                    </div>
-                    <span className="text-sm font-black text-[#0eb59a]">{profileStrength}%</span>
-                  </div>
-                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mb-3">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${profileStrength}%` }}
-                      transition={{ duration: 1.2 }}
-                      className="h-full bg-[#0eb59a] rounded-full"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    {profileTips.map((tip, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${tip.done ? 'bg-emerald-500' : 'bg-white/10 border border-dashed border-white/20'}`}>
-                          {tip.done && <Check size={8} className="text-white" strokeWidth={3} />}
-                        </div>
-                        <span className={`text-[10px] font-semibold ${tip.done ? 'text-white/50 line-through' : 'text-white/70'}`}>
-                          {tip.label}
-                        </span>
+            <div className="bg-white rounded-2xl lg:rounded-3xl border border-gray-100 shadow-sm p-2 lg:p-4 lg:sticky lg:top-6">
+              
+              {/* Profile strength — hidden on mobile horizontal nav */}
+              <div className="hidden lg:block">
+                <div className="bg-gradient-to-br from-[#0d1f2d] to-[#134e40] rounded-2xl p-4 text-white mb-3 relative overflow-hidden">
+                  <div className="absolute -right-3 -top-3 w-16 h-16 bg-white/5 rounded-full" />
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <Award size={14} className="text-[#0eb59a]" />
+                        <p className="font-black text-xs">Profile Strength</p>
                       </div>
-                    ))}
+                      <span className="text-sm font-black text-[#0eb59a]">{profileStrength}%</span>
+                    </div>
+                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mb-3">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${profileStrength}%` }}
+                        transition={{ duration: 1.2 }}
+                        className="h-full bg-[#0eb59a] rounded-full"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      {profileTips.map((tip, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${tip.done ? 'bg-emerald-500' : 'bg-white/10 border border-dashed border-white/20'}`}>
+                            {tip.done && <Check size={8} className="text-white" strokeWidth={3} />}
+                          </div>
+                          <span className={`text-[10px] font-semibold ${tip.done ? 'text-white/50 line-through' : 'text-white/70'}`}>
+                            {tip.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Tab nav */}
-              {tabs.map((tab) => (
-                <motion.button
-                  key={tab.id}
-                  whileHover={{ x: 3 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all text-left ${
-                    activeTab === tab.id
-                      ? 'bg-teal-50 text-[#134e40]'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
-                  }`}
-                >
-                  <tab.icon size={16} className={activeTab === tab.id ? 'text-[#0eb59a]' : 'text-gray-400'} />
-                  {tab.id}
-                  {activeTab === tab.id && (
-                    <motion.div layoutId="profileTabDot" className="ml-auto w-1.5 h-1.5 rounded-full bg-[#0eb59a]" />
-                  )}
-                </motion.button>
-              ))}
+              {/* Mobile: horizontal scrolling tabs */}
+              <div className="flex lg:flex-col gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+                {tabs.map((tab) => (
+                  <motion.button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex items-center gap-2 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl
+                      text-xs lg:text-sm font-bold transition-all whitespace-nowrap shrink-0
+                      lg:w-full lg:text-left
+                      ${activeTab === tab.id
+                        ? 'bg-teal-50 text-[#134e40]'
+                        : 'text-gray-500 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    <tab.icon size={14} className={activeTab === tab.id ? 'text-[#0eb59a]' : 'text-gray-400'} />
+                    {tab.id}
+                  </motion.button>
+                ))}
+              </div>
             </div>
           </motion.aside>
 
@@ -430,7 +433,7 @@ const ExpertProfileBuilder = () => {
                     </div>
 
                     {/* Name */}
-                    <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       {[
                         { label: 'First Name', key: 'firstName' },
                         { label: 'Last Name', key: 'lastName' },
@@ -988,7 +991,7 @@ const ExpertProfileBuilder = () => {
                           <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">
                             Preferred Work Mode
                           </label>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap">
                             {modeOptions.map(mode => (
                               <motion.button
                                 key={mode}
@@ -1103,7 +1106,7 @@ const ExpertProfileBuilder = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -1144,7 +1147,7 @@ const ExpertProfileBuilder = () => {
 
                 <div>
                   <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">Type</label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     {['Full-time', 'Fractional', 'Advisory'].map(type => (
                       <motion.button
                         key={type}
@@ -1207,14 +1210,14 @@ const ExpertProfileBuilder = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-black text-gray-900">Add Education</h3>
@@ -1280,7 +1283,7 @@ const ExpertProfileBuilder = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}

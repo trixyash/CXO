@@ -416,14 +416,14 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
           </div>
 
           {/* Filter tabs */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 mb-5 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
             {filters.map(filter => (
               <motion.button
                 key={filter}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
                   activeFilter === filter
                     ? 'bg-[#134e40] text-white shadow-md'
                     : 'bg-white text-gray-500 border border-gray-200 hover:border-[#0eb59a]/40 hover:text-[#0eb59a]'
@@ -602,15 +602,15 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
                           </div>
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex items-center gap-2 shrink-0">
+                        {/* Action buttons — stack on mobile */}
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 mt-3 sm:mt-0">
                           {/* Primary action */}
                           {contract.status === 'Pending Signature' ? (
                             <motion.button
                               whileHover={{ scale: 1.03, boxShadow: '0 8px 20px rgba(20,78,64,0.25)' }}
                               whileTap={{ scale: 0.97 }}
                               onClick={() => setShowSignModal(contract)}
-                              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#134e40] to-[#0eb59a] text-white text-xs font-black rounded-xl shadow-md"
+                              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#134e40] to-[#0eb59a] text-white text-xs font-black rounded-xl shadow-md w-full sm:w-auto justify-center"
                             >
                               <PenLine size={13} /> Sign Now
                             </motion.button>
@@ -619,7 +619,7 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               onClick={() => setShowViewModal(contract)}
-                              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-50 transition-all shadow-sm"
+                              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-50 transition-all shadow-sm w-full sm:w-auto justify-center"
                             >
                               <Eye size={13} /> View
                             </motion.button>
@@ -628,7 +628,7 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               onClick={() => setShowViewModal(contract)}
-                              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-50 transition-all shadow-sm"
+                              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-50 transition-all shadow-sm w-full sm:w-auto justify-center"
                             >
                               <Eye size={13} /> Preview
                             </motion.button>
@@ -638,7 +638,7 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="p-2.5 bg-white border border-gray-200 text-gray-400 hover:text-[#0eb59a] hover:border-teal-200 rounded-xl transition-all shadow-sm"
+                            className="hidden sm:block p-2.5 bg-white border border-gray-200 text-gray-400 hover:text-[#0eb59a] hover:border-teal-200 rounded-xl transition-all shadow-sm"
                           >
                             <Download size={14} />
                           </motion.button>
@@ -893,7 +893,7 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <AnimatePresence mode="wait">
                 {!signatureSent ? (

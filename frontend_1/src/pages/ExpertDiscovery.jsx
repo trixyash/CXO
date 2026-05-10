@@ -359,11 +359,31 @@ const ExpertDiscovery = () => {
                 </motion.button>
               ))}
             </div>
+            {/* Mobile filter button — shows only on mobile */}
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border bg-white text-gray-600 border-gray-200 md:hidden"
+            >
+              <SlidersHorizontal size={15} />
+              Filters
+              {totalActiveFilters > 0 && (
+                <span className="bg-[#0eb59a] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                  {totalActiveFilters}
+                </span>
+              )}
+            </motion.button>
+
+            {/* Desktop Filter toggle — hidden on mobile */}
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${showFilters ? 'bg-[#134e40] text-white border-[#134e40]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#0eb59a]/40'}`}
+              className={`hidden md:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${
+                showFilters
+                  ? 'bg-[#134e40] text-white border-[#134e40]'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-[#0eb59a]/40'
+              }`}
             >
               <SlidersHorizontal size={15} />
               Filters
@@ -404,14 +424,36 @@ const ExpertDiscovery = () => {
           {/* ── FILTER PANEL ── */}
           <AnimatePresence>
             {showFilters && (
-              <motion.aside
-                initial={{ opacity: 0, width: 0, x: -20 }}
-                animate={{ opacity: 1, width: 260, x: 0 }}
-                exit={{ opacity: 0, width: 0, x: -20 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="shrink-0 overflow-hidden"
-              >
-                <div className="w-[260px] bg-white rounded-3xl border border-gray-100 shadow-sm p-5 sticky top-6">
+              <>
+                {/* Mobile backdrop */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowFilters(false)}
+                  className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 md:hidden"
+                />
+
+                {/* Filter panel */}
+                <motion.aside
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className={`
+                    shrink-0 overflow-hidden
+                    fixed left-0 top-0 h-full z-50 w-72 md:static md:h-auto md:z-auto md:w-[260px]
+                    md:block
+                  `}
+                >
+                  <div className="w-full h-full md:h-auto bg-white md:rounded-3xl border border-gray-100 shadow-sm p-5 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+                    {/* Mobile close button */}
+                    <div className="flex items-center justify-between mb-4 md:hidden">
+                      <h3 className="font-black text-gray-900 text-sm">Filters</h3>
+                      <button onClick={() => setShowFilters(false)} className="p-1.5 rounded-lg bg-gray-100">
+                        <X size={16} />
+                      </button>
+                    </div>
 
                   {/* Filter Header */}
                   <div className="flex items-center justify-between mb-5">
@@ -551,8 +593,9 @@ const ExpertDiscovery = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.aside>
+                  </div>
+                </motion.aside>
+              </>
             )}
           </AnimatePresence>
 
@@ -736,50 +779,52 @@ const ExpertDiscovery = () => {
                             </span>
                           </div>
 
-                          {/* Action Buttons */}
-                          <div className="flex gap-2">
+                          {/* Action buttons — stack on mobile */}
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 mt-3 sm:mt-0">
                             <motion.button
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               onClick={() => navigate(`/experts/${expert.id}`)}
-                              className="flex-1 py-2.5 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl transition-all shadow-sm"
+                              className="flex-1 py-2.5 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl transition-all shadow-sm w-full sm:w-auto text-center"
                             >
                               View Profile
                             </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => setShowInviteModal(expert)}
-                              className="px-3 py-2.5 bg-teal-50 hover:bg-teal-100 text-[#134e40] text-xs font-black rounded-xl transition-all border border-teal-100"
-                            >
-                              Invite
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => toggleShortlist(expert.id)}
-                              className={`p-2.5 rounded-xl transition-all border ${
-                                shortlisted.includes(expert.id)
-                                  ? 'bg-red-50 text-red-500 border-red-100'
-                                  : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-red-400'
-                              }`}
-                            >
-                              <Heart size={14} fill={shortlisted.includes(expert.id) ? 'currentColor' : 'none'} />
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => toggleCompare(expert.id)}
-                              className={`p-2.5 rounded-xl transition-all border text-xs font-black ${
-                                compareTray.includes(expert.id)
-                                  ? 'bg-blue-50 text-blue-600 border-blue-100'
-                                  : compareTray.length >= 3
-                                  ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
-                                  : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-blue-50 hover:text-blue-500'
-                              }`}
-                            >
-                              <BarChart2 size={14} />
-                            </motion.button>
+                            <div className="flex gap-2 justify-center">
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setShowInviteModal(expert)}
+                                className="px-3 py-2.5 bg-teal-50 hover:bg-teal-100 text-[#134e40] text-xs font-black rounded-xl transition-all border border-teal-100"
+                              >
+                                Invite
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => toggleShortlist(expert.id)}
+                                className={`p-2.5 rounded-xl transition-all border ${
+                                  shortlisted.includes(expert.id)
+                                    ? 'bg-red-50 text-red-500 border-red-100'
+                                    : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-red-400'
+                                }`}
+                              >
+                                <Heart size={14} fill={shortlisted.includes(expert.id) ? 'currentColor' : 'none'} />
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => toggleCompare(expert.id)}
+                                className={`p-2.5 rounded-xl transition-all border text-xs font-black ${
+                                  compareTray.includes(expert.id)
+                                    ? 'bg-blue-50 text-blue-600 border-blue-100'
+                                    : compareTray.length >= 3
+                                    ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                                    : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-blue-50 hover:text-blue-500'
+                                }`}
+                              >
+                                <BarChart2 size={14} />
+                              </motion.button>
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -811,31 +856,34 @@ const ExpertDiscovery = () => {
                               <span className="flex items-center gap-1"><Star size={10} fill="#F59E0B" className="text-amber-400" />{expert.rating}</span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          {/* Action buttons — stack on mobile */}
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 mt-3 sm:mt-0">
                             <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                               onClick={() => navigate(`/experts/${expert.id}`)}
-                              className="px-4 py-2 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl transition-all"
+                              className="px-4 py-2.5 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl transition-all w-full sm:w-auto text-center"
                             >
                               View Profile
                             </motion.button>
-                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                              onClick={() => setShowInviteModal(expert)}
-                              className="px-3 py-2 bg-teal-50 text-[#134e40] text-xs font-black rounded-xl border border-teal-100"
-                            >
-                              Invite
-                            </motion.button>
-                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                              onClick={() => toggleShortlist(expert.id)}
-                              className={`p-2 rounded-xl border transition-all ${shortlisted.includes(expert.id) ? 'bg-red-50 text-red-500 border-red-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}
-                            >
-                              <Heart size={14} fill={shortlisted.includes(expert.id) ? 'currentColor' : 'none'} />
-                            </motion.button>
-                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                              onClick={() => toggleCompare(expert.id)}
-                              className={`p-2 rounded-xl border transition-all ${compareTray.includes(expert.id) ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}
-                            >
-                              <BarChart2 size={14} />
-                            </motion.button>
+                            <div className="flex gap-2 justify-center">
+                              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                onClick={() => setShowInviteModal(expert)}
+                                className="px-3 py-2 bg-teal-50 text-[#134e40] text-xs font-black rounded-xl border border-teal-100"
+                              >
+                                Invite
+                              </motion.button>
+                              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                onClick={() => toggleShortlist(expert.id)}
+                                className={`p-2.5 rounded-xl border transition-all ${shortlisted.includes(expert.id) ? 'bg-red-50 text-red-500 border-red-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}
+                              >
+                                <Heart size={14} fill={shortlisted.includes(expert.id) ? 'currentColor' : 'none'} />
+                              </motion.button>
+                              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                onClick={() => toggleCompare(expert.id)}
+                                className={`p-2.5 rounded-xl border transition-all ${compareTray.includes(expert.id) ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}
+                              >
+                                <BarChart2 size={14} />
+                              </motion.button>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -1007,14 +1055,14 @@ const ExpertDiscovery = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               {/* Expert mini-card */}
               <div className="flex items-center gap-3 p-4 bg-teal-50 rounded-2xl border border-teal-100 mb-6">

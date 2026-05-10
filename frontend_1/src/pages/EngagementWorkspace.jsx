@@ -347,13 +347,13 @@ const EngagementWorkspace = () => {
           </div>
 
           {/* ── TABS ── */}
-          <div className="flex gap-1 mt-4 border-b border-gray-100 -mb-4">
+          <div className="flex gap-1 mt-4 border-b border-gray-100 -mb-4 overflow-x-auto [&::-webkit-scrollbar]:hidden">
             {tabs.map((tab) => (
               <motion.button
                 key={tab.id}
                 whileHover={{ y: -1 }}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-bold transition-all relative ${
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 text-xs sm:text-sm font-bold transition-all relative shrink-0 ${
                   activeTab === tab.id
                     ? 'text-[#134e40]'
                     : 'text-gray-400 hover:text-gray-600'
@@ -390,13 +390,13 @@ const EngagementWorkspace = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+              className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6"
             >
               {/* Left — Main overview */}
               <div className="lg:col-span-2 space-y-5">
 
                 {/* KPI Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                   {[
                     { label: 'Total Value', value: engagement.totalValue, icon: TrendingUp, color: 'text-teal-500', bg: 'bg-teal-50', border: 'border-l-[#0eb59a]' },
                     { label: 'Escrow Balance', value: engagement.escrowBalance, icon: Lock, color: 'text-amber-500', bg: 'bg-amber-50', border: 'border-l-amber-400' },
@@ -472,7 +472,7 @@ const EngagementWorkspace = () => {
                       View All <ChevronRight size={12} />
                     </button>
                   </div>
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {milestones.map((ms, idx) => {
                       const statusInfo = getMilestoneStatus(ms.status);
                       return (
@@ -683,18 +683,18 @@ const EngagementWorkspace = () => {
                         className={`relative flex gap-4 ${ms.status === 'upcoming' ? 'opacity-60' : ''}`}
                       >
                         {/* Timeline dot */}
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 z-10 shadow-sm ${
+                        <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 z-10 shadow-sm ${
                           ms.status === 'completed' ? 'bg-emerald-500' :
                           ms.status === 'pending_approval' ? 'bg-amber-500' :
                           ms.status === 'in_progress' ? 'bg-blue-500' : 'bg-gray-100 border border-gray-200'
                         }`}>
                           {ms.status === 'completed' ? (
-                            <Check size={22} className="text-white" strokeWidth={3} />
+                            <Check className="w-5 h-5 sm:w-[22px] sm:h-[22px] text-white" strokeWidth={3} />
                           ) : ms.status === 'pending_approval' ? (
-                            <AlertCircle size={22} className="text-white" />
+                            <AlertCircle className="w-5 h-5 sm:w-[22px] sm:h-[22px] text-white" />
                           ) : ms.status === 'in_progress' ? (
                             <motion.div animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}>
-                              <Clock size={22} className="text-white" />
+                              <Clock className="w-5 h-5 sm:w-[22px] sm:h-[22px] text-white" />
                             </motion.div>
                           ) : (
                             <span className="text-sm font-black text-gray-400">{idx + 1}</span>
@@ -706,7 +706,7 @@ const EngagementWorkspace = () => {
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <div className="flex items-center gap-2 mb-1">
-                                <h4 className="font-black text-gray-900 text-base">{ms.title}</h4>
+                                <h4 className="font-black text-gray-900 text-sm sm:text-base">{ms.title}</h4>
                                 <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border ${statusInfo.color}`}>
                                   {statusInfo.label}
                                 </span>
@@ -765,24 +765,24 @@ const EngagementWorkspace = () => {
 
                           {/* Action Buttons */}
                           {ms.status === 'pending_approval' && (
-                            <div className="flex gap-3">
-                              <motion.button
-                                whileHover={{ scale: 1.03, boxShadow: '0 8px 20px rgba(16,185,129,0.2)' }}
-                                whileTap={{ scale: 0.97 }}
-                                onClick={() => setShowApproveModal(ms)}
-                                className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-black rounded-2xl transition-all shadow-md"
-                              >
-                                <Check size={15} strokeWidth={3} /> Approve & Release ₹{ms.payment.replace('₹', '')}
-                              </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.03 }}
-                                whileTap={{ scale: 0.97 }}
-                                onClick={() => setShowRejectModal(ms)}
-                                className="flex items-center justify-center gap-2 px-5 py-3 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-black rounded-2xl transition-all border border-red-100"
-                              >
-                                <X size={15} /> Reject
-                              </motion.button>
-                            </div>
+                          <div className="flex flex-col sm:flex-row gap-3">
+                               <motion.button
+                                 whileHover={{ scale: 1.03, boxShadow: '0 8px 20px rgba(16,185,129,0.2)' }}
+                                 whileTap={{ scale: 0.97 }}
+                                 onClick={() => setShowApproveModal(ms)}
+                                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-black rounded-2xl transition-all shadow-md"
+                               >
+                                 <Check size={15} strokeWidth={3} /> Approve & Release ₹{ms.payment.replace('₹', '')}
+                               </motion.button>
+                               <motion.button
+                                 whileHover={{ scale: 1.03 }}
+                                 whileTap={{ scale: 0.97 }}
+                                 onClick={() => setShowRejectModal(ms)}
+                                 className="sm:w-auto flex items-center justify-center gap-2 px-5 py-3 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-black rounded-2xl transition-all border border-red-100"
+                               >
+                                 <X size={15} /> Reject
+                               </motion.button>
+                             </div>
                           )}
                         </div>
                       </motion.div>
@@ -801,7 +801,7 @@ const EngagementWorkspace = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="flex flex-col h-[calc(100vh-280px)] bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden"
+              className="flex flex-col h-[calc(100vh-240px)] sm:h-[calc(100vh-280px)] bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden"
             >
               {/* Chat Header */}
               <div className="flex items-center gap-3 p-5 border-b border-gray-100 bg-gray-50/50">
@@ -1093,14 +1093,14 @@ const EngagementWorkspace = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-emerald-100">
                 <CheckCircle size={28} className="text-emerald-500" />
@@ -1167,14 +1167,14 @@ const EngagementWorkspace = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-red-100">
                 <XCircle size={28} className="text-red-500" />
@@ -1233,14 +1233,14 @@ const EngagementWorkspace = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-sm w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-emerald-100">
                 <DollarSign size={28} className="text-emerald-500" />

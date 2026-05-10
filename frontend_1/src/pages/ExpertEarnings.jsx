@@ -483,13 +483,17 @@ const ExpertEarnings = () => {
                             }`}
                           />
                         </div>
-                        <span className="text-[10px] font-black text-gray-500">{bar.month}</span>
+                        <span className={`text-[10px] font-black text-gray-500 ${
+                          idx % 2 !== 0 ? 'hidden sm:block' : ''
+                        }`}>
+                          {bar.month}
+                        </span>
                       </div>
                     ))}
                   </div>
 
                   {/* Chart footer */}
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-gray-50">
                     <div>
                       <p className="text-xs text-gray-400 font-semibold">Year to Date (2025)</p>
                       <p className="text-lg font-black text-gray-900">₹10,50,000</p>
@@ -701,35 +705,51 @@ const ExpertEarnings = () => {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.05 }}
-                        className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors"
+                        className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 sm:px-6 py-4 hover:bg-gray-50 transition-colors group"
                       >
-                        <div className={`w-10 h-10 ${txIcon.bg} rounded-xl flex items-center justify-center shrink-0`}>
-                          <txIcon.icon size={17} className={txIcon.color} />
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <p className="font-bold text-gray-800 text-sm truncate">{tx.description}</p>
-                          <div className="flex items-center gap-3 mt-0.5">
-                            <p className="text-xs text-gray-400 font-semibold">{tx.engagement !== '—' ? tx.engagement : tx.company}</p>
+                        {/* Top row on mobile */}
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className={`w-9 h-9 sm:w-10 sm:h-10 ${txIcon.bg} rounded-xl flex items-center justify-center shrink-0`}>
+                            <txIcon.icon size={16} className={txIcon.color} />
                           </div>
-                        </div>
-
-                        <div className="text-right shrink-0">
-                          <p className={`font-black text-base ${
-                            tx.amountNum > 0 ? 'text-emerald-600' : 'text-gray-700'
-                          }`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-gray-800 text-sm truncate">{tx.description}</p>
+                            <p className="text-xs text-gray-400 font-semibold truncate">
+                              {tx.engagement !== '—' ? tx.engagement : tx.company}
+                            </p>
+                          </div>
+                          {/* Amount — right on mobile */}
+                          <p className={`font-black text-gray-900 sm:hidden ${tx.amountNum > 0 ? 'text-emerald-600' : ''}`}>
                             {tx.amount}
                           </p>
-                          <p className="text-[10px] text-gray-400 font-semibold">
-                            {tx.date !== '—' ? `${tx.date} · ${tx.time}` : 'Pending'}
-                          </p>
                         </div>
 
-                        <div className="shrink-0 flex flex-col items-end gap-1">
+                        {/* Bottom row on mobile — hidden on desktop */}
+                        <div className="flex items-center justify-between sm:hidden pl-12">
+                          <span className="text-xs text-gray-400">
+                            {tx.date} {tx.time !== '—' ? `· ${tx.time}` : ''}
+                          </span>
                           <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border ${getStatusStyle(tx.status)}`}>
                             {tx.status}
                           </span>
-                          <span className="text-[10px] text-gray-300 font-semibold">{tx.txRef}</span>
+                        </div>
+
+                        {/* Desktop layout — hidden on mobile */}
+                        <div className="hidden sm:flex items-center gap-4">
+                          <div className="text-right">
+                            <p className={`font-black text-base ${tx.amountNum > 0 ? 'text-emerald-600' : 'text-gray-700'}`}>
+                              {tx.amount}
+                            </p>
+                            <p className="text-[10px] text-gray-400 font-semibold">
+                              {tx.date !== '—' ? `${tx.date} · ${tx.time}` : 'Pending'}
+                            </p>
+                          </div>
+                          <div className="shrink-0 flex flex-col items-end gap-1 min-w-[80px]">
+                            <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border ${getStatusStyle(tx.status)}`}>
+                              {tx.status}
+                            </span>
+                            <span className="text-[10px] text-gray-300 font-semibold">{tx.txRef}</span>
+                          </div>
                         </div>
                       </motion.div>
                     );
@@ -972,14 +992,14 @@ const ExpertEarnings = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <AnimatePresence mode="wait">
                 {!withdrawSent ? (
@@ -1145,14 +1165,14 @@ const ExpertEarnings = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
             >
               <div className="flex items-center justify-between mb-6">
                 <div>
