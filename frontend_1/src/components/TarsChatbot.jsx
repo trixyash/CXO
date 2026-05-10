@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, X, Send } from 'lucide-react';
-import { HfInference } from '@huggingface/inference';
 
 const TarsChatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -44,52 +43,37 @@ const TarsChatbot = () => {
         setIsLoading(true);
 
         try {
-            // Ensure the user provides their API key in their environment
-            const hfToken = import.meta.env.VITE_HUGGINGFACE_API_KEY || "";
-            
-            if (!hfToken) {
-                // If no API key provided, just reply with a placeholder for now
-                setTimeout(() => {
-                    setMessages(prev => [...prev, { role: 'assistant', content: "API Key is missing! Please configure VITE_HUGGINGFACE_API_KEY in your .env file." }]);
-                    setIsLoading(false);
-                }, 1000);
-                return;
-            }
+            const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
             let loadingInterval = setInterval(() => {
                 setLoadingText(loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)]);
             }, 1500);
 
-            const hf = new HfInference(hfToken);
+            // Map previous messages using the ref to absolutely guarantee no stale context
+            const formattedMessages = messagesRef.current
+                .filter(m => m.role !== 'assistant' || m.content !== 'Welcome! I am TARS, here to guide you to the right expertise. What can I help with today?')
+                .map(m => ({ role: m.role, content: m.content }));
+            
+            formattedMessages.push({ role: "user", content: userMessage });
 
-            const template = `You are TARS, the official AI assistant for CXO Connect. CXO Connect is an exclusive network bridging forward-thinking companies and elite fractional leaders (like fractional CMOs, CFOs, etc.).
-Your strict rules:
-1. ONLY answer questions regarding CXO Connect, finding fractional leaders, or joining the network.
-2. If asked ANYTHING outside the usage of the website's core (e.g., coding, general knowledge, math, unrelated advice), you must politely decline and state that you can only assist with CXO Connect related inquiries.
-3. Keep your answers concise, professional, and helpful.
-4. NEVER use markdown bold (**) or italic (*) marks anywhere in your response. Keep the text clean.
-5. If your answer is in points, format it nicely with standard bullet points.
-6. All answers MUST be under 100 words.`;
-
-            // We must use chatCompletion for models restricted to the "conversational" task
-            const result = await hf.chatCompletion({
-                model: "Qwen/Qwen2.5-72B-Instruct",
-                messages: [
-                    { role: "system", content: template },
-                    // Map previous messages using the ref to absolutely guarantee no stale context
-                    ...messagesRef.current.filter(m => m.role !== 'assistant' || m.content !== 'Welcome! I am TARS, here to guide you to the right expertise. What can I help with today?').map(m => ({ role: m.role, content: m.content })),
-                    { role: "user", content: userMessage }
-                ],
-                max_tokens: 180,
-                temperature: 0.1
+            const response = await fetch(`${baseUrl}/api/chat/completions`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ messages: formattedMessages })
             });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `Server error: ${response.status}`);
+            }
+
+            const data = await response.json();
             
             clearInterval(loadingInterval);
             
-            // Strip out all * and ** marks completely
-            let finalResponse = result.choices[0].message.content.trim().replace(/\*/g, '');
-            
-            setMessages(prev => [...prev, { role: 'assistant', content: finalResponse }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
         } catch (error) {
             console.error("Error generating response:", error);
             const errorMessage = error instanceof Error ? error.message : String(error);
