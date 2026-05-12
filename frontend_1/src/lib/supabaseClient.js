@@ -30,31 +30,34 @@ const createMockAuth = (originalAuth = {}) => ({
   signOut: async () => ({ error: null }),
 });
 
-let supabase;
-if (supabaseUrl && supabaseAnonKey) {
-  const client = createClient(supabaseUrl, supabaseAnonKey);
-  // Wrap the real client's auth with our mock auth for temporary access
-  Object.defineProperty(client, 'auth', { value: createMockAuth(client.auth) });
-  supabase = client;
-} else {
-  console.warn('Supabase environment variables not set – using mock client');
-  supabase = {
-    from: () => ({ 
-      select: () => ({ data: [], error: null }),
-      insert: () => ({ data: [], error: null }),
-      update: () => ({ data: [], error: null }),
-      delete: () => ({ data: [], error: null }),
-      eq: () => ({ data: [], error: null }),
-      single: () => ({ data: null, error: null }),
-    }),
-    storage: {
-      from: () => ({
-        upload: async () => ({}),
-        getPublicUrl: () => ({ data: { publicUrl: '' } }),
-      }),
-    },
-    auth: createMockAuth(),
-  };
-}
+const createSupabaseClient = () => {
+  if (supabaseUrl && supabaseAnonKey) {
+    return createClient(supabaseUrl, supabaseAnonKey);
+  } else {
+    console.warn('Supabase environment variables not set – using mock client');
+    const chainableMock = {
+      select: () => chainableMock,
+      insert: () => chainableMock,
+      update: () => chainableMock,
+      delete: () => chainableMock,
+      eq: () => chainableMock,
+      single: async () => ({ data: null, error: null }),
+      maybeSingle: async () => ({ data: null, error: null }),
+      limit: () => chainableMock,
+      order: () => chainableMock,
+      then: (resolve) => resolve({ data: null, error: null })
+    };
+    return {
+      from: () => chainableMock,
+      storage: {
+        from: () => ({
+          upload: async () => ({}),
+          getPublicUrl: () => ({ data: { publicUrl: '' } }),
+        }),
+      },
+      auth: createMockAuth(),
+    };
+  }
+};
 
-export { supabase };
+export const supabase = createSupabaseClient();
