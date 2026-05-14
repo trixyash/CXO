@@ -71,7 +71,7 @@ const Navbar = () => {
                     <img
                         src="/favicon.png"
                         alt="CXO Connect"
-                        className="h-12 md:h-14 lg:h-16 w-auto object-contain rounded-full"
+                        className="h-9 md:h-10 lg:h-11 w-auto object-contain rounded-full"
                     />
                     <span className="text-white font-bold text-xl md:text-2xl lg:text-3xl tracking-wide font-serif whitespace-nowrap">CXO CONNECT</span>
                 </Link>
@@ -86,12 +86,12 @@ const Navbar = () => {
                     <span className={`absolute -bottom-1 left-0 h-0.5 bg-[#0eb59a] transition-all duration-300 ${location.pathname === '/' ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
                 </Link>
 
-                <a href="#about-us" onClick={(e) => handleScrollTarget(e, 'about-us')} className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-200 hover:text-white group">
+                <a href="#problems" onClick={(e) => handleScrollTarget(e, 'problems')} className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-200 hover:text-white group">
                     About
                     <span className="absolute -bottom-1 left-0 h-0.5 bg-[#0eb59a] transition-all duration-300 w-0 group-hover:w-full"></span>
                 </a>
 
-                <a href="#problems" onClick={(e) => handleScrollTarget(e, 'problems')} className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-200 hover:text-white group">
+                <a href="#about-us" onClick={(e) => handleScrollTarget(e, 'about-us')} className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-200 hover:text-white group">
                     Services
                     <span className="absolute -bottom-1 left-0 h-0.5 bg-[#0eb59a] transition-all duration-300 w-0 group-hover:w-full"></span>
                 </a>
