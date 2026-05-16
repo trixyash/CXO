@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight, Building, Users, Bell, CreditCard,
@@ -35,7 +36,51 @@ const Settings = () => {
     gst: '27AAACA0000A1ZS',
     adminEmail: 'admin@acmecorp.com',
     adminPhone: '+91 98765 43210',
+    logoUrl: null,
   });
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/signin?role=company');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/profile`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setProfile(prev => ({
+            ...prev,
+            companyName: data.company_name || prev.companyName,
+            industry: data.industry || prev.industry,
+            size: data.org_size || prev.size,
+            website: data.website || prev.website,
+            linkedIn: data.linkedin || prev.linkedIn,
+            description: data.about || prev.description,
+            founded: data.company_age || prev.founded, // using company_age for founded or similar
+            gst: data.gstin || prev.gst,
+            adminEmail: data.admin_email || prev.adminEmail,
+            adminPhone: data.contact_number || prev.adminPhone,
+            logoUrl: data.logo_url || prev.logoUrl,
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching company profile:", error);
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+    
+    fetchProfile();
+  }, [navigate]);
 
   // ── NOTIFICATION STATE ──
   const [notifications, setNotifications] = useState({
@@ -366,8 +411,14 @@ const Settings = () => {
                     {/* Logo upload */}
                     <div className="flex items-center gap-5 mb-6">
                       <div className="relative group">
-                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center shadow-lg">
-                          <span className="text-2xl font-black text-white">AC</span>
+                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center shadow-lg overflow-hidden">
+                          {profile.logoUrl ? (
+                            <img src={profile.logoUrl} alt="Company Logo" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-2xl font-black text-white">
+                              {profile.companyName ? profile.companyName.substring(0, 2).toUpperCase() : 'AC'}
+                            </span>
+                          )}
                         </div>
                         <motion.div
                           whileHover={{ scale: 1.05 }}
