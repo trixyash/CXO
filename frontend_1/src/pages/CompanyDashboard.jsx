@@ -20,6 +20,8 @@ const CompanyDashboard = () => {
   const [expertCarouselIndex, setExpertCarouselIndex] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationCount, setNotificationCount] = useState(3);
+  const [companyProfile, setCompanyProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   // Carousel handlers
   const nextExpert = () => {
@@ -36,13 +38,33 @@ const CompanyDashboard = () => {
 
   // Authentication Guard
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuthAndFetchProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/signin?role=company');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/profile`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setCompanyProfile(data);
+        } else {
+          console.error("Failed to fetch company profile");
+        }
+      } catch (error) {
+        console.error("Error fetching company profile:", error);
+      } finally {
+        setLoadingProfile(false);
       }
     };
-    checkAuth();
+    checkAuthAndFetchProfile();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) {
@@ -258,15 +280,23 @@ const CompanyDashboard = () => {
 
         {/* Logo Area */}
         <div className={`flex items-center border-b border-gray-100 overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'px-5 py-4 gap-3' : 'px-0 py-4 justify-center'}`}>
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center shrink-0 shadow-md">
-            <span className="text-white font-black text-sm">C</span>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center shrink-0 shadow-md overflow-hidden">
+            {companyProfile?.logo_url ? (
+              <img src={companyProfile.logo_url} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-black text-sm">
+                {companyProfile?.company_name ? companyProfile.company_name.charAt(0).toUpperCase() : 'C'}
+              </span>
+            )}
           </div>
           <motion.div
             animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
             transition={{ duration: 0.2 }}
             className="overflow-hidden whitespace-nowrap"
           >
-            <p className="text-sm font-black text-[#134e40] leading-tight">CXO Connect</p>
+            <p className="text-sm font-black text-[#134e40] leading-tight">
+              {companyProfile?.company_name || 'CXO Connect'}
+            </p>
             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
               Company Portal
             </p>
@@ -569,9 +599,13 @@ const CompanyDashboard = () => {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-9 h-9 rounded-full bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center text-white font-black text-xs cursor-pointer shadow-md ring-2 ring-white"
+                className="w-9 h-9 rounded-full bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center text-white font-black text-xs cursor-pointer shadow-md ring-2 ring-white overflow-hidden"
               >
-                AC
+                {companyProfile?.logo_url ? (
+                  <img src={companyProfile.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                ) : (
+                  companyProfile?.company_name ? companyProfile.company_name.substring(0, 2).toUpperCase() : 'AC'
+                )}
               </motion.div>
             </div>
 
@@ -607,7 +641,7 @@ const CompanyDashboard = () => {
                       animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
                       transition={{ duration: 3, repeat: Infinity }}
                     >
-                      Acme Corp
+                      {loadingProfile ? '...' : (companyProfile?.company_name || 'Acme Corp')}
                     </motion.span>{' '}
                     <motion.span
                       animate={{ rotate: [0, 20, -10, 20, 0] }}
