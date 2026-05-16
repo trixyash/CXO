@@ -30,27 +30,22 @@ const SignIn = () => {
 				const cleanEmail = identifier.trim();
 				console.log("🔍 Searching for company admin email:", `"${cleanEmail}"`);
 
-				if (cleanEmail === "demo@cxo.com") {
-					setResolvedEmail(cleanEmail);
-				} else {
-					const { data, error: dbError } = await supabase
-						.from("company_applications")
-						.select("admin_email")
-						.eq("admin_email", cleanEmail)
-						.limit(1)
-						.maybeSingle();
+				const { data, error: dbError } = await supabase
+					.from("company_applications")
+					.select("admin_email")
+					.eq("admin_email", cleanEmail)
+					.limit(1)
+					.maybeSingle();
 
-					if (dbError || !data) {
-						console.error("DB Error:", dbError);
-						throw new Error("Company not found");
-					}
-
-					const targetEmail = data.admin_email?.trim();
-					setResolvedEmail(targetEmail);
+				if (dbError || !data) {
+					console.error("DB Error:", dbError);
+					throw new Error("Company not found");
 				}
 
-				// Wait for state to update (or just use the variable)
-				const targetEmailForAuth = cleanEmail === "demo@cxo.com" ? cleanEmail : resolvedEmail || cleanEmail;
+				const targetEmail = data.admin_email?.trim();
+				setResolvedEmail(targetEmail);
+
+				const targetEmailForAuth = targetEmail || cleanEmail;
 				
 				const { error: authError } = await supabase.auth.signInWithOtp({
 					email: targetEmailForAuth,
