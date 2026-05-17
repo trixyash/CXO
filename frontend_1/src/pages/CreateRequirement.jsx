@@ -203,8 +203,49 @@ const CreateRequirement = () => {
     if (currentStep > 1) setCurrentStep(prev => prev - 1);
   };
 
-  const handleSubmit = () => {
-    navigate('/requirements');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (status = 'Active') => {
+    setIsSubmitting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.user.email) {
+        navigate('/signin?role=company');
+        return;
+      }
+
+      const payload = {
+        company_email: session.user.email,
+        engagement_type: formData.engagementType,
+        business_problems: formData.businessProblems,
+        business_problem_text: formData.businessProblemText,
+        role_title: formData.roleTitle,
+        skills: formData.skills,
+        experience_years: formData.experienceYears,
+        industries: formData.industries,
+        budget_min: formData.budgetMin ? parseInt(formData.budgetMin) : null,
+        budget_max: formData.budgetMax ? parseInt(formData.budgetMax) : null,
+        duration: formData.duration,
+        commitment: formData.commitment,
+        urgency: formData.urgency,
+        location: formData.location,
+        status: status
+      };
+
+      const { error } = await supabase
+        .from('company_requirements')
+        .insert([payload]);
+
+      if (!error) {
+        navigate('/requirements');
+      } else {
+        console.error("Failed to save requirement:", error);
+      }
+    } catch (error) {
+      console.error("Error saving requirement:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // ── RENDER STEP (INLINE) ──
@@ -1005,10 +1046,11 @@ const CreateRequirement = () => {
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={handleSubmit}
-                  className="flex items-center gap-2 px-7 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-[#134e40] to-[#0eb59a] text-white shadow-lg"
+                  onClick={() => handleSubmit('Active')}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-7 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-[#134e40] to-[#0eb59a] text-white shadow-lg disabled:opacity-50"
                 >
-                  <Zap size={15} fill="currentColor" /> Post Requirement
+                  <Zap size={15} fill="currentColor" /> {isSubmitting ? 'Posting...' : 'Post Requirement'}
                 </motion.button>
               )}
             </div>
@@ -1053,10 +1095,14 @@ const CreateRequirement = () => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate('/requirements')}
-                  className="flex-1 py-3 bg-[#134e40] hover:bg-[#0eb59a] text-white text-sm font-bold rounded-2xl transition-all shadow-lg"
+                  onClick={() => {
+                    setShowSaveModal(false);
+                    handleSubmit('Draft');
+                  }}
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 bg-[#134e40] hover:bg-[#0eb59a] text-white text-sm font-bold rounded-2xl transition-all shadow-lg disabled:opacity-50"
                 >
-                  Save Draft
+                  {isSubmitting ? 'Saving...' : 'Save Draft'}
                 </motion.button>
               </div>
             </motion.div>

@@ -96,6 +96,8 @@ const CompanyDashboard = () => {
   const [mounted, setMounted] = useState(false);
   const [companyProfile, setCompanyProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [requirementsCount, setRequirementsCount] = useState(2); // default fallback
+  const [activeEngagementsCount, setActiveEngagementsCount] = useState(3); // default fallback
 
   // Carousel State
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -136,8 +138,20 @@ const CompanyDashboard = () => {
         } else {
           console.error("Failed to fetch company profile");
         }
+
+        // Fetch requirements for counts
+        const { data: reqData, error: reqError } = await supabase
+          .from('company_requirements')
+          .select('*');
+        
+        if (!reqError && reqData) {
+          setRequirementsCount(reqData.filter(r => r.status === 'Active').length || 0);
+          setActiveEngagementsCount(reqData.filter(r => r.status === 'Active').length || 0);
+        } else if (reqError) {
+          console.error("Supabase fetch error:", reqError);
+        }
       } catch (error) {
-        console.error("Error fetching company profile:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoadingProfile(false);
       }
@@ -153,7 +167,7 @@ const CompanyDashboard = () => {
 
   const sidebarMenu = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/company-dashboard' },
-    { name: 'My Requirements', icon: Briefcase, path: '/requirements', badge: '2' },
+    { name: 'My Requirements', icon: Briefcase, path: '/requirements', badge: requirementsCount.toString() },
     { name: 'Experts', icon: Users, path: '/experts' },
     { name: 'Payments', icon: CreditCard, path: '/payments' },
     { name: 'Analytics', icon: BarChart2, path: '/analytics' },
@@ -183,7 +197,7 @@ const CompanyDashboard = () => {
   const canGoRight = currentIndex + CARDS_PER_VIEW < experts.length;
 
   const kpiCards = [
-    { title: 'Active Engagements', value: '3', trend: '+1 this month', icon: Activity, iconBg: 'bg-teal-50', iconColor: 'text-[#0eb59a]', border: 'border-l-[#0eb59a]', numColor: 'text-[#0eb59a]', path: '/engagements' },
+    { title: 'Active Engagements', value: activeEngagementsCount.toString(), trend: '+1 this month', icon: Activity, iconBg: 'bg-teal-50', iconColor: 'text-[#0eb59a]', border: 'border-l-[#0eb59a]', numColor: 'text-[#0eb59a]', path: '/engagements' },
     { title: 'Experts Shortlisted', value: '12', trend: '4 new this week', icon: Users, iconBg: 'bg-blue-50', iconColor: 'text-blue-500', border: 'border-l-purple-400', numColor: 'text-purple-500', path: '/experts?filter=shortlisted' },
     { title: 'Total Spend', value: '₹4.2L', trend: 'On budget', icon: DollarSign, iconBg: 'bg-purple-50', iconColor: 'text-purple-500', border: 'border-l-blue-400', numColor: 'text-blue-500', path: '/payments' },
     { title: 'Milestones Due', value: '2', trend: 'Next in 3 days', icon: Target, iconBg: 'bg-amber-50', iconColor: 'text-amber-500', border: 'border-l-amber-400', numColor: 'text-amber-500', path: '/engagements?filter=milestones' },

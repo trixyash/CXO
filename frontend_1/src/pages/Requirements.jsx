@@ -23,15 +23,65 @@ const Requirements = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Authentication Guard
+  const [requirements, setRequirements] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Authentication Guard & Fetch
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuthAndFetch = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/signin?role=company');
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('company_requirements')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (!error && data) {
+          const mappedData = data.map(dbReq => ({
+            id: dbReq.id,
+            title: dbReq.role_title || 'Untitled Requirement',
+            type: dbReq.engagement_type ? dbReq.engagement_type.charAt(0).toUpperCase() + dbReq.engagement_type.slice(1) : 'Interim',
+            status: dbReq.status || 'Draft',
+            functionalArea: dbReq.business_problems && dbReq.business_problems.length > 0 ? dbReq.business_problems[0].toUpperCase() : 'GENERAL',
+            budget: dbReq.budget_min && dbReq.budget_max 
+              ? `₹${(dbReq.budget_min/100000).toFixed(1)}L - ₹${(dbReq.budget_max/100000).toFixed(1)}L/mo` 
+              : (dbReq.budget_min ? `₹${(dbReq.budget_min/1000).toFixed(0)}K/mo` : 'Negotiable'),
+            duration: dbReq.duration || 'Flexible',
+            commitment: dbReq.commitment || 'Flexible',
+            urgency: dbReq.urgency ? (dbReq.urgency === 'immediate' ? 'Immediate' : 'Planned') : 'Planned',
+            location: dbReq.location || 'Remote',
+            postedDate: new Date(dbReq.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+            matchedExperts: 0,
+            shortlisted: 0,
+            invited: 0,
+            skills: dbReq.skills || [],
+            description: dbReq.business_problem_text || 'No description provided.',
+            matchBreakdown: { applied: 0, reviewed: 0, shortlisted: 0, interviewed: 0 },
+            recentApplicants: [],
+            timeline: [
+              { label: 'Posted', date: new Date(dbReq.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }), done: true },
+              { label: 'Matching', date: 'Pending', done: false },
+              { label: 'Shortlisting', date: 'Pending', done: false },
+              { label: 'Interview', date: 'Pending', done: false },
+              { label: 'Placed', date: 'Pending', done: false },
+            ],
+          }));
+          setRequirements(mappedData);
+        } else if (error) {
+          console.error("Supabase fetch error:", error);
+        }
+      } catch (error) {
+        console.error("Error fetching requirements:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
-    checkAuth();
+    checkAuthAndFetch();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) {
@@ -45,170 +95,6 @@ const Requirements = () => {
       }
     };
   }, [navigate]);
-
-  // ── ENHANCED DATA ARRAY ──
-  const requirements = [
-    {
-      id: 1,
-      title: 'Interim CFO',
-      type: 'Interim',
-      status: 'Active',
-      functionalArea: 'Finance',
-      budget: '₹2L - ₹3.5L/mo',
-      duration: '6 months',
-      commitment: '40 hrs/wk',
-      urgency: 'Immediate',
-      location: 'Remote',
-      postedDate: '3 days ago',
-      matchedExperts: 12,
-      shortlisted: 4,
-      invited: 2,
-      skills: ['Financial Modeling', 'Fundraising', 'M&A', 'Investor Relations'],
-      description: 'Looking for an experienced CFO to lead our Series B fundraising and build financial infrastructure.',
-      statusColor: 'text-emerald-600 bg-emerald-50 border-emerald-200',
-      urgencyColor: 'text-red-600 bg-red-50',
-      matchBreakdown: { applied: 24, reviewed: 16, shortlisted: 4, interviewed: 2 },
-      recentApplicants: [
-        { initials: 'RK', name: 'Rajesh Kumar', role: 'Ex-CFO, Infosys', match: 96, color: 'bg-teal-500' },
-        { initials: 'AD', name: 'Anita Desai', role: 'CFO, D2C Brand', match: 91, color: 'bg-purple-500' },
-        { initials: 'VM', name: 'Vikram Menon', role: 'Board Advisor', match: 87, color: 'bg-blue-500' },
-        { initials: 'PM', name: 'Priya Mathur', role: 'Interim CFO', match: 84, color: 'bg-rose-500' },
-      ],
-      timeline: [
-        { label: 'Posted', date: '12 May 2026', done: true },
-        { label: 'Matching', date: '13 May 2026', done: true },
-        { label: 'Shortlisting', date: '15 May 2026', done: true },
-        { label: 'Interview', date: 'Pending', done: false },
-        { label: 'Placed', date: 'Pending', done: false },
-      ],
-    },
-    {
-      id: 2,
-      title: 'Fractional CMO',
-      type: 'Fractional',
-      status: 'Shortlisting',
-      functionalArea: 'Growth',
-      budget: '₹1.2L - ₹2L/mo',
-      duration: '3 months',
-      commitment: '20 hrs/wk',
-      urgency: 'Planned',
-      location: 'Hybrid | Mumbai',
-      postedDate: '1 week ago',
-      matchedExperts: 8,
-      shortlisted: 6,
-      invited: 3,
-      skills: ['Brand Strategy', 'Growth Marketing', 'B2B Marketing', 'Product Marketing'],
-      description: 'Need a senior marketing leader to define our GTM strategy and build the marketing function.',
-      statusColor: 'text-blue-600 bg-blue-50 border-blue-200',
-      urgencyColor: 'text-amber-600 bg-amber-50',
-      matchBreakdown: { applied: 18, reviewed: 12, shortlisted: 6, interviewed: 3 },
-      recentApplicants: [
-        { initials: 'SJ', name: 'Sarah Jenkins', role: 'Ex-CMO, TechCorp', match: 94, color: 'bg-pink-500' },
-        { initials: 'NP', name: 'Neha Patel', role: 'CMO, SaaS Brand', match: 89, color: 'bg-orange-500' },
-        { initials: 'AR', name: 'Arjun Rao', role: 'Growth Lead', match: 83, color: 'bg-indigo-500' },
-      ],
-      timeline: [
-        { label: 'Posted', date: '9 May 2026', done: true },
-        { label: 'Matching', date: '10 May 2026', done: true },
-        { label: 'Shortlisting', date: '14 May 2026', done: true },
-        { label: 'Interview', date: 'Pending', done: false },
-        { label: 'Placed', date: 'Pending', done: false },
-      ],
-    },
-    {
-      id: 3,
-      title: 'VP Engineering',
-      type: 'Fractional',
-      status: 'Draft',
-      functionalArea: 'Technology',
-      budget: '₹1.5L - ₹2.5L/mo',
-      duration: '4 months',
-      commitment: '15 hrs/wk',
-      urgency: 'Planned',
-      location: 'Remote',
-      postedDate: '2 weeks ago',
-      matchedExperts: 0,
-      shortlisted: 0,
-      invited: 0,
-      skills: ['Engineering Leadership', 'System Architecture', 'Team Scaling'],
-      description: 'Draft requirement for a VP Engineering to help scale our tech team and architecture.',
-      statusColor: 'text-gray-500 bg-gray-50 border-gray-200',
-      urgencyColor: 'text-gray-500 bg-gray-50',
-      matchBreakdown: { applied: 0, reviewed: 0, shortlisted: 0, interviewed: 0 },
-      recentApplicants: [],
-      timeline: [
-        { label: 'Posted', date: 'Pending', done: false },
-        { label: 'Matching', date: 'Pending', done: false },
-        { label: 'Shortlisting', date: 'Pending', done: false },
-        { label: 'Interview', date: 'Pending', done: false },
-        { label: 'Placed', date: 'Pending', done: false },
-      ],
-    },
-    {
-      id: 4,
-      title: 'Advisory Board Member — Sales',
-      type: 'Advisory',
-      status: 'Active',
-      functionalArea: 'Sales',
-      budget: '₹40K - ₹80K/mo',
-      duration: '12 months',
-      commitment: '8 hrs/wk',
-      urgency: 'Planned',
-      location: 'Remote',
-      postedDate: '2 weeks ago',
-      matchedExperts: 15,
-      shortlisted: 2,
-      invited: 1,
-      skills: ['Enterprise Sales', 'B2B SaaS', 'Revenue Strategy'],
-      description: 'Seeking an experienced sales leader to advise on enterprise sales strategy and key account acquisition.',
-      statusColor: 'text-emerald-600 bg-emerald-50 border-emerald-200',
-      urgencyColor: 'text-amber-600 bg-amber-50',
-      matchBreakdown: { applied: 20, reviewed: 10, shortlisted: 2, interviewed: 1 },
-      recentApplicants: [
-        { initials: 'DC', name: 'David Chen', role: 'VP Sales, B2B SaaS', match: 93, color: 'bg-blue-500' },
-        { initials: 'MS', name: 'Meera Shah', role: 'Revenue Advisor', match: 88, color: 'bg-green-500' },
-      ],
-      timeline: [
-        { label: 'Posted', date: '2 May 2026', done: true },
-        { label: 'Matching', date: '3 May 2026', done: true },
-        { label: 'Shortlisting', date: 'Pending', done: false },
-        { label: 'Interview', date: 'Pending', done: false },
-        { label: 'Placed', date: 'Pending', done: false },
-      ],
-    },
-    {
-      id: 5,
-      title: 'Interim COO',
-      type: 'Interim',
-      status: 'Closed',
-      functionalArea: 'Operations',
-      budget: '₹2.5L - ₹4L/mo',
-      duration: '3 months',
-      commitment: '40 hrs/wk',
-      urgency: 'Immediate',
-      location: 'In Office | Bangalore',
-      postedDate: '2 months ago',
-      matchedExperts: 20,
-      shortlisted: 8,
-      invited: 5,
-      skills: ['Operations', 'Supply Chain', 'Process Optimization', 'OKRs'],
-      description: 'Closed role — successfully placed Interim COO for 3-month engagement.',
-      statusColor: 'text-gray-400 bg-gray-50 border-gray-200',
-      urgencyColor: 'text-gray-400 bg-gray-50',
-      matchBreakdown: { applied: 28, reviewed: 20, shortlisted: 8, interviewed: 5 },
-      recentApplicants: [
-        { initials: 'VN', name: 'Vikram Nair', role: 'COO, Logistics', match: 97, color: 'bg-teal-600' },
-        { initials: 'KM', name: 'Kavita Mehta', role: 'Ops Director', match: 92, color: 'bg-indigo-500' },
-      ],
-      timeline: [
-        { label: 'Posted', date: '1 Mar 2026', done: true },
-        { label: 'Matching', date: '3 Mar 2026', done: true },
-        { label: 'Shortlisting', date: '10 Mar 2026', done: true },
-        { label: 'Interview', date: '20 Mar 2026', done: true },
-        { label: 'Placed', date: '1 Apr 2026', done: true },
-      ],
-    },
-  ];
 
   // ── HELPERS ──
   const filters = ['All', 'Active', 'Draft', 'Shortlisting', 'Closed'];
