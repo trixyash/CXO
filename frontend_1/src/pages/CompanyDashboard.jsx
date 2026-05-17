@@ -118,7 +118,29 @@ const CompanyDashboard = () => {
       }
 
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) navigate('/signin?role=company');
+      if (!session) {
+        navigate('/signin?role=company');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/profile`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setCompanyProfile(data);
+        } else {
+          console.error("Failed to fetch company profile");
+        }
+      } catch (error) {
+        console.error("Error fetching company profile:", error);
+      } finally {
+        setLoadingProfile(false);
+      }
     };
     checkAuthAndFetchProfile();
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {

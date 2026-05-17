@@ -31,17 +31,17 @@ const SignIn = () => {
 				console.log("🔍 Searching for company admin email:", `"${cleanEmail}"`);
 
 				if (cleanEmail === "demo@cxo.com") {
-					localStorage.setItem("sb-mock-auth", "true");
-					localStorage.setItem("mock-role", "company");
-					window.location.href = "/company-dashboard";
+					localStorage.setItem('demo_company', 'true');
+					navigate("/company-dashboard");
 					return;
-				} else {
-					const { data, error: dbError } = await supabase
-						.from("company_applications")
-						.select("admin_email")
-						.eq("admin_email", cleanEmail)
-						.limit(1)
-						.maybeSingle();
+				}
+
+				const { data, error: dbError } = await supabase
+					.from("company_applications")
+					.select("admin_email")
+					.eq("admin_email", cleanEmail)
+					.limit(1)
+					.maybeSingle();
 
 					if (dbError || !data) {
 						console.error("DB Error:", dbError);
@@ -50,25 +50,17 @@ const SignIn = () => {
 
 					const targetEmail = data.admin_email?.trim();
 					setResolvedEmail(targetEmail);
-				}
 
 				const targetEmailForAuth = cleanEmail === "demo@cxo.com" ? cleanEmail : resolvedEmail || cleanEmail;
 				
-				if (targetEmailForAuth !== "demo@cxo.com") {
-					localStorage.removeItem('demo_company');
-					const { error: authError } = await supabase.auth.signInWithOtp({
-						email: targetEmailForAuth,
-					});
-					if (authError) throw authError;
+				localStorage.removeItem('demo_company');
+				const { error: authError } = await supabase.auth.signInWithOtp({
+					email: targetEmailForAuth,
+				});
+				if (authError) throw authError;
 
-					setMessage(`✅ OTP sent to ${targetEmailForAuth}`);
-					setShowOtp(true);
-				} else {
-					// 🚀 Bypass OTP for demo account
-					localStorage.setItem('demo_company', 'true');
-					navigate("/company-dashboard");
-					return;
-				}
+				setMessage(`✅ OTP sent to ${targetEmailForAuth}`);
+				setShowOtp(true);
 			} else {
 				// 👨‍💼 EXPERT LOGIN
 				const cleanIdentifier = identifier.trim();
