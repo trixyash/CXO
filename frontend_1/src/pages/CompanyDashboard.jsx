@@ -38,7 +38,15 @@ const CompanyDashboard = () => {
 
   // Authentication Guard
   useEffect(() => {
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+
     const checkAuthAndFetchProfile = async () => {
+      if (isDemo) {
+        setCompanyProfile({ company_name: 'Acme Corp.', admin_email: 'demo@cxo.com' });
+        setLoadingProfile(false);
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/signin?role=company');
@@ -67,7 +75,7 @@ const CompanyDashboard = () => {
     checkAuthAndFetchProfile();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
+      if (!session && !isDemo) {
         navigate('/signin?role=company');
       }
     });
