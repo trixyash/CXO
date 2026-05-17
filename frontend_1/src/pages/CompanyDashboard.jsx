@@ -106,25 +106,46 @@ const CompanyDashboard = () => {
   // Click outside listener for Mega Dropdown
   const gridRef = useRef(null);
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (gridRef.current && !gridRef.current.contains(event.target)) {
-        setGridOpen(false);
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+
+    const checkAuthAndFetchProfile = async () => {
+      if (isDemo) {
+        setCompanyProfile({ company_name: 'Acme Corp.', admin_email: 'demo@cxo.com' });
+        setLoadingProfile(false);
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/signin?role=company');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/profile`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setCompanyProfile(data);
+        } else {
+          console.error("Failed to fetch company profile");
+        }
+      } catch (error) {
+        console.error("Error fetching company profile:", error);
+      } finally {
+        setLoadingProfile(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    checkAuthAndFetchProfile();
 
-  useEffect(() => { setTimeout(() => setMounted(true), 300); }, []);
-
-  useEffect(() => {
-    const checkAuthAndFetchProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) navigate('/signin?role=company');
-    };
-    checkAuth();
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) navigate('/signin?role=company');
+      if (!session && !isDemo) {
+        navigate('/signin?role=company');
+      }
     });
     return () => { if (authListener?.subscription) authListener.subscription.unsubscribe(); };
   }, [navigate]);

@@ -47,14 +47,21 @@ const SignIn = () => {
 
 				const targetEmailForAuth = targetEmail || cleanEmail;
 				
-				const { error: authError } = await supabase.auth.signInWithOtp({
-					email: targetEmailForAuth,
-				});
+				if (targetEmailForAuth !== "demo@cxo.com") {
+					localStorage.removeItem('demo_company');
+					const { error: authError } = await supabase.auth.signInWithOtp({
+						email: targetEmailForAuth,
+					});
+					if (authError) throw authError;
 
-				if (authError) throw authError;
-
-				setMessage(`✅ OTP sent to ${targetEmailForAuth}`);
-				setShowOtp(true);
+					setMessage(`✅ OTP sent to ${targetEmailForAuth}`);
+					setShowOtp(true);
+				} else {
+					// 🚀 Bypass OTP for demo account
+					localStorage.setItem('demo_company', 'true');
+					navigate("/company-dashboard");
+					return;
+				}
 			} else {
 				// 👨‍💼 EXPERT LOGIN
 				const cleanIdentifier = identifier.trim();
