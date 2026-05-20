@@ -14,6 +14,7 @@ import {
 
 const ExpertDiscovery = () => {
   const navigate = useNavigate();
+  const [companyProfile, setCompanyProfile] = useState(null);
 
   // Authentication Guard
   useEffect(() => {
@@ -38,7 +39,64 @@ const ExpertDiscovery = () => {
     };
   }, [navigate]);
 
+  // Fetch experts from backend
+  useEffect(() => {
+    const fetchExperts = async () => {
+      const isDemo = localStorage.getItem('demo_company') === 'true';
+      if (isDemo) {
+        setExperts(MOCK_EXPERTS);
+        setCompanyProfile({ company_name: 'Acme Corp.' });
+        setLoading(false);
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/company/experts`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.length > 0) {
+            setExperts(data);
+          } else {
+            setExperts(MOCK_EXPERTS);
+          }
+        } else {
+          console.error("Failed to fetch experts");
+          setExperts(MOCK_EXPERTS);
+        }
+
+        // Fetch company profile
+        const profileRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/profile`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          setCompanyProfile(profileData);
+        }
+      } catch (err) {
+        console.error("Error fetching experts:", err);
+        setExperts(MOCK_EXPERTS);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExperts();
+  }, []);
+
   // ── STATE ──
+  const [experts, setExperts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(true);
   const [viewMode, setViewMode] = useState('grid');
@@ -81,7 +139,7 @@ const ExpertDiscovery = () => {
   ];
 
   // ── DATA ──
-  const experts = [
+  const MOCK_EXPERTS = [
     {
       id: 1,
       name: 'Sarah Jenkins',
@@ -378,16 +436,23 @@ const ExpertDiscovery = () => {
         className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed left-0 top-0 h-screen"
       >
         {/* Brand */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
-          <div className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center shrink-0">
-            <span className="text-white font-black text-sm">C</span>
-          </div>
+        <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-50">
+          <motion.div whileHover={{ scale: 1.05, rotate: 2 }} whileTap={{ scale: 0.95 }}
+            className="w-9 h-9 bg-gradient-to-br from-[#134e40] to-[#0eb59a] rounded-xl flex items-center justify-center text-white font-black text-xs shadow-md overflow-hidden shrink-0">
+            {companyProfile?.logo_url ? (
+              <img src={companyProfile.logo_url} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-black text-sm">
+                {companyProfile?.company_name ? companyProfile.company_name.charAt(0).toUpperCase() : 'C'}
+              </span>
+            )}
+          </motion.div>
           <motion.div
             animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden whitespace-nowrap"
+            className="overflow-hidden whitespace-nowrap flex flex-col"
           >
-            <p className="text-[#134e40] font-black text-sm leading-none">CXO Connect</p>
+            <p className="text-[#134e40] font-black text-sm leading-none">{companyProfile?.company_name || 'CXO Connect'}</p>
             <p className="text-gray-400 text-[10px] mt-0.5">Company Portal</p>
           </motion.div>
           <motion.button
@@ -473,8 +538,12 @@ const ExpertDiscovery = () => {
               </button>
               <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center animate-pulse">3</span>
             </div>
-            <button className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center text-white text-xs font-black hover:ring-2 hover:ring-[#0eb59a] hover:ring-offset-2 transition-all">
-              AC
+            <button className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center text-white text-xs font-black hover:ring-2 hover:ring-[#0eb59a] hover:ring-offset-2 transition-all overflow-hidden">
+              {companyProfile?.logo_url ? (
+                <img src={companyProfile.logo_url} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                companyProfile?.company_name ? companyProfile.company_name.substring(0, 2).toUpperCase() : 'AC'
+              )}
             </button>
           </div>
         </header>
@@ -764,296 +833,305 @@ const ExpertDiscovery = () => {
                 </div>
 
                 {/* Grid */}
-                <AnimatePresence mode="popLayout">
-                  {filteredExperts.length === 0 ? (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="bg-white rounded-2xl border border-gray-100 p-16 text-center"
-                    >
-                      <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <Users size={20} className="text-gray-300" />
-                      </div>
-                      <h3 className="font-black text-[#1C3627] mb-1">No experts found</h3>
-                      <p className="text-gray-400 text-sm mb-5">Try adjusting your filters</p>
-                      <motion.button
-                        whileHover={{ scale: 1.03 }}
-                        onClick={clearAllFilters}
-                        className="px-5 py-2.5 bg-[#134e40] text-white text-sm font-bold rounded-xl"
+                {loading ? (
+                  <div className="flex items-center justify-center p-20 bg-white rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+                    <div className="flex flex-col items-center gap-3">
+                      <RefreshCw size={28} className="text-[#0eb59a] animate-spin" />
+                      <p className="text-sm font-bold text-gray-500">Loading verified experts...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <AnimatePresence mode="popLayout">
+                    {filteredExperts.length === 0 ? (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="bg-white rounded-2xl border border-gray-100 p-16 text-center"
                       >
-                        Clear Filters
-                      </motion.button>
-                    </motion.div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-4">
-                      {filteredExperts.map((expert, idx) => {
-                        const isHovered = hoveredCardId === expert.id;
-                        const panelSide = getPanelSide(expert.id);
+                        <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                          <Users size={20} className="text-gray-300" />
+                        </div>
+                        <h3 className="font-black text-[#1C3627] mb-1">No experts found</h3>
+                        <p className="text-gray-400 text-sm mb-5">Try adjusting your filters</p>
+                        <motion.button
+                          whileHover={{ scale: 1.03 }}
+                          onClick={clearAllFilters}
+                          className="px-5 py-2.5 bg-[#134e40] text-white text-sm font-bold rounded-xl"
+                        >
+                          Clear Filters
+                        </motion.button>
+                      </motion.div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4">
+                        {filteredExperts.map((expert, idx) => {
+                          const isHovered = hoveredCardId === expert.id;
+                          const panelSide = getPanelSide(expert.id);
 
-                        return (
-                          <motion.div
-                            key={expert.id}
-                            ref={el => cardRefs.current[expert.id] = el}
-                            layout
-                            initial={{ opacity: 0, y: 16 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.28, delay: idx * 0.05 }}
-                            onMouseEnter={() => setHoveredCardId(expert.id)}
-                            onMouseLeave={() => setHoveredCardId(null)}
-                            className="relative group z-10 hover:z-[90]"
-                          >
-                            {/* ── BASE CARD ── */}
+                          return (
                             <motion.div
-                              whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                              className={`bg-white rounded-2xl border transition-all duration-200 overflow-visible cursor-pointer
-                                ${isHovered
-                                  ? 'border-[#0eb59a]/40 shadow-[0_12px_40px_rgba(14,181,154,0.12)]'
-                                  : 'border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:border-gray-200'
-                                }
-                              `}
+                              key={expert.id}
+                              ref={el => cardRefs.current[expert.id] = el}
+                              layout
+                              initial={{ opacity: 0, y: 16 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              transition={{ duration: 0.28, delay: idx * 0.05 }}
+                              onMouseEnter={() => setHoveredCardId(expert.id)}
+                              onMouseLeave={() => setHoveredCardId(null)}
+                              className="relative group z-10 hover:z-[90]"
                             >
-                              <div className="p-5">
+                              {/* ── BASE CARD ── */}
+                              <motion.div
+                                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                                className={`bg-white rounded-2xl border transition-all duration-200 overflow-visible cursor-pointer
+                                  ${isHovered
+                                    ? 'border-[#0eb59a]/40 shadow-[0_12px_40px_rgba(14,181,154,0.12)]'
+                                    : 'border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:border-gray-200'
+                                  }
+                                `}
+                              >
+                                <div className="p-5">
 
-                                {/* Top badges row */}
-                                <div className="flex items-center gap-1.5 mb-4">
-                                  {expert.topExpert && (
-                                    <span className="flex items-center gap-1 text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">
-                                      <Star size={8} fill="currentColor" /> Top Expert
-                                    </span>
-                                  )}
-                                  {expert.verified && (
-                                    <span className="flex items-center gap-1 text-[9px] font-black text-blue-700 bg-blue-50 px-2 py-1 rounded-lg border border-blue-100">
-                                      <Shield size={8} /> Verified
-                                    </span>
-                                  )}
-                                  <div className="ml-auto flex items-center gap-1.5 bg-[#134e40] px-2.5 py-1 rounded-lg">
-                                    <span className="text-[10px] font-black text-white">{expert.match}% Match</span>
-                                  </div>
-                                </div>
-
-                                {/* Avatar + Name — asymmetric image border */}
-                                <div className="flex items-start gap-3 mb-4">
-                                  <div className="relative shrink-0">
-                                    <motion.img
-                                      src={expert.avatar}
-                                      alt={expert.name}
-                                      className="w-14 h-14 object-cover shadow-sm"
-                                      style={{ borderRadius: '12px 0px 12px 12px' }}
-                                    />
-                                    <motion.div
-                                      animate={{ scale: [1, 1.3, 1] }}
-                                      transition={{ duration: 2, repeat: Infinity }}
-                                      className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"
-                                    />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <h3
-                                      onClick={() => navigate(`/experts/${expert.id}`)}
-                                      className="font-black text-[#1C3627] text-sm leading-tight mb-0.5 transition-colors cursor-pointer hover:text-[#0eb59a] text-left"
-                                    >
-                                      {expert.name}
-                                    </h3>
-                                    <p className="text-xs font-bold text-gray-600 text-left">{expert.title}</p>
-                                    <p className="text-[11px] text-gray-400 mt-0.5 truncate text-left">{expert.exRole}</p>
-                                  </div>
-                                </div>
-
-                                {/* Bio */}
-                                <p className="text-xs text-gray-400 leading-relaxed mb-4 line-clamp-2 text-left">
-                                  {expert.bio}
-                                </p>
-
-                                {/* Meta grid */}
-                                <div className="grid grid-cols-2 gap-2 mb-4">
-                                  {[
-                                    { icon: Clock, label: expert.availability, color: 'text-blue-400' },
-                                    { icon: MapPin, label: expert.location.split(' | ')[0], color: 'text-rose-400' },
-                                    { icon: DollarSign, label: expert.budget, color: 'text-[#0eb59a]' },
-                                    { icon: Zap, label: expert.experience, color: 'text-purple-400' },
-                                  ].map((m, mi) => (
-                                    <div key={mi} className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
-                                      <m.icon size={11} className={`${m.color} shrink-0`} />
-                                      <span className="truncate">{m.label}</span>
-                                    </div>
-                                  ))}
-                                </div>
-
-                                {/* Skills */}
-                                <div className="flex flex-wrap gap-1.5 mb-4">
-                                  {expert.skills.slice(0, 3).map(skill => (
-                                    <span key={skill} className="text-[10px] font-semibold bg-[#FAFBF9] text-[#1C3627] border border-gray-200 px-2 py-0.5 rounded-md">
-                                      {skill}
-                                    </span>
-                                  ))}
-                                  {expert.skills.length > 3 && (
-                                    <span className="text-[10px] font-semibold bg-[#FAFBF9] text-gray-400 border border-gray-200 px-2 py-0.5 rounded-md">
-                                      +{expert.skills.length - 3}
-                                    </span>
-                                  )}
-                                </div>
-
-                                {/* Rating + response */}
-                                <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-50">
-                                  <div className="flex items-center gap-1">
-                                    <Star size={12} fill="#F59E0B" className="text-amber-400" />
-                                    <span className="font-black text-[#1C3627] text-sm">{expert.rating}</span>
-                                    <span className="text-xs text-gray-400">({expert.reviews})</span>
-                                  </div>
-                                  <span className="text-[10px] font-medium text-gray-400">
-                                    Responds {expert.responseTime}
-                                  </span>
-                                </div>
-
-                                {/* Action bar */}
-                                <div className="flex items-center gap-2">
-                                  <motion.button
-                                    whileHover={{ scale: 1.03 }}
-                                    whileTap={{ scale: 0.97 }}
-                                    onClick={(e) => { e.stopPropagation(); navigate(`/experts/${expert.id}`); }}
-                                    className="flex-1 py-2 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl transition-all"
-                                  >
-                                    View Profile
-                                  </motion.button>
-                                  <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={(e) => { e.stopPropagation(); setShowInviteModal(expert); }}
-                                    className="px-3 py-2 bg-teal-50 text-[#134e40] text-xs font-black rounded-xl border border-teal-100 hover:bg-teal-100 transition-all"
-                                  >
-                                    Invite
-                                  </motion.button>
-                                  <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={(e) => { e.stopPropagation(); toggleShortlist(expert.id); }}
-                                    className={`p-2 rounded-xl border transition-all ${
-                                      shortlisted.includes(expert.id)
-                                        ? 'bg-red-50 text-red-500 border-red-100'
-                                        : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-red-400'
-                                    }`}
-                                  >
-                                    <Heart size={13} fill={shortlisted.includes(expert.id) ? 'currentColor' : 'none'} />
-                                  </motion.button>
-                                  <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={(e) => { e.stopPropagation(); toggleCompare(expert.id); }}
-                                    className={`p-2 rounded-xl border transition-all ${
-                                      compareTray.includes(expert.id)
-                                        ? 'bg-blue-50 text-blue-600 border-blue-100'
-                                        : compareTray.length >= 3
-                                        ? 'bg-gray-50 text-gray-200 border-gray-100 cursor-not-allowed'
-                                        : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-blue-50 hover:text-blue-500'
-                                    }`}
-                                  >
-                                    <BarChart2 size={13} />
-                                  </motion.button>
-                                </div>
-
-                              </div>
-                            </motion.div>
-
-                            {/* ── FLOATING HOVER OVERLAY PANEL ── */}
-                            <AnimatePresence>
-                              {isHovered && (
-                                <motion.div
-                                  initial={{ opacity: 0, scale: 0.92, x: panelSide === 'right' ? -10 : 10 }}
-                                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                                  exit={{ opacity: 0, scale: 0.92, x: panelSide === 'right' ? -10 : 10 }}
-                                  transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-                                  className="absolute top-0 z-[100] w-[280px] bg-[#FAFBF9] rounded-2xl border border-gray-100 shadow-2xl shadow-[#134e40]/10 p-5 pointer-events-none"
-                                  style={{
-                                    [panelSide === 'right' ? 'left' : 'right']: 'calc(100% + 12px)',
-                                  }}
-                                >
-
-                                  {/* Panel header */}
-                                  <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
-                                    <img
-                                      src={expert.avatar}
-                                      alt={expert.name}
-                                      className="w-10 h-10 object-cover"
-                                      style={{ borderRadius: '8px 0px 8px 8px' }}
-                                    />
-                                    <div>
-                                      <p className="text-xs font-black text-[#1C3627] leading-none">{expert.name}</p>
-                                      <p className="text-[10px] text-gray-400 mt-0.5">{expert.title}</p>
+                                  {/* Top badges row */}
+                                  <div className="flex items-center gap-1.5 mb-4">
+                                    {expert.topExpert && (
+                                      <span className="flex items-center gap-1 text-[9px] font-black text-amber-700 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">
+                                        <Star size={8} fill="currentColor" /> Top Expert
+                                      </span>
+                                    )}
+                                    {expert.verified && (
+                                      <span className="flex items-center gap-1 text-[9px] font-black text-blue-700 bg-blue-50 px-2 py-1 rounded-lg border border-blue-100">
+                                        <Shield size={8} /> Verified
+                                      </span>
+                                    )}
+                                    <div className="ml-auto flex items-center gap-1.5 bg-[#134e40] px-2.5 py-1 rounded-lg">
+                                      <span className="text-[10px] font-black text-white">{expert.match}% Match</span>
                                     </div>
                                   </div>
 
-                                  {/* SVG Radial Rings */}
-                                  <div className="flex items-center justify-center gap-6 mb-4 pb-4 border-b border-gray-100">
-                                    <RadialRing
-                                      percent={expert.match}
-                                      color="#0eb59a"
-                                      size={60}
-                                      stroke={5}
-                                      label="Match Score"
-                                    />
-                                    <RadialRing
-                                      percent={Math.min(100, expert.completedEngagements * 7)}
-                                      color="#134e40"
-                                      size={60}
-                                      stroke={5}
-                                      label="Competence"
-                                    />
-                                  </div>
-
-                                  {/* Industries */}
-                                  <div className="mb-4">
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Industries</p>
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {expert.industries.map(ind => (
-                                        <span key={ind} className="text-[10px] font-semibold bg-white text-[#134e40] border border-[#134e40]/15 px-2 py-0.5 rounded-md">
-                                          {ind}
-                                        </span>
-                                      ))}
+                                  {/* Avatar + Name — asymmetric image border */}
+                                  <div className="flex items-start gap-3 mb-4">
+                                    <div className="relative shrink-0">
+                                      <motion.img
+                                        src={expert.avatar}
+                                        alt={expert.name}
+                                        className="w-14 h-14 object-cover shadow-sm"
+                                        style={{ borderRadius: '12px 0px 12px 12px' }}
+                                      />
+                                      <motion.div
+                                        animate={{ scale: [1, 1.3, 1] }}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                        className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"
+                                      />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <h3
+                                        onClick={() => navigate(`/experts/${expert.id}`)}
+                                        className="font-black text-[#1C3627] text-sm leading-tight mb-0.5 transition-colors cursor-pointer hover:text-[#0eb59a] text-left"
+                                      >
+                                        {expert.name}
+                                      </h3>
+                                      <p className="text-xs font-bold text-gray-600 text-left">{expert.title}</p>
+                                      <p className="text-[11px] text-gray-400 mt-0.5 truncate text-left">{expert.exRole}</p>
                                     </div>
                                   </div>
 
-                                  {/* Engagement types */}
-                                  <div className="mb-4">
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Engagement Types</p>
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {expert.engagementTypes.map(type => (
-                                        <span key={type} className="text-[10px] font-semibold bg-teal-50 text-teal-700 border border-teal-100 px-2 py-0.5 rounded-md">
-                                          {type}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
+                                  {/* Bio */}
+                                  <p className="text-xs text-gray-400 leading-relaxed mb-4 line-clamp-2 text-left">
+                                    {expert.bio}
+                                  </p>
 
-                                  {/* Stats row */}
-                                  <div className="grid grid-cols-3 gap-2 mb-4">
+                                  {/* Meta grid */}
+                                  <div className="grid grid-cols-2 gap-2 mb-4">
                                     {[
-                                      { label: 'Engagements', value: expert.completedEngagements, color: 'text-[#0eb59a]' },
-                                      { label: 'Experience', value: expert.experience, color: 'text-purple-500' },
-                                      { label: 'Response', value: expert.responseTime, color: 'text-blue-500' },
-                                    ].map((s, si) => (
-                                      <div key={si} className="bg-white rounded-xl p-2.5 border border-gray-100 text-center">
-                                        <p className={`text-xs font-black ${s.color} leading-none`}>{s.value}</p>
-                                        <p className="text-[9px] text-gray-400 font-medium mt-0.5 leading-tight">{s.label}</p>
+                                      { icon: Clock, label: expert.availability, color: 'text-blue-400' },
+                                      { icon: MapPin, label: expert.location.split(' | ')[0], color: 'text-rose-400' },
+                                      { icon: DollarSign, label: expert.budget, color: 'text-[#0eb59a]' },
+                                      { icon: Zap, label: expert.experience, color: 'text-purple-400' },
+                                    ].map((m, mi) => (
+                                      <div key={mi} className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500">
+                                        <m.icon size={11} className={`${m.color} shrink-0`} />
+                                        <span className="truncate">{m.label}</span>
                                       </div>
                                     ))}
                                   </div>
 
-                                  {/* Bio excerpt */}
-                                  <div className="bg-white rounded-xl p-3 border border-gray-100">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Profile</p>
-                                    <p className="text-[11px] text-gray-600 leading-relaxed font-medium">{expert.bio}</p>
+                                  {/* Skills */}
+                                  <div className="flex flex-wrap gap-1.5 mb-4">
+                                    {expert.skills.slice(0, 3).map(skill => (
+                                      <span key={skill} className="text-[10px] font-semibold bg-[#FAFBF9] text-[#1C3627] border border-gray-200 px-2 py-0.5 rounded-md">
+                                        {skill}
+                                      </span>
+                                    ))}
+                                    {expert.skills.length > 3 && (
+                                      <span className="text-[10px] font-semibold bg-[#FAFBF9] text-gray-400 border border-gray-200 px-2 py-0.5 rounded-md">
+                                        +{expert.skills.length - 3}
+                                      </span>
+                                    )}
                                   </div>
 
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                                  {/* Rating + response */}
+                                  <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-50">
+                                    <div className="flex items-center gap-1">
+                                      <Star size={12} fill="#F59E0B" className="text-amber-400" />
+                                      <span className="font-black text-[#1C3627] text-sm">{expert.rating}</span>
+                                      <span className="text-xs text-gray-400">({expert.reviews})</span>
+                                    </div>
+                                    <span className="text-[10px] font-medium text-gray-400">
+                                      Responds {expert.responseTime}
+                                    </span>
+                                  </div>
 
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </AnimatePresence>
+                                  {/* Action bar */}
+                                  <div className="flex items-center gap-2">
+                                    <motion.button
+                                      whileHover={{ scale: 1.03 }}
+                                      whileTap={{ scale: 0.97 }}
+                                      onClick={(e) => { e.stopPropagation(); navigate(`/experts/${expert.id}`); }}
+                                      className="flex-1 py-2 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl transition-all"
+                                    >
+                                      View Profile
+                                    </motion.button>
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={(e) => { e.stopPropagation(); setShowInviteModal(expert); }}
+                                      className="px-3 py-2 bg-teal-50 text-[#134e40] text-xs font-black rounded-xl border border-teal-100 hover:bg-teal-100 transition-all"
+                                    >
+                                      Invite
+                                    </motion.button>
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={(e) => { e.stopPropagation(); toggleShortlist(expert.id); }}
+                                      className={`p-2 rounded-xl border transition-all ${
+                                        shortlisted.includes(expert.id)
+                                          ? 'bg-red-50 text-red-500 border-red-100'
+                                          : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-red-400'
+                                      }`}
+                                    >
+                                      <Heart size={13} fill={shortlisted.includes(expert.id) ? 'currentColor' : 'none'} />
+                                    </motion.button>
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={(e) => { e.stopPropagation(); toggleCompare(expert.id); }}
+                                      className={`p-2 rounded-xl border transition-all ${
+                                        compareTray.includes(expert.id)
+                                          ? 'bg-blue-50 text-blue-600 border-blue-100'
+                                          : compareTray.length >= 3
+                                          ? 'bg-gray-50 text-gray-200 border-gray-100 cursor-not-allowed'
+                                          : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-blue-50 hover:text-blue-500'
+                                      }`}
+                                    >
+                                      <BarChart2 size={13} />
+                                    </motion.button>
+                                  </div>
+
+                                </div>
+                              </motion.div>
+
+                              {/* ── FLOATING HOVER OVERLAY PANEL ── */}
+                              <AnimatePresence>
+                                {isHovered && (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0.92, x: panelSide === 'right' ? -10 : 10 }}
+                                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                                    exit={{ opacity: 0, scale: 0.92, x: panelSide === 'right' ? -10 : 10 }}
+                                    transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+                                    className="absolute top-0 z-[100] w-[280px] bg-[#FAFBF9] rounded-2xl border border-gray-100 shadow-2xl shadow-[#134e40]/10 p-5 pointer-events-none"
+                                    style={{
+                                      [panelSide === 'right' ? 'left' : 'right']: 'calc(100% + 12px)',
+                                    }}
+                                  >
+
+                                    {/* Panel header */}
+                                    <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+                                      <img
+                                        src={expert.avatar}
+                                        alt={expert.name}
+                                        className="w-10 h-10 object-cover"
+                                        style={{ borderRadius: '8px 0px 8px 8px' }}
+                                      />
+                                      <div>
+                                        <p className="text-xs font-black text-[#1C3627] leading-none">{expert.name}</p>
+                                        <p className="text-[10px] text-gray-400 mt-0.5">{expert.title}</p>
+                                      </div>
+                                    </div>
+
+                                    {/* SVG Radial Rings */}
+                                    <div className="flex items-center justify-center gap-6 mb-4 pb-4 border-b border-gray-100">
+                                      <RadialRing
+                                        percent={expert.match}
+                                        color="#0eb59a"
+                                        size={60}
+                                        stroke={5}
+                                        label="Match Score"
+                                      />
+                                      <RadialRing
+                                        percent={Math.min(100, expert.completedEngagements * 7)}
+                                        color="#134e40"
+                                        size={60}
+                                        stroke={5}
+                                        label="Competence"
+                                      />
+                                    </div>
+
+                                    {/* Industries */}
+                                    <div className="mb-4">
+                                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Industries</p>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {expert.industries.map(ind => (
+                                          <span key={ind} className="text-[10px] font-semibold bg-white text-[#134e40] border border-[#134e40]/15 px-2 py-0.5 rounded-md">
+                                            {ind}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {/* Engagement types */}
+                                    <div className="mb-4">
+                                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Engagement Types</p>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {expert.engagementTypes.map(type => (
+                                          <span key={type} className="text-[10px] font-semibold bg-teal-50 text-teal-700 border border-teal-100 px-2 py-0.5 rounded-md">
+                                            {type}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {/* Stats row */}
+                                    <div className="grid grid-cols-3 gap-2 mb-4">
+                                      {[
+                                        { label: 'Engagements', value: expert.completedEngagements, color: 'text-[#0eb59a]' },
+                                        { label: 'Experience', value: expert.experience, color: 'text-purple-500' },
+                                        { label: 'Response', value: expert.responseTime, color: 'text-blue-500' },
+                                      ].map((s, si) => (
+                                        <div key={si} className="bg-white rounded-xl p-2.5 border border-gray-100 text-center">
+                                          <p className={`text-xs font-black ${s.color} leading-none`}>{s.value}</p>
+                                          <p className="text-[9px] text-gray-400 font-medium mt-0.5 leading-tight">{s.label}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+
+                                    {/* Bio excerpt */}
+                                    <div className="bg-white rounded-xl p-3 border border-gray-100">
+                                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Profile</p>
+                                      <p className="text-[11px] text-gray-600 leading-relaxed font-medium">{expert.bio}</p>
+                                    </div>
+
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </AnimatePresence>
+                )}
               </div>
             </div>
           </div>

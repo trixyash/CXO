@@ -10,7 +10,7 @@ import {
   CheckCircle, X, ExternalLink, Building, Target,
   LayoutDashboard, CreditCard, FileText,
   LogOut, Settings, ShieldCheck, Menu, Bell,
-  ChevronLeft
+  ChevronLeft, RefreshCw
 } from 'lucide-react';
 
 const ExpertProfile = () => {
@@ -23,6 +23,19 @@ const ExpertProfile = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/signin?role=company');
+        return;
+      }
+      
+      try {
+        const profileRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/profile`, {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          setCompanyProfile(profileData);
+        }
+      } catch (err) {
+        console.error("Error fetching company profile:", err);
       }
     };
     checkAuth();
@@ -42,6 +55,7 @@ const ExpertProfile = () => {
 
   const [activeTab, setActiveTab] = useState('Overview');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [companyProfile, setCompanyProfile] = useState(null);
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/company-dashboard' },
@@ -178,9 +192,71 @@ const ExpertProfile = () => {
       timezone: 'IST (UTC+5:30)',
     },
   };
+  const [expert, setExpert] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const expert = experts[expertId] || experts[1];
+  useEffect(() => {
+    const fetchExpert = async () => {
+      // If expertId is one of the mock IDs (1, 2, 3), use local mock data directly
+      if (expertId === '1' || expertId === '2' || expertId === '3') {
+        setExpert(experts[expertId]);
+        setLoading(false);
+        return;
+      }
 
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          // Fall back to Sarah Jenkins if not logged in and not a mock ID
+          setExpert(experts[1]);
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch(`http://localhost:5000/api/company/experts/${expertId}`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to fetch expert');
+        }
+
+        const data = await res.json();
+        setExpert(data);
+      } catch (err) {
+        console.error('Error fetching expert profile:', err);
+        // Fallback to static experts if not found or API fails
+        setExpert(experts[expertId] || experts[1]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (expertId) {
+      fetchExpert();
+    }
+  }, [expertId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f4f7f5] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <RefreshCw size={40} className="text-[#0eb59a] animate-spin" />
+          <p className="text-[#134e40] font-bold text-sm">Loading profile details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!expert) {
+    return (
+      <div className="min-h-screen bg-[#f4f7f5] flex items-center justify-center">
+        <p className="text-gray-500 font-medium">Expert profile not found.</p>
+      </div>
+    );
+  }
   const caseStudies = [
     {
       id: 1,
@@ -406,15 +482,22 @@ Bio: ${expert.bio}
       >
         {/* Brand */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
-          <div className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center shrink-0">
-            <span className="text-white font-black text-sm">C</span>
-          </div>
+          <motion.div whileHover={{ scale: 1.05, rotate: 2 }} whileTap={{ scale: 0.95 }}
+            className="w-9 h-9 bg-gradient-to-br from-[#134e40] to-[#0eb59a] rounded-xl flex items-center justify-center text-white font-black text-xs shadow-md overflow-hidden shrink-0">
+            {companyProfile?.logo_url ? (
+              <img src={companyProfile.logo_url} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-black text-sm">
+                {companyProfile?.company_name ? companyProfile.company_name.charAt(0).toUpperCase() : 'C'}
+              </span>
+            )}
+          </motion.div>
           <motion.div
             animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden whitespace-nowrap"
+            className="overflow-hidden whitespace-nowrap flex flex-col"
           >
-            <p className="text-[#134e40] font-black text-sm leading-none">CXO Connect</p>
+            <p className="text-[#134e40] font-black text-sm leading-none">{companyProfile?.company_name || 'CXO Connect'}</p>
             <p className="text-gray-400 text-[10px] mt-0.5">Company Portal</p>
           </motion.div>
           <motion.button
@@ -588,8 +671,12 @@ Bio: ${expert.bio}
                 )}
               </AnimatePresence>
             </div>
-            <button className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center text-white text-xs font-black hover:ring-2 hover:ring-[#0eb59a] hover:ring-offset-2 transition-all">
-              AC
+            <button className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center text-white text-xs font-black hover:ring-2 hover:ring-[#0eb59a] hover:ring-offset-2 transition-all overflow-hidden">
+              {companyProfile?.logo_url ? (
+                <img src={companyProfile.logo_url} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                companyProfile?.company_name ? companyProfile.company_name.substring(0, 2).toUpperCase() : 'AC'
+              )}
             </button>
           </div>
         </header>

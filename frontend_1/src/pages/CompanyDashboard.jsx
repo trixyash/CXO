@@ -31,14 +31,29 @@ const AnimatedCounter = ({ value }) => {
   }, [value]);
   return <span>{display}</span>;
 };
-
 // ── EXPERT CARD ──
 const ExpertCard = ({ expert }) => {
+  const navigate = useNavigate();
   return (
-    <div className="flex-1 min-w-0 bg-white rounded-xl border border-gray-100 p-3 shadow-sm group">
+    <div 
+      onClick={() => navigate(`/experts/${expert.id}`)}
+      className="flex-1 min-w-0 bg-white rounded-xl border border-gray-100 p-3 shadow-sm group cursor-pointer hover:border-[#0eb59a] hover:shadow-md transition-all duration-200"
+    >
       <div className="flex items-start justify-between mb-2">
-        <div className={`w-10 h-10 rounded-full text-white text-sm font-bold flex items-center justify-center ${expert.color}`}>
-          {expert.initials}
+        <div className="relative shrink-0 w-10 h-10">
+          {expert.avatar ? (
+            <img
+              src={expert.avatar}
+              alt={expert.name}
+              className="w-10 h-10 object-cover shadow-sm"
+              style={{ borderRadius: '10px 0px 10px 10px' }}
+            />
+          ) : (
+            <div className={`w-10 h-10 rounded-full text-white text-sm font-bold flex items-center justify-center ${expert.color}`}>
+              {expert.initials}
+            </div>
+          )}
+          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border border-white rounded-full" />
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className="text-xs px-2 py-0.5 bg-[#134e40] text-white rounded-full font-semibold">
@@ -71,8 +86,11 @@ const ExpertCard = ({ expert }) => {
           <span className="font-bold text-gray-600 truncate max-w-[80px] text-right">{expert.location}</span>
         </div>
       </div>
-      <div className="flex items-center gap-1.5">
-        <button className="flex-1 text-xs py-1.5 px-3 bg-[#134e40] text-white rounded-lg hover:bg-[#0eb59a] transition-colors duration-200">
+      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <button 
+          onClick={() => navigate(`/experts/${expert.id}`)}
+          className="flex-1 text-xs py-1.5 px-3 bg-[#134e40] text-white rounded-lg hover:bg-[#0eb59a] transition-colors duration-200 cursor-pointer"
+        >
           View Profile
         </button>
         <button className="flex-1 text-xs py-1.5 px-3 border border-gray-200 text-gray-600 rounded-lg hover:border-[#0eb59a] hover:text-[#0eb59a] transition-colors duration-200">
@@ -102,6 +120,7 @@ const CompanyDashboard = () => {
   // Carousel State
   const [currentIndex, setCurrentIndex] = useState(0);
   const CARDS_PER_VIEW = 4;
+  const [experts, setExperts] = useState([]);
 
   // Header States
   const [searchFocused, setSearchFocused] = useState(false);
@@ -127,6 +146,7 @@ const CompanyDashboard = () => {
     const checkAuthAndFetchProfile = async () => {
       if (isDemo) {
         setCompanyProfile({ company_name: 'Acme Corp.', admin_email: 'demo@cxo.com' });
+        setExperts(MOCK_EXPERTS);
         setLoadingProfile(false);
         return;
       }
@@ -162,6 +182,29 @@ const CompanyDashboard = () => {
         } else if (reqError) {
           console.error("Supabase fetch error:", reqError);
         }
+
+        // Fetch registered experts from backend
+        try {
+          const expertsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/company/experts`, {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`
+            }
+          });
+          if (expertsResponse.ok) {
+            const expertsData = await expertsResponse.json();
+            if (expertsData && expertsData.length > 0) {
+              setExperts(expertsData);
+            } else {
+              setExperts(MOCK_EXPERTS);
+            }
+          } else {
+            console.error("Failed to fetch registered experts, falling back to mock data");
+            setExperts(MOCK_EXPERTS);
+          }
+        } catch (err) {
+          console.error("Error fetching experts:", err);
+          setExperts(MOCK_EXPERTS);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -193,15 +236,15 @@ const CompanyDashboard = () => {
     { title: 'Payment Released', desc: '₹85,000 released to David Chen for milestone completion', time: '1 day ago', unread: false, color: 'bg-emerald-500' },
   ];
 
-  const experts = [
-    { id: 1, name: "Sarah Jenkins", role: "Ex-CMO at TechCorp", initials: "SJ", color: "bg-purple-500", match: 98, rating: 4.9, rate: "₹15K–20K/Mo", availability: "20 hrs/week", location: "Remote" },
-    { id: 2, name: "David Chen", role: "Interim CFO", initials: "DC", color: "bg-blue-500", match: 95, rating: 5.0, rate: "₹33K/Month", availability: "Full-time", location: "New Delhi" },
-    { id: 3, name: "Priya Patel", role: "VP Engineering", initials: "PP", color: "bg-teal-600", match: 92, rating: 4.8, rate: "₹10K/Month", availability: "10 hrs/week", location: "Remote" },
-    { id: 4, name: "Rajesh Sharma", role: "Ex-CHRO, Infosys", initials: "RS", color: "bg-orange-500", match: 90, rating: 4.7, rate: "₹18K/Month", availability: "15 hrs/week", location: "Bengaluru" },
-    { id: 5, name: "Anita Desai", role: "COO, D2C Brand", initials: "AD", color: "bg-rose-500", match: 88, rating: 4.6, rate: "₹22K/Month", availability: "Full-time", location: "Mumbai" },
-    { id: 6, name: "Vikram Nair", role: "Board Advisor", initials: "VN", color: "bg-indigo-500", match: 86, rating: 4.8, rate: "₹12K/Month", availability: "8 hrs/week", location: "Remote" },
-    { id: 7, name: "Meera Iyer", role: "Ex-CMO, Flipkart", initials: "MI", color: "bg-pink-500", match: 84, rating: 4.5, rate: "₹25K/Month", availability: "20 hrs/week", location: "Hyderabad" },
-    { id: 8, name: "Suresh Menon", role: "CFO & Board Member", initials: "SM", color: "bg-green-600", match: 82, rating: 4.7, rate: "₹30K/Month", availability: "Full-time", location: "Chennai" },
+  const MOCK_EXPERTS = [
+    { id: 1, name: "Sarah Jenkins", role: "Ex-CMO at TechCorp", initials: "SJ", color: "bg-purple-500", match: 98, rating: 4.9, rate: "₹1.5L - ₹2.5L/mo", availability: "20 hrs/week", location: "Remote" },
+    { id: 2, name: "David Chen", role: "Interim CFO", initials: "DC", color: "bg-blue-500", match: 95, rating: 5.0, rate: "₹2.5L - ₹4L/mo", availability: "Full-time", location: "New Delhi" },
+    { id: 3, name: "Priya Patel", role: "VP Engineering", initials: "PP", color: "bg-teal-600", match: 92, rating: 4.8, rate: "₹1.8L - ₹3L/mo", availability: "10 hrs/week", location: "Remote" },
+    { id: 4, name: "Rajesh Sharma", role: "Ex-CHRO, Infosys", initials: "RS", color: "bg-orange-500", match: 90, rating: 4.7, rate: "₹1.8L/mo", availability: "15 hrs/week", location: "Bengaluru" },
+    { id: 5, name: "Anita Desai", role: "COO, D2C Brand", initials: "AD", color: "bg-rose-500", match: 88, rating: 4.6, rate: "₹2.2L/mo", availability: "Full-time", location: "Mumbai" },
+    { id: 6, name: "Vikram Nair", role: "Board Advisor", initials: "VN", color: "bg-indigo-500", match: 86, rating: 4.8, rate: "₹1.2L/mo", availability: "8 hrs/week", location: "Remote" },
+    { id: 7, name: "Meera Iyer", role: "Ex-CMO, Flipkart", initials: "MI", color: "bg-pink-500", match: 84, rating: 4.5, rate: "₹2.5L/mo", availability: "20 hrs/week", location: "Hyderabad" },
+    { id: 8, name: "Suresh Menon", role: "CFO & Board Member", initials: "SM", color: "bg-green-600", match: 82, rating: 4.7, rate: "₹3.0L/mo", availability: "Full-time", location: "Chennai" },
   ];
   const visibleExperts = experts.slice(currentIndex, currentIndex + CARDS_PER_VIEW);
   const canGoLeft = currentIndex > 0;
