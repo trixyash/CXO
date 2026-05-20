@@ -431,7 +431,7 @@ const Settings = () => {
           >
             {item.active && (
               <motion.div
-                layoutId="activeNavSettings"
+                layoutId="activeNav"
                 className="absolute left-0 top-1 bottom-1 w-0.5 bg-[#0eb59a] rounded-r-full"
               />
             )}

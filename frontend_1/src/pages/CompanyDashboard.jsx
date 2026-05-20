@@ -166,7 +166,7 @@ const CompanyDashboard = () => {
   }, [navigate]);
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/company-dashboard' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/company-dashboard', active: true },
     { icon: FileText, label: 'My Requirements', path: '/requirements' },
     { icon: Users, label: 'Experts', path: '/experts' },
     { icon: CreditCard, label: 'Payments', path: '/payments' },
@@ -228,167 +228,87 @@ const CompanyDashboard = () => {
   ];
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] font-sans text-slate-900 overflow-hidden">
+    <div className="min-h-screen bg-[#f4f7f5] font-sans text-slate-900">
 
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden" />
-        )}
-      </AnimatePresence>
-
-      {/* ══ SIDEBAR — white premium ══ */}
+      {/* ── SIDEBAR ── */}
       <motion.aside
-        initial={false}
+        initial={{ width: 260 }}
         animate={{ width: isSidebarOpen ? 260 : 68 }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        className={`
-          bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm
-          fixed md:relative inset-y-0 left-0 transition-transform duration-300
-          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        `}
-        style={{ width: typeof window !== 'undefined' && window.innerWidth < 768 ? 260 : undefined }}
+        className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed left-0 top-0 h-screen"
       >
-        <button onClick={() => setIsMobileMenuOpen(false)}
-          className="absolute top-4 right-4 p-1.5 rounded-lg bg-gray-100 text-gray-500 md:hidden z-50">
-          <X size={14} />
-        </button>
-
-        {/* Logo */}
-        <div className={`flex items-center border-b border-gray-100 overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'px-5 py-5 gap-3' : 'px-0 py-5 justify-center'}`}>
-          <div className="relative w-9 h-9 shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center shadow-md overflow-hidden">
-              {companyProfile?.logo_url ? (
-                <img src={companyProfile.logo_url} alt="Logo" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-white font-black text-sm">
-                  {companyProfile?.company_name ? companyProfile.company_name.charAt(0).toUpperCase() : 'C'}
-                </span>
-              )}
-            </div>
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
+          <div className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center shrink-0">
+            <span className="text-white font-black text-sm">C</span>
           </div>
-          <motion.div animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }} transition={{ duration: 0.2 }}
-            className="overflow-hidden whitespace-nowrap">
-            <p className="text-sm font-black text-[#134e40] leading-tight">{companyProfile?.company_name || 'CXO Connect'}</p>
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Company Portal</p>
+          <motion.div
+            animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden whitespace-nowrap"
+          >
+            <p className="text-[#134e40] font-black text-sm leading-none">CXO Connect</p>
+            <p className="text-gray-400 text-[10px] mt-0.5">Company Portal</p>
           </motion.div>
+          <motion.button
+            animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}
+            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:text-[#134e40] hover:bg-gray-100 transition-all shrink-0"
+          >
+            {isSidebarOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+          </motion.button>
         </div>
-
-        {/* Nav */}
-        <nav className="flex-1 px-2 py-4 flex flex-col gap-0.5 [&::-webkit-scrollbar]:hidden overflow-y-auto">
-          <motion.p animate={{ opacity: isSidebarOpen ? 1 : 0, height: isSidebarOpen ? 'auto' : 0 }} transition={{ duration: 0.2 }}
-            className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 mb-2 overflow-hidden">
-            Main Menu
-          </motion.p>
-
-          {navItems.map((item, idx) => {
-            const isActive = activeMenu === item.label;
-            const badge = item.label === 'My Requirements' ? '2' : null;
-            return (
-              <div key={item.label} className="relative group">
-                <motion.button
-                  initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  whileHover={{ x: isSidebarOpen ? 3 : 0 }} whileTap={{ scale: 0.95 }}
-                  onClick={() => { setActiveMenu(item.label); navigate(item.path); if (window.innerWidth < 768) setIsMobileMenuOpen(false); }}
-                  className={`w-full flex items-center transition-colors duration-150 rounded-xl relative
-                    ${isSidebarOpen ? 'gap-3 px-4 py-3' : 'justify-center px-0 py-3'}
-                    ${isActive ? 'bg-teal-50 text-[#134e40]' : 'text-gray-400 hover:bg-[#134e40]/10 hover:text-gray-700'}`}
-                >
-                  {isActive && (
-                    <motion.div layoutId="activeBar"
-                      className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#0eb59a] rounded-r" />
-                  )}
-                  <div className={`relative shrink-0 ${isActive ? 'text-[#0eb59a]' : 'text-gray-400 group-hover:text-gray-600'}`}>
-                    <item.icon size={19} />
-                    {badge && (
-                      <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#0eb59a] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm">
-                        {badge}
-                      </span>
-                    )}
-                  </div>
-                  <motion.span animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }} transition={{ duration: 0.2 }}
-                    className="text-sm font-semibold overflow-hidden whitespace-nowrap">
-                    {item.label}
-                  </motion.span>
-                </motion.button>
-                {!isSidebarOpen && (
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-[#0d1f2d] text-white text-xs font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 shadow-xl">
-                    {item.label}
-                    <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#0d1f2d]" />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-
-        {/* Bottom */}
-        <div className="px-2 pb-4 flex flex-col gap-2">
-          {isSidebarOpen ? (
-            <motion.div whileHover={{ scale: 1.02 }}
-              className="mx-1 p-4 rounded-2xl bg-gradient-to-br from-[#0d1f2d] to-[#134e40] text-white relative overflow-hidden cursor-pointer">
-              <div className="absolute -right-3 -top-3 w-16 h-16 bg-white/5 rounded-full" />
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-1">
-                  <ShieldCheck size={13} className="text-[#0eb59a]" />
-                  <h4 className="font-black text-xs">CXO Concierge</h4>
-                </div>
-                <p className="text-[10px] text-white/60 mb-3">Need help scoping a role?</p>
-                <button className="w-full bg-[#0eb59a] hover:bg-[#0ca88e] text-white text-[11px] font-bold py-2 rounded-xl transition-all">
-                  Talk to Advisor
-                </button>
-              </div>
-            </motion.div>
-          ) : (
-            <div className="relative group flex justify-center">
-              <motion.button whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
-                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0d1f2d] to-[#134e40] flex items-center justify-center shadow-md">
-                <ShieldCheck size={17} className="text-[#0eb59a]" />
-              </motion.button>
-            </div>
+        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-hidden">
+          {isSidebarOpen && (
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2">Main Menu</p>
           )}
-          <div className="h-px bg-gray-100 mx-1" />
-          <div className="relative group">
-            <motion.button whileHover={{ x: isSidebarOpen ? 3 : 0 }} whileTap={{ scale: 0.95 }}
-              onClick={async () => { await supabase.auth.signOut(); navigate('/signin?role=company'); }}
-              className={`w-full flex items-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all
-                ${isSidebarOpen ? 'gap-3 px-4 py-3' : 'justify-center px-0 py-3'}`}>
-              <LogOut size={17} className="shrink-0" />
-              <motion.span animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }} transition={{ duration: 0.2 }}
-                className="text-sm font-semibold overflow-hidden whitespace-nowrap">
-                Logout
+          {navItems.map((item) => (
+            <motion.button
+              key={item.path}
+              whileHover={{ x: 2, transition: { duration: 0.15 } }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate(item.path)}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${
+                item.active
+                  ? 'bg-[#134e40] text-white shadow-md'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
+              }`}
+            >
+              {item.active && (
+                <motion.div
+                  layoutId="activeNav"
+                  className="absolute left-0 top-1 bottom-1 w-0.5 bg-[#0eb59a] rounded-r-full"
+                />
+              )}
+              <item.icon size={17} className="shrink-0" />
+              <motion.span
+                animate={{ 
+                  opacity: isSidebarOpen ? 1 : 0, 
+                  width: isSidebarOpen ? 'auto' : 0 
+                }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden whitespace-nowrap text-sm font-bold"
+              >
+                {item.label}
               </motion.span>
             </motion.button>
-            {!isSidebarOpen && (
-              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-50 shadow-xl">
-                Logout
-                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-red-600" />
-              </div>
-            )}
-          </div>
-        </div>
+          ))}
+        </nav>
       </motion.aside>
 
-      {/* ══ MAIN ══ */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden md:ml-0">
+      {/* ── MAIN CONTENT ── */}
+      <div
+        className="flex flex-col min-h-screen overflow-x-hidden"
+        style={{
+          marginLeft: isSidebarOpen ? 260 : 68,
+          transition: 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)',
+        }}
+      >
 
         {/* ── HEADER ── */}
         <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-6 shrink-0 z-40 sticky top-0 shadow-sm">
-          {/* Left — hamburger */}
-          <div className="flex items-center gap-3">
-            <motion.button
-              whileHover={{ scale: 1.08, backgroundColor: '#f0fdf4' }}
-              whileTap={{ scale: 0.92 }}
-              onClick={() => { if (window.innerWidth < 768) setIsMobileMenuOpen(!isMobileMenuOpen); else setIsSidebarOpen(!isSidebarOpen); }}
-              className="p-2 rounded-xl border border-transparent hover:border-gray-200 text-gray-500 hover:text-[#134e40] transition-all duration-200"
-            >
-              <motion.div animate={{ rotate: isSidebarOpen ? 0 : 180 }} transition={{ duration: 0.3 }}>
-                <Menu size={20} />
-              </motion.div>
-            </motion.button>
-          </div>
+          {/* Left — branding spacer */}
+          <div className="flex items-center gap-3" />
 
           {/* Center — search */}
           <div className="flex-1 max-w-xl mx-4 sm:mx-6 hidden md:block">
@@ -580,7 +500,7 @@ const CompanyDashboard = () => {
         </header>
 
         {/* ── MAIN CONTENT ── */}
-        <main className="flex-1 overflow-y-auto bg-[#f8fafc] [&::-webkit-scrollbar]:hidden">
+        <main className="flex-1 overflow-y-auto bg-[#f4f7f5] [&::-webkit-scrollbar]:hidden">
 
           {/* LIGHT HERO BANNER */}
           <div className="relative overflow-hidden border-b border-teal-100/60"

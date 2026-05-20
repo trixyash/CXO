@@ -74,7 +74,7 @@ const ExpertDiscovery = () => {
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/company-dashboard' },
     { icon: FileText, label: 'My Requirements', path: '/requirements' },
-    { icon: Users, label: 'Experts', path: '/experts' },
+    { icon: Users, label: 'Experts', path: '/experts', active: true },
     { icon: CreditCard, label: 'Payments', path: '/payments' },
     { icon: BarChart2, label: 'Analytics', path: '/analytics' },
     { icon: ShieldCheck, label: 'PMO Services', path: '/pmo' },
@@ -372,14 +372,14 @@ const ExpertDiscovery = () => {
   return (
     <div className="min-h-screen bg-[#f4f7f5]" style={{ backgroundColor: '#f4f7f5' }}>
 
-      {/* ── SIDEBAR — same as Requirements.jsx ── */}
       <motion.aside
+        initial={{ width: 260 }}
         animate={{ width: isSidebarOpen ? 260 : 68 }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        className="bg-white border-r border-gray-100 flex flex-col z-50 shadow-sm fixed left-0 top-0 h-screen overflow-hidden"
+        className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed left-0 top-0 h-screen"
       >
         {/* Brand */}
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-50">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
           <div className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center shrink-0">
             <span className="text-white font-black text-sm">C</span>
           </div>
@@ -403,49 +403,50 @@ const ExpertDiscovery = () => {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-hidden">
           {isSidebarOpen && (
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-3">Main Menu</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2">Main Menu</p>
           )}
-          {navItems.map((item) => {
-            const isActive = item.path === '/experts';
-            return (
-              <motion.button
-                key={item.path}
-                whileHover={{ x: 2 }}
-                onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 relative ${
-                  isActive
-                    ? 'bg-[#134e40] text-white shadow-md'
-                    : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
-                }`}
+          {navItems.map((item) => (
+            <motion.button
+              key={item.path}
+              whileHover={{ x: 2, transition: { duration: 0.15 } }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate(item.path)}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${
+                item.active
+                  ? 'bg-[#134e40] text-white shadow-md'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
+              }`}
+            >
+              {item.active && (
+                <motion.div
+                  layoutId="activeNav"
+                  className="absolute left-0 top-1 bottom-1 w-0.5 bg-[#0eb59a] rounded-r-full"
+                />
+              )}
+              <item.icon size={17} className="shrink-0" />
+              <motion.span
+                animate={{ 
+                  opacity: isSidebarOpen ? 1 : 0, 
+                  width: isSidebarOpen ? 'auto' : 0 
+                }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden whitespace-nowrap text-sm font-bold"
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeNavBar"
-                    className="absolute left-0 top-1 bottom-1 w-0.5 bg-[#0eb59a] rounded-r-full"
-                  />
-                )}
-                <item.icon size={17} className="shrink-0" />
-                <motion.span
-                  animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden whitespace-nowrap text-sm font-bold"
-                >
-                  {item.label}
-                </motion.span>
-              </motion.button>
-            );
-          })}
+                {item.label}
+              </motion.span>
+            </motion.button>
+          ))}
         </nav>
       </motion.aside>
 
       {/* ── MAIN CONTENT ── */}
       <div
-        className="flex flex-col min-h-screen"
+        className="flex flex-col min-h-screen overflow-x-hidden"
         style={{
           marginLeft: isSidebarOpen ? 260 : 68,
-          transition: 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)'
+          transition: 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)',
         }}
       >
 

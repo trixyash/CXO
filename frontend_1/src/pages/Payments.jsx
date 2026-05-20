@@ -426,13 +426,16 @@ const Payments = () => {
           >
             {item.active && (
               <motion.div
-                layoutId="activeNavPayments"
+                layoutId="activeNav"
                 className="absolute left-0 top-1 bottom-1 w-0.5 bg-[#0eb59a] rounded-r-full"
               />
             )}
             <item.icon size={17} className="shrink-0" />
             <motion.span
-              animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
+              animate={{ 
+                opacity: isSidebarOpen ? 1 : 0, 
+                width: isSidebarOpen ? 'auto' : 0 
+              }}
               transition={{ duration: 0.2 }}
               className="overflow-hidden whitespace-nowrap text-sm font-bold"
             >
