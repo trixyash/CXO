@@ -110,6 +110,18 @@ const CompanyDashboard = () => {
   // Click outside listener for Mega Dropdown
   const gridRef = useRef(null);
   useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (gridRef.current && !gridRef.current.contains(event.target)) {
+        setGridOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
     const isDemo = localStorage.getItem('demo_company') === 'true';
 
     const checkAuthAndFetchProfile = async () => {
@@ -171,7 +183,6 @@ const CompanyDashboard = () => {
     { icon: Users, label: 'Experts', path: '/experts' },
     { icon: CreditCard, label: 'Payments', path: '/payments' },
     { icon: BarChart2, label: 'Analytics', path: '/analytics' },
-    { icon: ShieldCheck, label: 'PMO Services', path: '/pmo' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
@@ -359,53 +370,148 @@ const CompanyDashboard = () => {
               <AnimatePresence>
                 {gridOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute top-full right-0 mt-2 w-[520px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 z-50"
+                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                    transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                    className="absolute top-full right-0 mt-2 w-[400px] bg-white rounded-2xl z-50 overflow-hidden"
+                    style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.12)', border: '1px solid #F1F5F2' }}
                   >
-                    <div className="grid grid-cols-2 gap-6">
-                      {/* Left — Quick Actions */}
-                      <div>
-                        <p className="text-xs text-gray-400 font-semibold tracking-widest mb-3">QUICK ACTIONS</p>
-                        {[
-                          { icon: "🔍", bg: "bg-teal-50", label: "Find Experts", sub: "Browse CXO-level talent" },
-                          { icon: "📋", bg: "bg-green-50", label: "Post a Role", sub: "Create a new requirement" },
-                          { icon: "📁", bg: "bg-purple-50", label: "Contracts", sub: "Manage NDAs and agreements" },
-                          { icon: "💳", bg: "bg-orange-50", label: "Payments", sub: "Escrow and invoices" },
-                          { icon: "📊", bg: "bg-blue-50", label: "Analytics", sub: "Spend and ROI reports" },
-                          { icon: "🛡️", bg: "bg-indigo-50", label: "PMO Services", sub: "Governance and oversight" },
-                        ].map(item => (
-                          <div key={item.label} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-150">
-                            <div className={`w-9 h-9 ${item.bg} rounded-lg flex items-center justify-center text-base`}>{item.icon}</div>
-                            <div>
-                              <p className="text-sm font-semibold text-gray-800">{item.label}</p>
-                              <p className="text-xs text-gray-500">{item.sub}</p>
-                            </div>
+                    <div className="p-3 space-y-1">
+
+                      {/* Column Headers */}
+                      <div className="flex items-center justify-between px-2 pb-2">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Navigate</span>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Your Activity</span>
+                      </div>
+
+                      {/* Nav Rows */}
+                      {[
+                        {
+                          icon: FileText,
+                          label: 'My Requirements',
+                          iconBg: 'bg-teal-50',
+                          iconColor: 'text-[#0eb59a]',
+                          border: '#0eb59a',
+                          badge: '2 active',
+                          badgeStyle: 'text-teal-700 bg-teal-50 border-teal-200',
+                          path: '/requirements',
+                        },
+                        {
+                          icon: Users,
+                          label: 'Find Experts',
+                          iconBg: 'bg-blue-50',
+                          iconColor: 'text-blue-500',
+                          border: '#3B82F6',
+                          badge: '5 matched',
+                          badgeStyle: 'text-blue-700 bg-blue-50 border-blue-200',
+                          path: '/experts',
+                        },
+                        {
+                          icon: FileText,
+                          label: 'Contracts',
+                          iconBg: 'bg-purple-50',
+                          iconColor: 'text-purple-500',
+                          border: '#8B5CF6',
+                          badge: '1 pending',
+                          badgeStyle: 'text-amber-700 bg-amber-50 border-amber-200',
+                          path: '/contracts',
+                        },
+                        {
+                          icon: CreditCard,
+                          label: 'Payments',
+                          iconBg: 'bg-emerald-50',
+                          iconColor: 'text-emerald-500',
+                          border: '#10b981',
+                          badge: '₹4.2L spent',
+                          badgeStyle: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+                          path: '/payments',
+                        },
+                        {
+                          icon: BarChart2,
+                          label: 'Analytics',
+                          iconBg: 'bg-amber-50',
+                          iconColor: 'text-amber-500',
+                          border: '#F59E0B',
+                          badge: 'View Reports',
+                          badgeStyle: 'text-amber-700 bg-amber-50 border-amber-200',
+                          path: '/analytics',
+                        },
+                        {
+                          icon: Settings,
+                          label: 'Settings',
+                          iconBg: 'bg-gray-50',
+                          iconColor: 'text-gray-500',
+                          border: '#9CA3AF',
+                          badge: 'Profile & Billing',
+                          badgeStyle: 'text-gray-600 bg-gray-50 border-gray-200',
+                          path: '/settings',
+                        },
+                      ].map((item, idx) => (
+                        <motion.button
+                          key={idx}
+                          whileHover={{ x: 3, backgroundColor: '#FAFBF9', transition: { duration: 0.15 } }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => { navigate(item.path); setGridOpen(false); }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer text-left"
+                          style={{ borderLeft: `3px solid ${item.border}` }}
+                        >
+                          {/* Icon */}
+                          <div className={`w-7 h-7 ${item.iconBg} rounded-lg flex items-center justify-center shrink-0`}>
+                            <item.icon size={13} className={item.iconColor} />
                           </div>
+
+                          {/* Label */}
+                          <span className="flex-1 text-sm font-bold text-[#1C3627]">{item.label}</span>
+
+                          {/* Divider */}
+                          <div className="w-px h-4 bg-gray-100 shrink-0" />
+
+                          {/* Activity Badge */}
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border shrink-0 ${item.badgeStyle}`}>
+                            {item.badge}
+                          </span>
+                        </motion.button>
+                      ))}
+
+                      {/* Divider */}
+                      <div className="flex items-center gap-2 pt-2 pb-1 px-2">
+                        <div className="flex-1 h-px bg-gray-100" />
+                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Quick Create</span>
+                        <div className="flex-1 h-px bg-gray-100" />
+                      </div>
+
+                      {/* Quick Create Buttons */}
+                      <div className="flex gap-2 px-1 pb-1">
+                        {[
+                          {
+                            label: '+ Post a Role',
+                            path: '/requirements/create',
+                            style: 'border-[#0eb59a] text-[#0eb59a] hover:bg-[#0eb59a] hover:text-white',
+                          },
+                          {
+                            label: '+ Invite Expert',
+                            path: '/experts',
+                            style: 'border-blue-400 text-blue-500 hover:bg-blue-500 hover:text-white',
+                          },
+                          {
+                            label: '+ Add Funds',
+                            path: '/payments',
+                            style: 'border-amber-400 text-amber-500 hover:bg-amber-500 hover:text-white',
+                          },
+                        ].map((btn, idx) => (
+                          <motion.button
+                            key={idx}
+                            whileHover={{ scale: 1.04, transition: { duration: 0.15 } }}
+                            whileTap={{ scale: 0.96 }}
+                            onClick={() => { navigate(btn.path); setGridOpen(false); }}
+                            className={`flex-1 py-2 rounded-xl text-[11px] font-black border transition-all duration-200 ${btn.style}`}
+                          >
+                            {btn.label}
+                          </motion.button>
                         ))}
                       </div>
-                      {/* Right — Platform Highlights */}
-                      <div>
-                        <p className="text-xs text-gray-400 font-semibold tracking-widest mb-3">PLATFORM</p>
-                        {[
-                          { label: "AI Expert Matching", sub: "Find the right CXO in minutes" },
-                          { label: "Verified Profiles", sub: "All experts are background-checked" },
-                          { label: "Escrow Payments", sub: "Secure milestone-based releases" },
-                          { label: "E-Sign Contracts", sub: "Sign NDAs and agreements online" },
-                          { label: "PMO Oversight", sub: "Track all engagements in one place" },
-                          { label: "Dedicated Advisor", sub: "Get help scoping your requirements" },
-                        ].map(item => (
-                          <div key={item.label} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-150">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#0eb59a] flex-shrink-0" />
-                            <div>
-                              <p className="text-sm font-semibold text-gray-800">{item.label}</p>
-                              <p className="text-xs text-gray-500">{item.sub}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+
                     </div>
                   </motion.div>
                 )}

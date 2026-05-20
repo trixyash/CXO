@@ -77,7 +77,6 @@ const ExpertDiscovery = () => {
     { icon: Users, label: 'Experts', path: '/experts', active: true },
     { icon: CreditCard, label: 'Payments', path: '/payments' },
     { icon: BarChart2, label: 'Analytics', path: '/analytics' },
-    { icon: ShieldCheck, label: 'PMO Services', path: '/pmo' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 

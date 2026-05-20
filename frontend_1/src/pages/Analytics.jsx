@@ -1,60 +1,86 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
-  ChevronRight, BarChart2, TrendingUp, Users, Briefcase,
-  CreditCard, FileText, CheckCircle, Clock, AlertCircle,
-  ArrowUpRight, ArrowDownRight, Bell, Settings, ShieldCheck,
-  ChevronLeft, LayoutDashboard, Calendar, Target, Zap,
-  Star, Lock, Unlock, DollarSign, Activity, Filter,
-  Download, RefreshCw, Eye, Award, Layers
+  ChevronRight, BarChart2, Users, Briefcase, CreditCard,
+  FileText, CheckCircle, Clock, Bell, Settings, ChevronLeft,
+  LayoutDashboard, Target, Zap, Star, Lock, Unlock,
+  DollarSign, Activity, Download, Eye, Award, Layers,
+  TrendingUp, TrendingDown, AlertTriangle, Shield,
+  Clipboard, AlertCircle, CheckSquare, XCircle,
+  BarChart, PieChart, Flag, BookOpen
 } from 'lucide-react';
 
-// ── MINI BAR CHART ──
-const MiniBar = ({ value, max, color = '#0eb59a', delay = 0 }) => {
-  const pct = Math.round((value / max) * 100);
+// ── ANIMATED COUNTER ──
+const AnimatedNumber = ({ value, suffix = '' }) => {
+  const [display, setDisplay] = useState(0);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
+  useEffect(() => {
+    if (!inView) return;
+    const num = parseFloat(String(value).replace(/[^0-9.]/g, ''));
+    if (isNaN(num)) { setDisplay(value); return; }
+    let start = 0;
+    const inc = num / (1200 / 16);
+    const timer = setInterval(() => {
+      start += inc;
+      if (start >= num) { setDisplay(num); clearInterval(timer); }
+      else setDisplay(start);
+    }, 16);
+    return () => clearInterval(timer);
+  }, [inView, value]);
+  const fmt = typeof display === 'number'
+    ? (display % 1 === 0 ? Math.round(display) : display.toFixed(1))
+    : display;
+  return <span ref={ref}>{fmt}{suffix}</span>;
+};
+
+// ── SPARKLINE ──
+const Sparkline = ({ data, color = '#0eb59a', width = 64, height = 28 }) => {
+  const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
+  const pts = data.map((v, i) =>
+    `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 6) - 3}`
+  ).join(' ');
+  const lastPt = pts.split(' ').pop().split(',');
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.8, delay, ease: 'easeOut' }}
-          style={{ backgroundColor: color, height: '100%', borderRadius: '999px' }}
-        />
-      </div>
-      <span className="text-[10px] font-black text-gray-500 w-6 text-right">{pct}%</span>
-    </div>
+    <svg width={width} height={height} className="overflow-visible">
+      <defs>
+        <linearGradient id={`sg${color.replace(/[^a-z0-9]/gi,'')}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25"/>
+          <stop offset="100%" stopColor={color} stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      <motion.polyline points={pts} fill="none" stroke={color} strokeWidth="2"
+        strokeLinecap="round" strokeLinejoin="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ duration: 1.4, ease: 'easeOut' }} />
+      <motion.circle cx={lastPt[0]} cy={lastPt[1]} r="3" fill={color}
+        initial={{ scale: 0 }} animate={{ scale: 1 }}
+        transition={{ delay: 1.2, type: 'spring' }} />
+    </svg>
   );
 };
 
-// ── DONUT CHART (SVG) ──
-const DonutChart = ({ segments, size = 80, strokeWidth = 10 }) => {
-  const r = (size - strokeWidth) / 2;
-  const circ = 2 * Math.PI * r;
+// ── DONUT ──
+const DonutChart = ({ segments, size = 100, strokeWidth = 12 }) => {
+  const r = (size - strokeWidth) / 2, circ = 2 * Math.PI * r, center = size / 2;
   let offset = 0;
-  const center = size / 2;
   return (
     <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx={center} cy={center} r={r} fill="none" stroke="#F3F4F6" strokeWidth={strokeWidth} />
+      <circle cx={center} cy={center} r={r} fill="none" stroke="#F1F5F2" strokeWidth={strokeWidth} />
       {segments.map((seg, i) => {
-        const dash = (seg.value / 100) * circ;
-        const gap = circ - dash;
+        const dash = (seg.value / 100) * circ, gap = circ - dash;
         const el = (
-          <motion.circle
-            key={i}
-            cx={center} cy={center} r={r}
-            fill="none"
-            stroke={seg.color}
-            strokeWidth={strokeWidth}
+          <motion.circle key={i} cx={center} cy={center} r={r} fill="none"
+            stroke={seg.color} strokeWidth={strokeWidth}
             strokeDasharray={`${dash} ${gap}`}
-            strokeDashoffset={-offset * circ / 100}
+            strokeDashoffset={-(offset * circ / 100)}
             strokeLinecap="round"
             initial={{ strokeDasharray: `0 ${circ}` }}
             animate={{ strokeDasharray: `${dash} ${gap}` }}
-            transition={{ duration: 1, delay: i * 0.2, ease: 'easeOut' }}
-          />
+            transition={{ duration: 1.2, delay: i * 0.2, ease: 'easeOut' }} />
         );
         offset += seg.value;
         return el;
@@ -63,109 +89,113 @@ const DonutChart = ({ segments, size = 80, strokeWidth = 10 }) => {
   );
 };
 
-// ── SPARKLINE (SVG) ──
-const Sparkline = ({ data, color = '#0eb59a', width = 80, height = 32 }) => {
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * width;
-    const y = height - ((v - min) / range) * (height - 4) - 2;
-    return `${x},${y}`;
-  }).join(' ');
-  return (
-    <svg width={width} height={height} className="overflow-visible">
-      <motion.polyline
-        points={pts}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ duration: 1.2, ease: 'easeOut' }}
-      />
-    </svg>
-  );
+// ── PROGRESS BAR ──
+const ProgressBar = ({ value, color = '#0eb59a', delay = 0, thick = false }) => (
+  <div className={`w-full ${thick ? 'h-3' : 'h-2'} bg-gray-100 rounded-full overflow-hidden`}>
+    <motion.div initial={{ width: 0 }} animate={{ width: `${value}%` }}
+      transition={{ duration: 1, delay, ease: 'easeOut' }}
+      style={{ height: '100%', backgroundColor: color, borderRadius: '999px' }} />
+  </div>
+);
+
+// ── RISK BADGE ──
+const RiskBadge = ({ level }) => {
+  const map = {
+    High: 'text-red-700 bg-red-50 border-red-200',
+    Medium: 'text-amber-700 bg-amber-50 border-amber-200',
+    Low: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+  };
+  return <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border ${map[level]}`}>{level}</span>;
 };
+
+// ── STATUS BADGE ──
+const StatusBadge = ({ status }) => {
+  const ok = ['Released','Active','Completed','On Track','Compliant','Paid'];
+  const warn = ['In Progress','In Escrow','Shortlisted','At Risk','Review Needed','Pending'];
+  const cls = ok.includes(status)
+    ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+    : warn.includes(status)
+    ? 'text-amber-700 bg-amber-50 border-amber-200'
+    : 'text-gray-500 bg-gray-50 border-gray-200';
+  return <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border ${cls}`}>{status}</span>;
+};
+
+// ── SECTION HEADING ──
+const SectionHeading = ({ icon: Icon, label, iconBg = 'bg-teal-50', iconColor = 'text-[#0eb59a]' }) => (
+  <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 text-left">
+    <div className={`w-6 h-6 ${iconBg} rounded-lg flex items-center justify-center shrink-0`}>
+      <Icon size={13} className={iconColor} />
+    </div>
+    {label}
+  </h3>
+);
 
 const Analytics = () => {
   const navigate = useNavigate();
 
-  // ── Auth Guard ──
   useEffect(() => {
-    const checkAuth = async () => {
+    const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) navigate('/signin?role=company');
     };
-    checkAuth();
-    const { data: authListener } = supabase.auth.onAuthStateChange((_, session) => {
-      if (!session) navigate('/signin?role=company');
+    check();
+    const { data: l } = supabase.auth.onAuthStateChange((_, s) => {
+      if (!s) navigate('/signin?role=company');
     });
-    return () => authListener?.subscription?.unsubscribe();
+    return () => l?.subscription?.unsubscribe();
   }, [navigate]);
 
   const [activeTab, setActiveTab] = useState('Overview');
   const [activePeriod, setActivePeriod] = useState('3M');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [hoveredBar, setHoveredBar] = useState(null);
 
-  const tabs = ['Overview', 'Engagements', 'Experts', 'Payments', 'Requirements'];
+  const tabs = [
+    'Overview', 'Engagements', 'Experts',
+    'Spend Reports', 'Success Metrics',
+    'ROI Tracking', 'Risk Analysis', 'PMO Oversight',
+  ];
   const periods = ['1M', '3M', '6M', '1Y'];
 
+  // ── SIDEBAR — PMO Services REMOVED ──
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/company-dashboard' },
     { icon: FileText, label: 'My Requirements', path: '/requirements' },
     { icon: Users, label: 'Experts', path: '/experts' },
     { icon: CreditCard, label: 'Payments', path: '/payments' },
     { icon: BarChart2, label: 'Analytics', path: '/analytics', active: true },
-    { icon: ShieldCheck, label: 'PMO Services', path: '/pmo' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
-  const notifications = [
-    { id: 1, title: 'Analytics Report Ready', desc: 'Your Q1 2025 engagement report is available', time: '10 min ago', unread: true, color: 'bg-teal-500' },
-    { id: 2, title: 'Spend Alert', desc: 'Monthly spend is 80% of your budget', time: '2 hours ago', unread: true, color: 'bg-amber-500' },
-    { id: 3, title: 'Expert Match Rate Up', desc: 'Your match rate improved by 12% this month', time: '1 day ago', unread: false, color: 'bg-blue-505 font-bold' },
+  const appNotifs = [
+    { id: 1, title: 'Risk Alert: Budget Overrun', desc: 'Series B engagement is 12% over budget', time: '5 min ago', unread: true, color: 'bg-red-500' },
+    { id: 2, title: 'Milestone Overdue', desc: 'Investor Deck milestone is 3 days overdue', time: '2 hours ago', unread: true, color: 'bg-amber-500' },
+    { id: 3, title: 'PMO Report Ready', desc: 'Q1 2025 governance report is available', time: '1 day ago', unread: false, color: 'bg-teal-500' },
   ];
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const unreadCount = appNotifs.filter(n => n.unread).length;
 
-  // ── MOCK DATA ──
+  // ── DATA ──
   const kpis = [
-    { label: 'Active Engagements', value: '2', sub: '↑ 1 from last month', icon: Briefcase, iconBg: 'bg-teal-50', iconColor: 'text-[#0eb59a]', numColor: 'text-[#134e40]', border: 'border-l-[#0eb59a]', trend: 'up', spark: [1, 1, 2, 2, 2] },
-    { label: 'Experts Hired', value: '5', sub: '↑ 2 this quarter', icon: Users, iconBg: 'bg-blue-50', iconColor: 'text-blue-500', numColor: 'text-blue-700', border: 'border-l-blue-400', trend: 'up', spark: [2, 3, 3, 4, 5] },
-    { label: 'Total Spent', value: '₹11.5L', sub: '₹27L committed', icon: DollarSign, iconBg: 'bg-purple-50', iconColor: 'text-purple-500', numColor: 'text-purple-700', border: 'border-l-purple-400', trend: 'up', spark: [2, 4, 6, 9, 11.5] },
-    { label: 'Milestones Cleared', value: '4/8', sub: '50% completion rate', icon: CheckCircle, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-500', numColor: 'text-emerald-700', border: 'border-l-emerald-400', trend: 'up', spark: [1, 1, 2, 3, 4] },
-    { label: 'Avg Expert Rating', value: '4.9', sub: 'Across all engagements', icon: Star, iconBg: 'bg-amber-50', iconColor: 'text-amber-500', numColor: 'text-amber-700', border: 'border-l-amber-400', trend: 'stable', spark: [4.5, 4.7, 4.8, 4.9, 4.9] },
-    { label: 'Open Requirements', value: '3', sub: '1 pending review', icon: FileText, iconBg: 'bg-rose-50', iconColor: 'text-rose-500', numColor: 'text-rose-700', border: 'border-l-rose-400', trend: 'stable', spark: [2, 3, 3, 4, 3] },
+    { label: 'Active Engagements', value: '2', sub: '+1 from last month', icon: Briefcase, iconBg: 'bg-teal-50', iconColor: 'text-[#0eb59a]', numColor: 'text-[#134e40]', border: 'border-l-[#0eb59a]', spark: [1,1,2,2,2], sparkColor: '#0eb59a', trend: 'up' },
+    { label: 'Experts Hired', value: '5', sub: '+2 this quarter', icon: Users, iconBg: 'bg-blue-50', iconColor: 'text-blue-500', numColor: 'text-blue-700', border: 'border-l-blue-400', spark: [2,3,3,4,5], sparkColor: '#3B82F6', trend: 'up' },
+    { label: 'Total Spent', value: '₹11.5L', sub: '₹27L committed', icon: DollarSign, iconBg: 'bg-purple-50', iconColor: 'text-purple-500', numColor: 'text-purple-700', border: 'border-l-purple-400', spark: [2,4,6,9,11.5], sparkColor: '#8B5CF6', trend: 'up' },
+    { label: 'Milestones Done', value: '4/8', sub: '50% completion', icon: CheckCircle, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-500', numColor: 'text-emerald-700', border: 'border-l-emerald-400', spark: [1,1,2,3,4], sparkColor: '#10b981', trend: 'up' },
+    { label: 'Expert Rating', value: '4.9★', sub: 'Across all engagements', icon: Star, iconBg: 'bg-amber-50', iconColor: 'text-amber-500', numColor: 'text-amber-700', border: 'border-l-amber-400', spark: [4.5,4.7,4.8,4.9,4.9], sparkColor: '#F59E0B', trend: 'stable' },
+    { label: 'Open Requirements', value: '3', sub: '1 pending review', icon: FileText, iconBg: 'bg-rose-50', iconColor: 'text-rose-500', numColor: 'text-rose-700', border: 'border-l-rose-400', spark: [2,3,3,4,3], sparkColor: '#F43F5E', trend: 'stable' },
   ];
 
-  const engagementData = [
-    { month: 'Jan', value: 0 },
-    { month: 'Feb', value: 1 },
-    { month: 'Mar', value: 1 },
-    { month: 'Apr', value: 2 },
-    { month: 'May', value: 2 },
-    { month: 'Jun', value: 2 },
+  const engagementChartData = [
+    { month: 'Jan', value: 0 }, { month: 'Feb', value: 1 },
+    { month: 'Mar', value: 1 }, { month: 'Apr', value: 2 },
+    { month: 'May', value: 2 }, { month: 'Jun', value: 2 },
   ];
   const maxEng = 3;
 
-  const spendData = [
-    { month: 'Feb', amount: 350, label: '₹3.5L' },
-    { month: 'Mar', amount: 200, label: '₹2L' },
-    { month: 'Apr', amount: 400, label: '₹4L' },
-    { month: 'May', amount: 200, label: '₹2L' },
-    { month: 'Jun', amount: 0, label: '—' },
-  ];
-  const maxSpend = 500;
-
-  const expertsByRole = [
-    { role: 'Interim CFO', count: 1, color: '#0eb59a' },
-    { role: 'Fractional CMO', count: 1, color: '#3B82F6' },
-    { role: 'VP Engineering', count: 1, color: '#8B5CF6' },
-    { role: 'Advisory COO', count: 1, color: '#F59E0B' },
-    { role: 'Fractional CTO', count: 1, color: '#EF4444' },
+  const paymentBreakdown = [
+    { label: 'Released', value: 43, color: '#10b981' },
+    { label: 'In Escrow', value: 22, color: '#f59e0b' },
+    { label: 'Committed', value: 35, color: '#6366f1' },
   ];
 
   const requirementsFunnel = [
@@ -176,23 +206,25 @@ const Analytics = () => {
     { stage: 'Completed', value: 1, color: '#F59E0B' },
   ];
 
-  const paymentBreakdown = [
-    { label: 'Released', value: 43, color: '#10b981' },
-    { label: 'In Escrow', value: 22, color: '#f59e0b' },
-    { label: 'Committed', value: 35, color: '#6366f1' },
+  const expertsByRole = [
+    { role: 'Interim CFO', count: 1, color: '#0eb59a' },
+    { role: 'Fractional CMO', count: 1, color: '#3B82F6' },
+    { role: 'VP Engineering', count: 1, color: '#8B5CF6' },
+    { role: 'Advisory COO', count: 1, color: '#F59E0B' },
+    { role: 'Fractional CTO', count: 1, color: '#EF4444' },
   ];
 
   const engagementsList = [
-    { title: 'Series B Funding Strategy', expert: 'David Chen', role: 'Interim CFO', progress: 65, status: 'In Progress', spend: '₹9L', budget: '₹18L', rating: 5.0, milestones: '3/5', color: '#0eb59a' },
-    { title: 'Go-to-Market Expansion', expert: 'Sarah Jenkins', role: 'Fractional CMO', progress: 75, status: 'In Progress', spend: '₹5.5L', budget: '₹9L', rating: 4.9, milestones: '2/3', color: '#3B82F6' },
-    { title: 'Tech Infrastructure Scale', expert: 'Priya Patel', role: 'VP Engineering', progress: 0, status: 'Under Review', spend: '₹0', budget: '₹7.2L', rating: null, milestones: '0/4', color: '#8B5CF6' },
+    { title: 'Series B Funding Strategy', expert: 'David Chen', role: 'Interim CFO', progress: 65, status: 'In Progress', spend: '₹9L', budget: '₹18L', rating: 5.0, milestones: '3/5', color: '#0eb59a', avatar: 'https://i.pravatar.cc/150?u=david' },
+    { title: 'Go-to-Market Expansion', expert: 'Sarah Jenkins', role: 'Fractional CMO', progress: 75, status: 'In Progress', spend: '₹5.5L', budget: '₹9L', rating: 4.9, milestones: '2/3', color: '#3B82F6', avatar: 'https://i.pravatar.cc/150?u=sarah' },
+    { title: 'Tech Infrastructure Scale', expert: 'Priya Patel', role: 'VP Engineering', progress: 0, status: 'Under Review', spend: '₹0', budget: '₹7.2L', rating: null, milestones: '0/4', color: '#8B5CF6', avatar: 'https://i.pravatar.cc/150?u=priya' },
   ];
 
   const expertsList = [
-    { name: 'David Chen', role: 'Interim CFO', avatar: 'https://i.pravatar.cc/150?u=david', rating: 5.0, engagements: 1, spend: '₹9L', status: 'Active', match: 95 },
-    { name: 'Sarah Jenkins', role: 'Fractional CMO', avatar: 'https://i.pravatar.cc/150?u=sarah', rating: 4.9, engagements: 1, spend: '₹5.5L', status: 'Active', match: 98 },
-    { name: 'Priya Patel', role: 'VP Engineering', avatar: 'https://i.pravatar.cc/150?u=priya', rating: 4.8, engagements: 0, spend: '₹0', status: 'Shortlisted', match: 92 },
-    { name: 'Marcus Johnson', role: 'Interim COO', avatar: 'https://i.pravatar.cc/150?u=marcus', rating: 4.7, engagements: 1, spend: '₹4.5L', status: 'Completed', match: 88 },
+    { name: 'David Chen', role: 'Interim CFO', avatar: 'https://i.pravatar.cc/150?u=david', rating: 5.0, spend: '₹9L', status: 'Active', match: 95 },
+    { name: 'Sarah Jenkins', role: 'Fractional CMO', avatar: 'https://i.pravatar.cc/150?u=sarah', rating: 4.9, spend: '₹5.5L', status: 'Active', match: 98 },
+    { name: 'Priya Patel', role: 'VP Engineering', avatar: 'https://i.pravatar.cc/150?u=priya', rating: 4.8, spend: '₹0', status: 'Shortlisted', match: 92 },
+    { name: 'Marcus Johnson', role: 'Interim COO', avatar: 'https://i.pravatar.cc/150?u=marcus', rating: 4.7, spend: '₹4.5L', status: 'Completed', match: 88 },
   ];
 
   const requirementsList = [
@@ -210,23 +242,160 @@ const Analytics = () => {
     { milestone: 'Campaign Launch', engagement: 'GTM Expansion', amount: '₹3,50,000', date: '—', status: 'Locked' },
   ];
 
-  const statusColor = (s) => {
-    if (s === 'Released' || s === 'Active' || s === 'Completed') return 'text-emerald-600 bg-emerald-50 border-emerald-200';
-    if (s === 'In Escrow' || s === 'In Progress' || s === 'Shortlisted') return 'text-amber-600 bg-amber-50 border-amber-200';
-    if (s === 'Locked' || s === 'Under Review' || s === 'Draft') return 'text-gray-400 bg-gray-50 border-gray-200';
-    return 'text-gray-400 bg-gray-50 border-gray-200';
-  };
+  // ── SPEND REPORTS ──
+  const spendByCategory = [
+    { category: 'CFO / Finance', amount: 9.0, budget: 18.0, color: '#0eb59a', pct: 50 },
+    { category: 'CMO / Marketing', amount: 5.5, budget: 9.0, color: '#3B82F6', pct: 61 },
+    { category: 'COO / Operations', amount: 4.5, budget: 4.5, color: '#8B5CF6', pct: 100 },
+    { category: 'CTO / Engineering', amount: 0, budget: 7.2, color: '#F59E0B', pct: 0 },
+  ];
+  const monthlySpend = [
+    { month: 'Jan', amount: 0 }, { month: 'Feb', amount: 350 },
+    { month: 'Mar', amount: 200 }, { month: 'Apr', amount: 400 },
+    { month: 'May', amount: 200 }, { month: 'Jun', amount: 0 },
+  ];
+  const maxMonthly = 500;
+  const invoiceSummary = [
+    { id: 'INV-001', desc: 'Discovery & Assessment', expert: 'David Chen', amount: '₹1,50,000', date: 'Feb 25', status: 'Paid' },
+    { id: 'INV-002', desc: 'Financial Model Development', expert: 'David Chen', amount: '₹2,00,000', date: 'Mar 28', status: 'Paid' },
+    { id: 'INV-003', desc: 'Campaign Strategy Launch', expert: 'Sarah Jenkins', amount: '₹1,50,000', date: 'Apr 1', status: 'Paid' },
+    { id: 'INV-004', desc: 'Investor Deck & Data Room', expert: 'David Chen', amount: '₹2,50,000', date: 'Pending', status: 'Pending' },
+    { id: 'INV-005', desc: 'Go-to-Market Campaign', expert: 'Sarah Jenkins', amount: '₹3,50,000', date: 'Locked', status: 'Locked' },
+  ];
+
+  // ── SUCCESS METRICS ──
+  const successKpis = [
+    { label: 'On-Time Delivery', value: 88, icon: Clock, color: '#0eb59a', bg: 'bg-teal-50', border: 'border-l-[#0eb59a]', sub: '7 of 8 milestones on time' },
+    { label: 'Milestone Hit Rate', value: 75, icon: Target, color: '#3B82F6', bg: 'bg-blue-50', border: 'border-l-blue-400', sub: '6 of 8 fully approved' },
+    { label: 'Quality Score', value: 92, icon: Award, color: '#8B5CF6', bg: 'bg-purple-50', border: 'border-l-purple-400', sub: 'Avg across all deliverables' },
+    { label: 'Expert Satisfaction', value: 96, icon: Star, color: '#F59E0B', bg: 'bg-amber-50', border: 'border-l-amber-400', sub: 'Post-milestone surveys' },
+  ];
+  const milestonePerformance = [
+    { title: 'Discovery & Assessment', engagement: 'Series B', expert: 'David Chen', status: 'Completed', quality: 95, onTime: true, date: 'Feb 25, 2025' },
+    { title: 'Financial Model Dev', engagement: 'Series B', expert: 'David Chen', status: 'Completed', quality: 98, onTime: true, date: 'Mar 28, 2025' },
+    { title: 'Campaign Strategy', engagement: 'GTM Expansion', expert: 'Sarah Jenkins', status: 'Completed', quality: 92, onTime: true, date: 'Apr 1, 2025' },
+    { title: 'Market Analysis', engagement: 'GTM Expansion', expert: 'Sarah Jenkins', status: 'Completed', quality: 89, onTime: false, date: 'Apr 18, 2025' },
+    { title: 'Investor Deck', engagement: 'Series B', expert: 'David Chen', status: 'Overdue', quality: null, onTime: false, date: 'May 15, 2025' },
+  ];
+  const expertPerformance = [
+    { name: 'David Chen', role: 'Interim CFO', avatar: 'https://i.pravatar.cc/150?u=david', deliveryScore: 96, qualityScore: 97, communicationScore: 95, overallScore: 96, trend: 'up' },
+    { name: 'Sarah Jenkins', role: 'Fractional CMO', avatar: 'https://i.pravatar.cc/150?u=sarah', deliveryScore: 90, qualityScore: 92, communicationScore: 98, overallScore: 93, trend: 'up' },
+    { name: 'Marcus Johnson', role: 'Interim COO', avatar: 'https://i.pravatar.cc/150?u=marcus', deliveryScore: 85, qualityScore: 88, communicationScore: 87, overallScore: 87, trend: 'stable' },
+  ];
+
+  // ── ROI TRACKING ──
+  const roiEngagements = [
+    { title: 'Series B Funding Strategy', expert: 'David Chen', cost: '₹9L', valueDelivered: '₹45L', roi: 400, period: '4 months', status: 'In Progress', color: '#0eb59a', costNum: 9, valueNum: 45 },
+    { title: 'Go-to-Market Expansion', expert: 'Sarah Jenkins', cost: '₹5.5L', valueDelivered: '₹18L', roi: 227, period: '3 months', status: 'In Progress', color: '#3B82F6', costNum: 5.5, valueNum: 18 },
+    { title: 'Operations Restructuring', expert: 'Marcus Johnson', cost: '₹4.5L', valueDelivered: '₹12L', roi: 167, period: '2 months', status: 'Completed', color: '#8B5CF6', costNum: 4.5, valueNum: 12 },
+  ];
+  const roiBreakdown = [
+    { label: 'Revenue Impact', value: 45, color: '#0eb59a' },
+    { label: 'Cost Savings', value: 30, color: '#3B82F6' },
+    { label: 'Efficiency Gains', value: 15, color: '#8B5CF6' },
+    { label: 'Risk Mitigation', value: 10, color: '#F59E0B' },
+  ];
+
+  // ── RISK ANALYSIS ──
+  const riskSummary = [
+    { label: 'High Risk Items', value: '2', icon: AlertTriangle, bg: 'bg-red-50', color: 'text-red-500', border: 'border-l-red-400', sub: 'Immediate attention' },
+    { label: 'Medium Risk Items', value: '3', icon: AlertCircle, bg: 'bg-amber-50', color: 'text-amber-500', border: 'border-l-amber-400', sub: 'Monitor closely' },
+    { label: 'Budget Overruns', value: '1', icon: DollarSign, bg: 'bg-rose-50', color: 'text-rose-500', border: 'border-l-rose-400', sub: 'Ops engagement' },
+    { label: 'Overdue Milestones', value: '1', icon: Clock, bg: 'bg-orange-50', color: 'text-orange-500', border: 'border-l-orange-400', sub: 'Investor Deck — 3 days' },
+  ];
+  const riskItems = [
+    { title: 'Investor Deck Milestone Overdue', engagement: 'Series B Funding', severity: 'High', type: 'Delivery', impact: 'Fundraising timeline at risk', recommendation: 'Escalate to expert immediately', date: 'May 18, 2025', icon: Clock },
+    { title: 'Operations Budget 100% Utilised', engagement: 'Ops Restructuring', severity: 'High', type: 'Budget', impact: 'No buffer for revisions', recommendation: 'Review scope or increase budget', date: 'May 15, 2025', icon: DollarSign },
+    { title: 'VP Engineering Engagement Stalled', engagement: 'Tech Infrastructure', severity: 'Medium', type: 'Progress', impact: 'No milestones after 4 weeks', recommendation: 'Schedule kickoff call', date: 'May 10, 2025', icon: AlertCircle },
+    { title: 'CMO Contract Renewal Due', engagement: 'GTM Expansion', severity: 'Medium', type: 'Contract', impact: 'Engagement expires in 2 weeks', recommendation: 'Initiate renewal or replacement', date: 'May 8, 2025', icon: FileText },
+    { title: 'Low Expert Communication', engagement: 'Series B Funding', severity: 'Low', type: 'Communication', impact: 'No update in 7 days', recommendation: 'Request weekly check-in', date: 'May 5, 2025', icon: Flag },
+  ];
+  const budgetHealth = [
+    { engagement: 'Series B Funding', spent: 9, budget: 18, risk: 'Low', color: '#0eb59a' },
+    { engagement: 'GTM Expansion', spent: 5.5, budget: 9, risk: 'Medium', color: '#F59E0B' },
+    { engagement: 'Ops Restructuring', spent: 4.5, budget: 4.5, risk: 'High', color: '#EF4444' },
+    { engagement: 'Tech Infrastructure', spent: 0, budget: 7.2, risk: 'Low', color: '#0eb59a' },
+  ];
+
+  // ── PMO OVERSIGHT ──
+  const pmoHealth = [
+    { label: 'Overall PMO Score', value: 87, icon: Shield, color: '#0eb59a', bg: 'bg-teal-50', border: 'border-l-[#0eb59a]', sub: 'Above industry benchmark 72%' },
+    { label: 'SLA Adherence', value: 92, icon: CheckSquare, color: '#3B82F6', bg: 'bg-blue-50', border: 'border-l-blue-400', sub: '11 of 12 SLAs met' },
+    { label: 'Governance Score', value: 84, icon: BookOpen, color: '#8B5CF6', bg: 'bg-purple-50', border: 'border-l-purple-400', sub: 'All contracts compliant' },
+    { label: 'Audit Readiness', value: 95, icon: Clipboard, color: '#F59E0B', bg: 'bg-amber-50', border: 'border-l-amber-400', sub: 'Documentation current' },
+  ];
+  const governanceChecklist = [
+    { item: 'NDA Signed — All Experts', status: 'Compliant', date: 'Feb 2025', priority: 'Critical' },
+    { item: 'Master Service Agreements', status: 'Compliant', date: 'Feb 2025', priority: 'Critical' },
+    { item: 'Milestone Approval Process', status: 'Compliant', date: 'Ongoing', priority: 'High' },
+    { item: 'Escrow Fund Management', status: 'Compliant', date: 'Ongoing', priority: 'Critical' },
+    { item: 'Monthly PMO Report', status: 'Review Needed', date: 'May 2025', priority: 'High' },
+    { item: 'Expert Background Verification', status: 'Compliant', date: 'Feb 2025', priority: 'High' },
+    { item: 'IP Protection Clauses', status: 'Compliant', date: 'Feb 2025', priority: 'Critical' },
+    { item: 'Termination Clause Review', status: 'Review Needed', date: 'Jun 2025', priority: 'Medium' },
+  ];
+  const slaTracking = [
+    { metric: 'Expert Response Time', target: '< 4 hours', actual: '2.3 hours', status: 'On Track', pct: 95 },
+    { metric: 'Milestone Delivery Window', target: '± 2 days', actual: '± 1.4 days', status: 'On Track', pct: 90 },
+    { metric: 'Payment Processing', target: '< 24 hours', actual: '18 hours', status: 'On Track', pct: 88 },
+    { metric: 'Issue Resolution', target: '< 48 hours', actual: '52 hours', status: 'At Risk', pct: 60 },
+    { metric: 'Monthly Reporting', target: 'By 5th of month', actual: 'Pending', status: 'Pending', pct: 40 },
+  ];
+  const auditTrail = [
+    { action: 'Escrow Payment Released', user: 'Arjun Mehta', amount: '₹2,00,000', timestamp: 'Mar 28, 2025 · 14:32', type: 'Payment' },
+    { action: 'Contract Signed — GTM Expansion', user: 'Priya Sharma', amount: '—', timestamp: 'Feb 25, 2025 · 10:15', type: 'Contract' },
+    { action: 'Expert Invited — Sarah Jenkins', user: 'Arjun Mehta', amount: '—', timestamp: 'Feb 20, 2025 · 09:00', type: 'Engagement' },
+    { action: 'Funds Added to Escrow', user: 'Rohan Desai', amount: '₹9,00,000', timestamp: 'Feb 1, 2025 · 11:45', type: 'Payment' },
+    { action: 'NDA Executed — David Chen', user: 'Arjun Mehta', amount: '—', timestamp: 'Jan 28, 2025 · 16:20', type: 'Compliance' },
+  ];
 
   const handleExport = () => {
-    const content = `CXO CONNECT — ANALYTICS REPORT\n${'='.repeat(40)}\nGenerated: ${new Date().toLocaleDateString()}\n\nKEY METRICS\nActive Engagements: 2\nExperts Hired: 5\nTotal Spent: ₹11.5L\nMilestones Cleared: 4/8\nAvg Expert Rating: 4.9\n\n${'='.repeat(40)}\nGenerated by CXO Connect Platform`;
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([
+      `CXO CONNECT — FULL ANALYTICS REPORT\nGenerated: ${new Date().toLocaleDateString()}\n\n` +
+      `OVERVIEW\nActive Engagements: 2\nExperts: 5\nTotal Spent: ₹11.5L\nMilestones: 4/8\n\n` +
+      `ROI\nTotal Cost: ₹19L\nValue Delivered: ₹75L\nBlended ROI: 295%\n\n` +
+      `RISK\nHigh: 2 | Medium: 3 | Budget Overruns: 1\n\nPMO SCORE: 87%`
+    ], { type: 'text/plain' });
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'CXOConnect_Analytics.txt';
+    a.href = URL.createObjectURL(blob);
+    a.download = 'CXOConnect_FullAnalytics.txt';
     a.click();
-    URL.revokeObjectURL(url);
   };
+
+  // ── REUSABLE CARD WRAPPER ──
+  const Card = ({ children, className = '' }) => (
+    <div className={`bg-white rounded-2xl ${className}`} style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+      {children}
+    </div>
+  );
+
+  // ── KPI STRIP (reused in multiple tabs) ──
+  const KpiStrip = ({ items }) => (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {items.map((s, idx) => (
+        <motion.div key={idx}
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: idx * 0.06 }}
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          className={`bg-white rounded-2xl p-5 border-l-4 ${s.border} cursor-default`}
+          style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+          {s.icon && (
+            <div className={`w-8 h-8 ${s.bg || 'bg-gray-50'} rounded-xl flex items-center justify-center mb-3`}>
+              <s.icon size={15} className={s.iconColor || 'text-gray-400'} />
+            </div>
+          )}
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">{s.label}</p>
+          <p className={`${s.large ? 'text-3xl' : 'text-2xl'} font-black ${s.numColor} mb-1`}>{s.value}</p>
+          {s.sub && <p className="text-[10px] text-gray-400">{s.sub}</p>}
+          {s.progress !== undefined && (
+            <div className="mt-3">
+              <ProgressBar value={s.progress} color={s.progressColor || '#0eb59a'} delay={0.3 + idx * 0.1} />
+            </div>
+          )}
+        </motion.div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#f4f7f5]">
@@ -235,61 +404,35 @@ const Analytics = () => {
       <motion.aside
         initial={{ width: 260 }}
         animate={{ width: isSidebarOpen ? 260 : 68 }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.3, ease: [0.4,0,0.2,1] }}
         className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed left-0 top-0 h-screen"
       >
         <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
           <div className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center shrink-0">
             <span className="text-white font-black text-sm">C</span>
           </div>
-          <motion.div
-            animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden whitespace-nowrap"
-          >
+          <motion.div animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }} transition={{ duration: 0.2 }} className="overflow-hidden whitespace-nowrap">
             <p className="text-[#134e40] font-black text-sm leading-none">CXO Connect</p>
             <p className="text-gray-400 text-[10px] mt-0.5">Company Portal</p>
           </motion.div>
-          <motion.button
-            animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}
+          <motion.button animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}
             whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:text-[#134e40] hover:bg-gray-100 transition-all shrink-0"
-          >
+            className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:text-[#134e40] hover:bg-gray-100 transition-all shrink-0">
             {isSidebarOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
           </motion.button>
         </div>
         <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-hidden">
-          {isSidebarOpen && (
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2">Main Menu</p>
-          )}
+          {isSidebarOpen && <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2">Main Menu</p>}
           {navItems.map((item) => (
-            <motion.button
-              key={item.path}
+            <motion.button key={item.path}
               whileHover={{ x: 2, transition: { duration: 0.15 } }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${
-                item.active
-                  ? 'bg-[#134e40] text-white shadow-md'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
-              }`}
-            >
-              {item.active && (
-                <motion.div
-                  layoutId="activeNav"
-                  className="absolute left-0 top-1 bottom-1 w-0.5 bg-[#0eb59a] rounded-r-full"
-                />
-              )}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${item.active ? 'bg-[#134e40] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'}`}>
+              {item.active && <motion.div layoutId="activeNav" className="absolute left-0 top-1 bottom-1 w-0.5 bg-[#0eb59a] rounded-r-full" />}
               <item.icon size={17} className="shrink-0" />
-              <motion.span
-                animate={{ 
-                  opacity: isSidebarOpen ? 1 : 0, 
-                  width: isSidebarOpen ? 'auto' : 0 
-                }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden whitespace-nowrap text-sm font-bold"
-              >
+              <motion.span animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }} transition={{ duration: 0.2 }} className="overflow-hidden whitespace-nowrap text-sm font-bold">
                 {item.label}
               </motion.span>
             </motion.button>
@@ -297,66 +440,41 @@ const Analytics = () => {
         </nav>
       </motion.aside>
 
-      {/* ── MAIN CONTENT ── */}
-      <div
-        className="flex flex-col min-h-screen overflow-x-hidden"
-        style={{
-          marginLeft: isSidebarOpen ? 260 : 68,
-          transition: 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)',
-        }}
-      >
+      {/* ── MAIN ── */}
+      <div className="flex flex-col min-h-screen overflow-x-hidden"
+        style={{ marginLeft: isSidebarOpen ? 260 : 68, transition: 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)' }}>
 
         {/* ── HEADER ── */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm px-6 py-3 flex items-center gap-4">
+        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm px-6 py-3 flex items-center gap-4">
           <div className="flex items-center gap-1.5 text-xs text-gray-400 flex-1">
             <button onClick={() => navigate('/company-dashboard')} className="hover:text-[#134e40] font-semibold transition-colors">Dashboard</button>
             <ChevronRight size={12} className="text-gray-300" />
             <span className="text-[#134e40] font-bold">Analytics</span>
           </div>
-
           <div className="flex items-center gap-3">
-            {/* Period selector */}
-            <div className="hidden md:flex gap-1 bg-gray-50 rounded-xl p-1 border border-gray-200">
+            <div className="hidden md:flex gap-0.5 bg-gray-50 rounded-xl p-1 border border-gray-100">
               {periods.map(p => (
-                <motion.button
-                  key={p}
-                  whileHover={{ scale: 1.08, transition: { duration: 0.15 } }}
-                  whileTap={{ scale: 0.92 }}
+                <motion.button key={p} whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}
                   onClick={() => setActivePeriod(p)}
-                  className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
-                    activePeriod === p ? 'bg-[#134e40] text-white shadow-sm' : 'text-gray-500 hover:text-[#134e40] hover:bg-white'
-                  }`}
-                >
+                  className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${activePeriod === p ? 'bg-[#134e40] text-white shadow-sm' : 'text-gray-500 hover:text-[#134e40]'}`}>
                   {p}
                 </motion.button>
               ))}
             </div>
-
-            {/* Export */}
-            <motion.button
-              whileHover={{ scale: 1.04, boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
-              whileTap={{ scale: 0.96 }}
+            <motion.button whileHover={{ scale: 1.04, y: -1 }} whileTap={{ scale: 0.96 }}
               onClick={handleExport}
-              className="hidden md:flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-50 hover:text-[#0eb59a] hover:border-[#0eb59a]/30 transition-all"
-              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
-            >
+              className="hidden md:flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-bold rounded-xl hover:border-[#0eb59a]/40 hover:text-[#0eb59a] transition-all"
+              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
               <Download size={13} /> Export
             </motion.button>
-
-            {/* Bell */}
             <div className="relative">
-              <motion.button
-                whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
+              <motion.button whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-500 hover:text-[#134e40] hover:bg-gray-100 transition-all relative"
-              >
+                className="w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-500 hover:text-[#134e40] hover:bg-gray-100 transition-all relative">
                 <Bell size={17} />
                 {unreadCount > 0 && (
-                  <motion.span
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center"
-                  >
+                  <motion.span animate={{ scale: [1,1.3,1] }} transition={{ duration: 2, repeat: Infinity }}
+                    className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
                     {unreadCount}
                   </motion.span>
                 )}
@@ -366,406 +484,291 @@ const Analytics = () => {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
                     <motion.div
-                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute right-0 top-11 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden"
-                    >
+                      initial={{ opacity: 0, y: -8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.95 }} transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-11 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
                       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
-                        <h4 className="font-black text-[#1C3627] text-sm text-left">Notifications</h4>
+                        <h4 className="font-black text-[#1C3627] text-sm">Notifications</h4>
                         <span className="text-[10px] font-bold text-[#0eb59a] cursor-pointer">Mark all read</span>
                       </div>
-                      {notifications.map((notif, idx) => (
-                        <motion.div
-                          key={notif.id}
-                          initial={{ opacity: 0, x: -8 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.05 }}
-                          className={`flex items-start gap-3 px-4 py-3 cursor-pointer border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors ${notif.unread ? 'bg-teal-50/20' : ''}`}
-                        >
-                          <div className={`w-8 h-8 bg-teal-500 rounded-xl flex items-center justify-center shrink-0`}>
+                      {appNotifs.map((n, i) => (
+                        <motion.div key={n.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                          className={`flex items-start gap-3 px-4 py-3 cursor-pointer border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors ${n.unread ? 'bg-teal-50/20' : ''}`}>
+                          <div className={`w-8 h-8 ${n.color} rounded-xl flex items-center justify-center shrink-0`}>
                             <Bell size={13} className="text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-black text-[#1C3627] mb-0.5 text-left">{notif.title}</p>
-                            <p className="text-[11px] text-gray-500 text-left">{notif.desc}</p>
-                            <p className="text-[10px] text-gray-400 mt-1 text-left">{notif.time}</p>
+                            <p className="text-xs font-black text-[#1C3627] mb-0.5 text-left">{n.title}</p>
+                            <p className="text-[11px] text-gray-500 text-left">{n.desc}</p>
+                            <p className="text-[10px] text-gray-400 mt-0.5 text-left">{n.time}</p>
                           </div>
-                          {notif.unread && <div className="w-2 h-2 bg-[#0eb59a] rounded-full shrink-0 mt-1" />}
+                          {n.unread && <div className="w-2 h-2 bg-[#0eb59a] rounded-full shrink-0 mt-1" />}
                         </motion.div>
                       ))}
-                      <div className="px-4 py-3 border-t border-gray-50 text-center">
-                        <button className="text-xs font-bold text-[#0eb59a] hover:text-[#134e40] transition-colors">View all notifications →</button>
+                      <div className="px-4 py-3 text-center border-t border-gray-50">
+                        <button className="text-xs font-bold text-[#0eb59a] hover:text-[#134e40] transition-colors">View all →</button>
                       </div>
                     </motion.div>
                   </>
                 )}
               </AnimatePresence>
             </div>
-
             <button className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center text-white text-xs font-black hover:ring-2 hover:ring-[#0eb59a] hover:ring-offset-2 transition-all">
               AC
             </button>
           </div>
         </header>
 
-        {/* ── PAGE BODY ── */}
+        {/* ── BODY ── */}
         <div className="flex-1 px-6 py-5 pb-16 overflow-x-hidden space-y-5">
 
-          {/* ── TABS ── */}
-          <div className="flex gap-1 bg-white rounded-2xl p-1 w-fit overflow-x-auto [&::-webkit-scrollbar]:hidden"
-            style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-            {tabs.map(tab => (
-              <motion.button
-                key={tab}
-                whileHover={{ scale: 1.03, transition: { duration: 0.15 } }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                  activeTab === tab
-                    ? 'bg-[#134e40] text-white shadow-md'
-                    : 'text-gray-500 hover:text-[#134e40] hover:bg-gray-50'
-                }`}
-              >
-                {tab}
-              </motion.button>
-            ))}
+          {/* TABS — scrollable */}
+          <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden pb-1">
+            <div className="flex gap-1 bg-white rounded-2xl p-1 w-fit" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+              {tabs.map(tab => (
+                <motion.button key={tab} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all relative whitespace-nowrap shrink-0 ${activeTab === tab ? 'text-white' : 'text-gray-500 hover:text-[#134e40] hover:bg-gray-50'}`}>
+                  {activeTab === tab && (
+                    <motion.div layoutId="tabBg" className="absolute inset-0 bg-[#134e40] rounded-xl shadow-md"
+                      transition={{ type: 'spring', stiffness: 400, damping: 32 }} />
+                  )}
+                  <span className="relative z-10">{tab}</span>
+                </motion.button>
+              ))}
+            </div>
           </div>
 
           <AnimatePresence mode="wait">
 
-            {/* ══════════════════════════════════════════
-                TAB 1: OVERVIEW
-            ══════════════════════════════════════════ */}
+            {/* ══ OVERVIEW ══ */}
             {activeTab === 'Overview' && (
-              <motion.div
-                key="overview"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-                className="space-y-5"
-              >
+              <motion.div key="overview" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }} className="space-y-5">
 
-                {/* KPI CARDS */}
+                {/* KPI Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
                   {kpis.map((kpi, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.06 }}
-                      whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)', transition: { duration: 0.2 } }}
-                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}
-                      className={`bg-white rounded-2xl p-4 border-l-4 ${kpi.border} cursor-default`}
-                    >
-                      {/* Icon + label inline */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-6 h-6 ${kpi.iconBg} rounded-md flex items-center justify-center shrink-0`}>
-                          <kpi.icon size={12} className={kpi.iconColor} />
+                    <motion.div key={idx}
+                      initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.07 }}
+                      whileHover={{ y: -5, boxShadow: '0 16px 40px rgba(0,0,0,0.1)', transition: { duration: 0.2 } }}
+                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}
+                      className={`bg-white rounded-2xl p-4 border-l-4 ${kpi.border} cursor-default group relative overflow-hidden`}>
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{ background: `radial-gradient(circle at 0% 50%, ${kpi.sparkColor}10 0%, transparent 70%)` }} />
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`w-6 h-6 ${kpi.iconBg} rounded-lg flex items-center justify-center shrink-0`}>
+                            <kpi.icon size={12} className={kpi.iconColor} />
+                          </div>
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate text-left">{kpi.label}</span>
                         </div>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate text-left">{kpi.label}</span>
+                        <p className={`text-2xl font-black ${kpi.numColor} leading-none mb-2 text-left`}>{kpi.value}</p>
+                        <Sparkline data={kpi.spark} color={kpi.sparkColor} width={64} height={26} />
+                        <div className="flex items-center gap-1 mt-1.5">
+                          {kpi.trend === 'up' ? <TrendingUp size={10} className="text-emerald-500 shrink-0" /> : <TrendingDown size={10} className="text-gray-400 shrink-0" />}
+                          <p className="text-[10px] text-gray-400 font-medium truncate text-left">{kpi.sub}</p>
+                        </div>
                       </div>
-                      {/* Value */}
-                      <p className={`text-[22px] font-black ${kpi.numColor} leading-none mb-2 text-left`}>{kpi.value}</p>
-                      {/* Sparkline */}
-                      <div className="mb-1.5">
-                        <Sparkline data={kpi.spark} color="#0eb59a" width={60} height={24} />
-                      </div>
-                      {/* Sub text */}
-                      <p className="text-[10px] text-gray-400 font-medium leading-tight text-left">{kpi.sub}</p>
                     </motion.div>
                   ))}
                 </div>
 
-                {/* MAIN CHARTS ROW */}
+                {/* Charts Row 1 */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-                  {/* Engagement Activity — bar chart */}
-                  <div className="lg:col-span-2 bg-white rounded-2xl p-5" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+                  <Card className="lg:col-span-2 p-5">
                     <div className="flex items-center justify-between mb-5">
-                      <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 text-left">
-                        <Activity size={14} className="text-[#0eb59a]" /> Active Engagements Over Time
-                      </h3>
-                      <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">{activePeriod}</span>
+                      <SectionHeading icon={Activity} label="Active Engagements Over Time" />
+                      <span className="text-[10px] font-bold text-[#0eb59a] bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-100">{activePeriod}</span>
                     </div>
-                    <div className="flex items-end gap-3 h-32">
-                      {engagementData.map((bar, idx) => (
-                        <div key={bar.month} className="flex-1 flex flex-col items-center gap-2">
-                          <motion.span
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.5 + idx * 0.1 }}
-                            className="text-[10px] font-black text-[#134e40] text-center"
-                          >
-                            {bar.value > 0 ? bar.value : '—'}
-                          </motion.span>
-                          <div className="w-full flex flex-col justify-end" style={{ height: '90px' }}>
+                    <div className="flex items-end gap-3 h-36 px-2">
+                      {engagementChartData.map((bar, idx) => (
+                        <div key={bar.month} className="flex-1 flex flex-col items-center gap-2 cursor-default"
+                          onMouseEnter={() => setHoveredBar(idx)} onMouseLeave={() => setHoveredBar(null)}>
+                          <AnimatePresence>
+                            {hoveredBar === idx && bar.value > 0 && (
+                              <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                                className="bg-[#134e40] text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg whitespace-nowrap">
+                                {bar.value} active
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                          {hoveredBar !== idx && <span className="text-[10px] font-black text-[#134e40]">{bar.value > 0 ? bar.value : '—'}</span>}
+                          <div className="w-full flex flex-col justify-end" style={{ height: '96px' }}>
                             <motion.div
-                              initial={{ height: 0 }}
-                              animate={{ height: bar.value > 0 ? `${(bar.value / maxEng) * 90}px` : '4px' }}
-                              transition={{ duration: 0.8, delay: idx * 0.1, ease: 'easeOut' }}
-                              whileHover={{ filter: 'brightness(1.15)', transition: { duration: 0.15 } }}
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: bar.value > 0 ? `${(bar.value / maxEng) * 96}px` : '4px', opacity: 1 }}
+                              transition={{ duration: 0.9, delay: idx * 0.1, ease: 'easeOut' }}
                               style={{ borderRadius: '8px 8px 4px 4px' }}
-                              className={`w-full ${bar.value > 0 ? 'bg-gradient-to-t from-[#134e40] to-[#0eb59a]' : 'bg-gray-100'}`}
-                            />
+                              className={`w-full transition-all duration-200 ${bar.value > 0 ? hoveredBar === idx ? 'bg-gradient-to-t from-[#0a3028] to-[#0dd9b8]' : 'bg-gradient-to-t from-[#134e40] to-[#0eb59a]' : 'bg-gray-100'}`} />
                           </div>
-                          <span className="text-[10px] font-bold text-gray-400 text-center">{bar.month}</span>
+                          <span className={`text-[10px] font-bold transition-colors ${hoveredBar === idx ? 'text-[#134e40] font-black' : 'text-gray-400'}`}>{bar.month}</span>
                         </div>
                       ))}
                     </div>
-                  </div>
-
-                  {/* Spend Breakdown — donut */}
-                  <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                    <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 mb-4 text-left">
-                      <DollarSign size={14} className="text-[#0eb59a]" /> Spend Breakdown
-                    </h3>
-                    <div className="flex items-center gap-4">
-                      <div className="relative shrink-0">
-                        <DonutChart segments={paymentBreakdown} size={100} strokeWidth={14} />
+                  </Card>
+                  <Card className="p-5">
+                    <SectionHeading icon={DollarSign} label="Spend Breakdown" iconBg="bg-purple-50" iconColor="text-purple-500" />
+                    <div className="flex flex-col items-center gap-4 mt-4">
+                      <div className="relative">
+                        <DonutChart segments={paymentBreakdown} size={110} strokeWidth={14} />
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="text-center">
-                            <p className="text-[12px] font-black text-[#134e40] text-center">₹27L</p>
-                            <p className="text-[9px] text-gray-400 font-medium text-center">total</p>
+                            <p className="text-[13px] font-black text-[#134e40]">₹27L</p>
+                            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wide">total</p>
                           </div>
                         </div>
                       </div>
-                      <div className="flex-1 space-y-2">
+                      <div className="w-full space-y-2.5">
                         {paymentBreakdown.map((seg, idx) => (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, x: 8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 + idx * 0.1 }}
-                            className="flex items-center gap-2"
-                          >
+                          <motion.div key={idx} initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + idx * 0.1 }} className="flex items-center gap-2.5">
                             <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
                             <span className="text-[11px] text-gray-600 font-semibold flex-1 text-left">{seg.label}</span>
-                            <span className="text-[11px] font-black text-[#1C3627] text-right">{seg.value}%</span>
+                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                              <motion.div initial={{ width: 0 }} animate={{ width: `${seg.value}%` }} transition={{ duration: 0.9, delay: 0.5 + idx * 0.1 }} style={{ height: '100%', backgroundColor: seg.color, borderRadius: '999px' }} />
+                            </div>
+                            <span className="text-[11px] font-black text-[#1C3627] w-8 text-right">{seg.value}%</span>
                           </motion.div>
                         ))}
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
 
-                {/* SECOND ROW */}
+                {/* Charts Row 2 */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-                  {/* Monthly Spend */}
-                  <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                    <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 mb-5 text-left">
-                      <BarChart2 size={14} className="text-[#0eb59a]" /> Monthly Spend
-                    </h3>
-                    <div className="flex items-end gap-3 h-28">
-                      {spendData.map((bar, idx) => (
-                        <div key={bar.month} className="flex-1 flex flex-col items-center gap-1.5">
-                          <span className={`text-[10px] font-bold text-center ${bar.amount > 0 ? 'text-[#134e40]' : 'text-gray-300'}`}>{bar.label}</span>
-                          <div className="w-full flex flex-col justify-end" style={{ height: '72px' }}>
-                            <motion.div
-                              initial={{ height: 0 }}
-                              animate={{ height: bar.amount > 0 ? `${(bar.amount / maxSpend) * 72}px` : '4px' }}
-                              transition={{ duration: 0.8, delay: idx * 0.1, ease: 'easeOut' }}
-                              whileHover={{ filter: 'brightness(1.15)', transition: { duration: 0.15 } }}
-                              style={{ borderRadius: '6px 6px 3px 3px' }}
-                              className={`w-full ${bar.amount > 0 ? 'bg-gradient-to-t from-purple-600 to-purple-400' : 'bg-gray-100'}`}
-                            />
-                          </div>
-                          <span className="text-[10px] font-bold text-gray-400 text-center">{bar.month}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Requirements Funnel */}
-                  <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                    <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 mb-4 text-left">
-                      <Layers size={14} className="text-[#0eb59a]" /> Requirements Funnel
-                    </h3>
-                    <div className="space-y-2.5">
+                  <Card className="p-5">
+                    <SectionHeading icon={Layers} label="Requirements Funnel" iconBg="bg-blue-50" iconColor="text-blue-500" />
+                    <div className="space-y-2.5 mt-4">
                       {requirementsFunnel.map((stage, idx) => (
-                        <motion.div
-                          key={idx}
-                          initial={{ opacity: 0, x: -8 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.08 }}
-                          className="flex items-center gap-3"
-                        >
-                          <span className="text-[11px] font-bold text-gray-500 w-20 text-left">{stage.stage}</span>
-                          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${(stage.value / requirementsFunnel[0].value) * 100}%` }}
-                              transition={{ duration: 0.8, delay: 0.2 + idx * 0.1, ease: 'easeOut' }}
-                              style={{ height: '100%', backgroundColor: stage.color, borderRadius: '999px' }}
-                            />
+                        <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.08 }} whileHover={{ x: 4, transition: { duration: 0.15 } }} className="flex items-center gap-3 cursor-default group">
+                          <span className="text-[11px] font-bold text-gray-500 w-20 group-hover:text-[#1C3627] transition-colors text-left">{stage.stage}</span>
+                          <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                            <motion.div initial={{ width: 0 }} animate={{ width: `${(stage.value / requirementsFunnel[0].value) * 100}%` }} transition={{ duration: 1, delay: 0.2 + idx * 0.1, ease: 'easeOut' }} style={{ height: '100%', backgroundColor: stage.color, borderRadius: '999px' }} />
                           </div>
-                          <span className="text-[11px] font-black text-[#1C3627] w-4 text-right">{stage.value}</span>
+                          <span className="text-[12px] font-black text-[#1C3627] w-4 text-right">{stage.value}</span>
                         </motion.div>
                       ))}
                     </div>
-                  </div>
-
-                  {/* Expert Distribution */}
-                  <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                    <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 mb-4 text-left">
-                      <Users size={14} className="text-[#0eb59a]" /> Experts by Role
-                    </h3>
-                    <div className="space-y-3">
+                  </Card>
+                  <Card className="p-5">
+                    <SectionHeading icon={Users} label="Experts by Role" />
+                    <div className="space-y-3 mt-4">
                       {expertsByRole.map((item, idx) => (
-                        <motion.div
-                          key={idx}
-                          initial={{ opacity: 0, x: -8 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.07 }}
-                          whileHover={{ x: 3, transition: { duration: 0.15 } }}
-                          className="cursor-default"
-                        >
+                        <motion.div key={idx} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.07 }} whileHover={{ x: 4, transition: { duration: 0.15 } }} className="cursor-default group">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-bold text-gray-600 text-left">{item.role}</span>
-                            <span className="text-[11px] font-black text-[#1C3627] text-right">{item.count}</span>
+                            <span className="text-[11px] font-bold text-gray-600 group-hover:text-[#1C3627] transition-colors text-left">{item.role}</span>
+                            <span className="text-[11px] font-black" style={{ color: item.color }}>{item.count}</span>
                           </div>
-                          <MiniBar value={item.count} max={5} color={item.color} delay={0.3 + idx * 0.07} />
+                          <ProgressBar value={(item.count / 5) * 100} color={item.color} delay={0.3 + idx * 0.07} />
                         </motion.div>
                       ))}
                     </div>
-                  </div>
+                  </Card>
+                  <Card className="p-5">
+                    <SectionHeading icon={AlertTriangle} label="Risk Snapshot" iconBg="bg-red-50" iconColor="text-red-500" />
+                    <div className="space-y-3 mt-4">
+                      {[
+                        { label: 'High Risk', count: 2, color: '#EF4444', bg: 'bg-red-50' },
+                        { label: 'Medium Risk', count: 3, color: '#F59E0B', bg: 'bg-amber-50' },
+                        { label: 'Low Risk', count: 4, color: '#10b981', bg: 'bg-emerald-50' },
+                      ].map((r, i) => (
+                        <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} whileHover={{ x: 4, transition: { duration: 0.15 } }} className="flex items-center gap-3 cursor-default">
+                          <div className={`w-7 h-7 ${r.bg} rounded-lg flex items-center justify-center shrink-0`}>
+                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: r.color }} />
+                          </div>
+                          <span className="text-[12px] font-bold text-gray-600 flex-1 text-left">{r.label}</span>
+                          <span className="text-[13px] font-black" style={{ color: r.color }}>{r.count}</span>
+                        </motion.div>
+                      ))}
+                      <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                        onClick={() => setActiveTab('Risk Analysis')}
+                        className="w-full mt-2 py-2 text-[11px] font-bold text-red-500 border border-red-200 rounded-xl hover:bg-red-50 transition-all">
+                        View Risk Analysis →
+                      </motion.button>
+                    </div>
+                  </Card>
                 </div>
 
-                {/* SUMMARY ROW */}
+                {/* Summary Metrics */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {[
-                    { label: 'Avg Time to Hire', value: '12 days', icon: Clock, bg: 'bg-teal-50', color: 'text-[#0eb59a]', border: 'border-l-[#0eb59a]', sub: '↓ 3 days vs last quarter' },
-                    { label: 'Expert Retention', value: '100%', icon: Award, bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-l-emerald-400', sub: 'All experts re-engaged' },
-                    { label: 'Milestone Hit Rate', value: '88%', icon: Target, bg: 'bg-blue-50', color: 'text-blue-500', border: 'border-l-blue-400', sub: '7 of 8 on time' },
-                    { label: 'Platform NPS', value: '72', icon: Zap, bg: 'bg-amber-50', color: 'text-amber-500', border: 'border-l-amber-400', sub: 'Industry avg: 45' },
+                    { label: 'Avg Time to Hire', value: 12, suffix: ' days', icon: Clock, bg: 'bg-teal-50', color: 'text-[#0eb59a]', border: 'border-l-[#0eb59a]', sub: '↓ 3 days vs last quarter', glow: '#0eb59a' },
+                    { label: 'Expert Retention', value: 100, suffix: '%', icon: Award, bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-l-emerald-400', sub: 'All experts re-engaged', glow: '#10b981' },
+                    { label: 'Blended ROI', value: 295, suffix: '%', icon: TrendingUp, bg: 'bg-blue-50', color: 'text-blue-500', border: 'border-l-blue-400', sub: 'Across all engagements', glow: '#3B82F6' },
+                    { label: 'PMO Score', value: 87, suffix: '%', icon: Shield, bg: 'bg-amber-50', color: 'text-amber-500', border: 'border-l-amber-400', sub: 'Above industry avg 72%', glow: '#F59E0B' },
                   ].map((item, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.07 }}
-                      whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)', transition: { duration: 0.2 } }}
-                      className={`bg-white rounded-2xl p-5 border-l-4 ${item.border} cursor-default`}
-                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}
-                    >
-                      <div className={`w-9 h-9 ${item.bg} rounded-xl flex items-center justify-center mb-3`}>
-                        <item.icon size={17} className={item.color} />
+                    <motion.div key={idx}
+                      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.08 }}
+                      whileHover={{ y: -5, boxShadow: `0 16px 40px ${item.glow}20`, transition: { duration: 0.2 } }}
+                      className={`bg-white rounded-2xl p-5 border-l-4 ${item.border} cursor-default group relative overflow-hidden`}
+                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{ background: `radial-gradient(circle at 0% 100%, ${item.glow}10 0%, transparent 60%)` }} />
+                      <div className="relative z-10">
+                        <div className={`w-9 h-9 ${item.bg} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200`}>
+                          <item.icon size={17} className={item.color} />
+                        </div>
+                        <p className="text-2xl font-black text-[#1C3627] mb-0.5 text-left">
+                          <AnimatedNumber value={item.value} suffix={item.suffix} />
+                        </p>
+                        <p className="text-xs font-bold text-gray-500 mb-1 text-left">{item.label}</p>
+                        <p className="text-[10px] text-gray-400 text-left">{item.sub}</p>
                       </div>
-                      <p className="text-2xl font-black text-[#1C3627] mb-0.5 text-left">{item.value}</p>
-                      <p className="text-xs font-bold text-gray-500 mb-1 text-left">{item.label}</p>
-                      <p className="text-[10px] text-gray-400 text-left">{item.sub}</p>
                     </motion.div>
                   ))}
                 </div>
-
               </motion.div>
             )}
 
-            {/* ══════════════════════════════════════════
-                TAB 2: ENGAGEMENTS
-            ══════════════════════════════════════════ */}
+            {/* ══ ENGAGEMENTS ══ */}
             {activeTab === 'Engagements' && (
-              <motion.div
-                key="engagements"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-                className="space-y-4"
-              >
-                {/* Summary KPIs */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  {[
-                    { label: 'Total Engagements', value: '3', border: 'border-l-[#0eb59a]', numColor: 'text-[#134e40]' },
-                    { label: 'Active', value: '2', border: 'border-l-blue-400', numColor: 'text-blue-700' },
-                    { label: 'Completed', value: '1', border: 'border-l-emerald-400', numColor: 'text-emerald-700' },
-                    { label: 'Avg Progress', value: '47%', border: 'border-l-purple-400', numColor: 'text-purple-700' },
-                  ].map((s, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.06 }}
-                      whileHover={{ y: -3, transition: { duration: 0.15 } }}
-                      className={`bg-white rounded-2xl p-4 border-l-4 ${s.border} cursor-default`}
-                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}
-                    >
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 text-left">{s.label}</p>
-                      <p className={`text-3xl font-black ${s.numColor} text-left`}>{s.value}</p>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Engagement Cards */}
-                <div className="space-y-3">
+              <motion.div key="engagements" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }} className="space-y-4">
+                <KpiStrip items={[
+                  { label: 'Total Engagements', value: '3', border: 'border-l-[#0eb59a]', numColor: 'text-[#134e40]', large: true },
+                  { label: 'Active', value: '2', border: 'border-l-blue-400', numColor: 'text-blue-700', large: true },
+                  { label: 'Completed', value: '1', border: 'border-l-emerald-400', numColor: 'text-emerald-700', large: true },
+                  { label: 'Avg Progress', value: '47%', border: 'border-l-purple-400', numColor: 'text-purple-700', large: true },
+                ]} />
+                <div className="space-y-4">
                   {engagementsList.map((eng, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.1 }}
-                      whileHover={{ y: -4, boxShadow: '0 16px 40px rgba(0,0,0,0.08)', transition: { duration: 0.2 } }}
-                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}
-                      className="bg-white rounded-2xl p-5 cursor-default"
-                    >
+                    <motion.div key={idx} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}
+                      whileHover={{ y: -4, boxShadow: `0 20px 50px ${eng.color}15`, transition: { duration: 0.2 } }}
+                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}
+                      className="bg-white rounded-2xl p-5 cursor-default group relative overflow-hidden">
+                      <div className="absolute top-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: `linear-gradient(90deg, ${eng.color}, transparent)` }} />
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${eng.color}20` }}>
-                            <Briefcase size={18} style={{ color: eng.color }} />
+                          <div className="relative">
+                            <img src={eng.avatar} className="w-11 h-11 rounded-xl object-cover shadow-sm group-hover:shadow-md transition-shadow" alt={eng.expert} />
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white" style={{ backgroundColor: eng.status === 'In Progress' ? '#10b981' : '#F59E0B' }} />
                           </div>
-                          <div className="text-left">
-                            <h4 className="font-black text-[#1C3627] text-sm text-left">{eng.title}</h4>
-                            <p className="text-xs text-gray-400 text-left">{eng.expert} · {eng.role}</p>
-                          </div>
+                          <div className="text-left"><h4 className="font-black text-[#1C3627] text-sm text-left">{eng.title}</h4><p className="text-xs text-gray-400 mt-0.5 text-left">{eng.expert} · <span style={{ color: eng.color }} className="font-semibold">{eng.role}</span></p></div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border shrink-0 ${statusColor(eng.status)}`}>
-                            {eng.status}
-                          </span>
-                          <motion.button
-                            whileHover={{ scale: 1.1, backgroundColor: '#F0FDF4' }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => navigate('/engagements/1')}
-                            className="p-1.5 rounded-lg bg-gray-50 text-gray-400 hover:text-[#0eb59a] transition-all"
-                          >
-                            <Eye size={13} />
-                          </motion.button>
+                          <StatusBadge status={eng.status} />
+                          <motion.button whileHover={{ scale: 1.15, backgroundColor: `${eng.color}15` }} whileTap={{ scale: 0.9 }} onClick={() => navigate('/engagements/1')} className="p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-[#0eb59a] transition-all"><Eye size={14} /></motion.button>
                         </div>
                       </div>
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        {[
-                          { label: 'Spend', value: eng.spend },
-                          { label: 'Budget', value: eng.budget },
-                          { label: 'Milestones', value: eng.milestones },
-                          { label: 'Rating', value: eng.rating ? `★ ${eng.rating}` : '—' },
-                        ].map((item, iIdx) => (
-                          <div key={iIdx} className="text-left">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5 text-left">{item.label}</p>
-                            <p className="text-sm font-black text-[#1C3627] text-left">{item.value}</p>
+                      <div className="grid grid-cols-4 gap-3 mb-4">
+                        {[{ label: 'Spend', value: eng.spend },{ label: 'Budget', value: eng.budget },{ label: 'Milestones', value: eng.milestones },{ label: 'Rating', value: eng.rating ? `★ ${eng.rating}` : '—' }].map((item, i) => (
+                          <div key={i} className="bg-[#FAFBF9] rounded-xl p-3 border border-gray-100 text-center">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-center">{item.label}</p>
+                            <p className="text-sm font-black text-[#1C3627] text-center">{item.value}</p>
                           </div>
                         ))}
                       </div>
-
                       <div>
-                        <div className="flex justify-between text-[11px] mb-1.5">
-                          <span className="text-gray-400 font-semibold text-left">Progress</span>
-                          <span className="font-black text-[#134e40] text-right">{eng.progress}%</span>
+                        <div className="flex justify-between text-[11px] mb-2">
+                          <span className="text-gray-400 font-semibold">Progress</span>
+                          <span className="font-black" style={{ color: eng.color }}>{eng.progress}%</span>
                         </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${eng.progress}%` }}
-                            transition={{ duration: 1, delay: 0.3 + idx * 0.1 }}
-                            style={{
-                              height: '100%',
-                              background: `linear-gradient(90deg, #134e40, ${eng.color})`,
-                              borderRadius: '999px'
-                            }}
-                          />
+                        <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${eng.progress}%` }} transition={{ duration: 1.2, delay: 0.3 + idx * 0.1, ease: 'easeOut' }}
+                            style={{ height: '100%', background: `linear-gradient(90deg, #134e40, ${eng.color})`, borderRadius: '999px', position: 'relative', overflow: 'hidden' }}>
+                            <motion.div animate={{ x: ['-100%', '200%'] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }} style={{ position: 'absolute', inset: 0, width: '40%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)' }} />
+                          </motion.div>
                         </div>
                       </div>
                     </motion.div>
@@ -774,385 +777,430 @@ const Analytics = () => {
               </motion.div>
             )}
 
-            {/* ══════════════════════════════════════════
-                TAB 3: EXPERTS
-            ══════════════════════════════════════════ */}
+            {/* ══ EXPERTS ══ */}
             {activeTab === 'Experts' && (
-              <motion.div
-                key="experts"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-                className="space-y-4"
-              >
-                {/* Summary */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  {[
-                    { label: 'Total Experts', value: '5', border: 'border-l-[#0eb59a]', numColor: 'text-[#134e40]' },
-                    { label: 'Currently Active', value: '2', border: 'border-l-blue-400', numColor: 'text-blue-700' },
-                    { label: 'Avg Match Score', value: '93%', border: 'border-l-amber-400', numColor: 'text-amber-700' },
-                    { label: 'Avg Rating', value: '4.9★', border: 'border-l-emerald-400', numColor: 'text-emerald-700' },
-                  ].map((s, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.06 }}
-                      whileHover={{ y: -3, transition: { duration: 0.15 } }}
-                      className={`bg-white rounded-2xl p-4 border-l-4 ${s.border} cursor-default`}
-                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}
-                    >
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 text-left">{s.label}</p>
-                      <p className={`text-3xl font-black ${s.numColor} text-left`}>{s.value}</p>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Expert Table */}
-                <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+              <motion.div key="experts" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }} className="space-y-4">
+                <KpiStrip items={[
+                  { label: 'Total Experts', value: '5', border: 'border-l-[#0eb59a]', numColor: 'text-[#134e40]', large: true },
+                  { label: 'Currently Active', value: '2', border: 'border-l-blue-400', numColor: 'text-blue-700', large: true },
+                  { label: 'Avg Match Score', value: '93%', border: 'border-l-amber-400', numColor: 'text-amber-700', large: true },
+                  { label: 'Avg Rating', value: '4.9★', border: 'border-l-emerald-400', numColor: 'text-emerald-700', large: true },
+                ]} />
+                <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                   <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
                     <h3 className="font-black text-[#1C3627] text-sm text-left">All Experts</h3>
-                    <motion.button
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => navigate('/experts')}
-                      className="text-xs font-bold text-[#0eb59a] hover:text-[#134e40] transition-colors flex items-center gap-1"
-                    >
-                      View All <ChevronRight size={12} />
-                    </motion.button>
+                    <motion.button whileHover={{ scale: 1.04, x: 2 }} whileTap={{ scale: 0.96 }} onClick={() => navigate('/experts')} className="text-xs font-bold text-[#0eb59a] hover:text-[#134e40] transition-colors flex items-center gap-1">View All <ChevronRight size={12} /></motion.button>
                   </div>
                   {expertsList.map((expert, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.07 }}
-                      whileHover={{ backgroundColor: '#FAFBF9', transition: { duration: 0.15 } }}
-                      className={`flex items-center gap-4 px-5 py-4 cursor-default ${idx < expertsList.length - 1 ? 'border-b border-gray-50' : ''}`}
-                    >
+                    <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.07 }} whileHover={{ backgroundColor: '#FAFBF9', x: 3, transition: { duration: 0.15 } }} className={`flex items-center gap-4 px-5 py-4 cursor-default group ${idx < expertsList.length - 1 ? 'border-b border-gray-50' : ''}`}>
                       <div className="relative shrink-0">
-                        <img src={expert.avatar} className="w-10 h-10 rounded-xl object-cover shadow-sm" alt={expert.name} />
-                        <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
-                          expert.status === 'Active' ? 'bg-emerald-500' :
-                          expert.status === 'Shortlisted' ? 'bg-amber-400' : 'bg-gray-300'
-                        }`} />
+                        <img src={expert.avatar} className="w-11 h-11 rounded-xl object-cover shadow-sm group-hover:shadow-md transition-shadow" alt={expert.name} />
+                        <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${expert.status === 'Active' ? 'bg-emerald-500' : expert.status === 'Shortlisted' ? 'bg-amber-400' : 'bg-gray-300'}`} />
                       </div>
+                      <div className="flex-1 min-w-0 text-left"><p className="font-black text-[#1C3627] text-sm text-left">{expert.name}</p><p className="text-xs text-gray-400 font-medium text-left">{expert.role}</p></div>
+                      <div className="hidden md:flex items-center gap-5">
+                        {[{ label: 'Rating', value: `${expert.rating}★`, color: 'text-amber-600' },{ label: 'Spend', value: expert.spend, color: 'text-[#1C3627]' },{ label: 'Match', value: `${expert.match}%`, color: 'text-[#134e40]' }].map((item, i) => (
+                          <div key={i} className="text-center min-w-[48px]"><p className={`text-sm font-black ${item.color} text-center`}>{item.value}</p><p className="text-[9px] text-gray-400 uppercase tracking-wide text-center">{item.label}</p></div>
+                        ))}
+                      </div>
+                      <StatusBadge status={expert.status} />
+                      <motion.button whileHover={{ scale: 1.15, backgroundColor: '#F0FDF4' }} whileTap={{ scale: 0.9 }} onClick={() => navigate(`/experts/${idx + 1}`)} className="p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-[#0eb59a] transition-all shrink-0"><Eye size={14} /></motion.button>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                  <SectionHeading icon={Target} label="AI Match Score Distribution" />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    {expertsList.map((expert, idx) => (
+                      <motion.div key={idx} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300, damping: 25 }}
+                        whileHover={{ scale: 1.06, boxShadow: '0 12px 30px rgba(14,181,154,0.15)', transition: { duration: 0.2 } }}
+                        className="bg-[#FAFBF9] rounded-2xl p-4 border border-gray-100 text-center cursor-default">
+                        <div className="relative w-16 h-16 mx-auto mb-3">
+                          <DonutChart segments={[{ value: expert.match, color: '#0eb59a' },{ value: 100 - expert.match, color: '#F1F5F2' }]} size={64} strokeWidth={9} />
+                          <div className="absolute inset-0 flex items-center justify-center"><span className="text-[12px] font-black text-[#134e40] text-center">{expert.match}%</span></div>
+                        </div>
+                        <p className="text-[12px] font-black text-[#1C3627] text-center">{expert.name.split(' ')[0]}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5 text-center">{expert.role}</p>
+                        <span className="inline-block mt-2"><StatusBadge status={expert.status} /></span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ══ Spend Reports ══ */}
+            {activeTab === 'Spend Reports' && (
+              <motion.div key="spend" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }} className="space-y-5">
+                <KpiStrip items={[
+                  { label: 'Total Committed', value: '₹27.0L', border: 'border-l-[#0eb59a]', numColor: 'text-[#134e40]', sub: 'Projected total spend' },
+                  { label: 'Total Spent', value: '₹11.5L', border: 'border-l-emerald-400', numColor: 'text-emerald-700', sub: 'Released milestones', progress: 43, progressColor: '#10b981' },
+                  { label: 'In Escrow', value: '₹6.0L', border: 'border-l-amber-400', numColor: 'text-amber-700', sub: 'Secured funds', progress: 22, progressColor: '#f59e0b' },
+                  { label: 'Committed Balance', value: '₹9.5L', border: 'border-l-purple-400', numColor: 'text-purple-700', sub: 'Pending deliverables', progress: 35, progressColor: '#6366f1' },
+                ]} />
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                  <Card className="lg:col-span-2 p-5">
+                    <SectionHeading icon={BarChart} label="Monthly Spend Trend" />
+                    <div className="flex items-end gap-3 h-44 px-2 mt-5">
+                      {monthlySpend.map((bar, idx) => (
+                        <div key={bar.month} className="flex-1 flex flex-col items-center gap-2 cursor-default">
+                          <span className="text-[10px] font-black text-[#134e40]">{bar.amount > 0 ? `₹${bar.amount/100}L` : '—'}</span>
+                          <div className="w-full flex flex-col justify-end" style={{ height: '110px' }}>
+                            <motion.div initial={{ height: 0 }} animate={{ height: bar.amount > 0 ? `${(bar.amount / maxMonthly) * 110}px` : '4px' }}
+                              transition={{ duration: 0.8, delay: idx * 0.1, ease: 'easeOut' }}
+                              style={{ borderRadius: '6px 6px 3px 3px' }}
+                              className={`w-full ${bar.amount > 0 ? 'bg-gradient-to-t from-[#134e40] to-[#0eb59a]' : 'bg-gray-100'}`} />
+                          </div>
+                          <span className="text-[10px] font-bold text-gray-400">{bar.month}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  <Card className="p-5">
+                    <SectionHeading icon={PieChart} label="Spend by Category" />
+                    <div className="space-y-4 mt-5">
+                      {spendByCategory.map((item, idx) => (
+                        <div key={idx} className="cursor-default text-left">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[11px] font-bold text-gray-600 text-left">{item.category}</span>
+                            <span className="text-[11px] font-black text-[#1C3627] text-right">₹{item.amount}L / ₹{item.budget}L</span>
+                          </div>
+                          <ProgressBar value={item.pct} color={item.color} delay={idx * 0.1} />
+                          <p className="text-[9px] text-gray-400 mt-1 text-left">{item.pct}% of allocated budget spent</p>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
+
+                <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                  <div className="px-5 py-4 border-b border-gray-50">
+                    <h3 className="font-black text-[#1C3627] text-sm text-left">Recent Deliverables & Invoices</h3>
+                  </div>
+                  {invoiceSummary.map((inv, idx) => (
+                    <motion.div key={idx} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}
+                      className={`flex flex-col md:flex-row md:items-center justify-between gap-4 px-5 py-4 ${idx < invoiceSummary.length - 1 ? 'border-b border-gray-50' : ''}`}>
                       <div className="flex-1 min-w-0 text-left">
-                        <p className="font-black text-[#1C3627] text-sm text-left">{expert.name}</p>
-                        <p className="text-xs text-gray-400 font-medium text-left">{expert.role}</p>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-black text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-200">{inv.id}</span>
+                          <span className="text-xs font-black text-[#1C3627]">{inv.desc}</span>
+                        </div>
+                        <p className="text-[11px] text-gray-400 text-left">Expert: {inv.expert} · Released: {inv.date}</p>
                       </div>
-                      <div className="hidden md:flex items-center gap-6 text-xs">
-                        <div className="text-center">
-                          <p className="font-black text-[#1C3627] text-center">{expert.rating}★</p>
-                          <p className="text-[10px] text-gray-400 text-center">Rating</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="font-black text-[#1C3627] text-center">{expert.spend}</p>
-                          <p className="text-[10px] text-gray-400 text-center">Spend</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="font-black text-[#134e40] text-center">{expert.match}%</p>
-                          <p className="text-[10px] text-gray-400 text-center">Match</p>
-                        </div>
+                      <div className="flex items-center gap-5 self-end md:self-center">
+                        <span className="font-black text-sm text-[#1C3627]">{inv.amount}</span>
+                        <StatusBadge status={inv.status} />
                       </div>
-                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border shrink-0 ${statusColor(expert.status)}`}>
-                        {expert.status}
-                      </span>
-                      <motion.button
-                        whileHover={{ scale: 1.1, backgroundColor: '#F0FDF4' }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => navigate(`/experts/${idx + 1}`)}
-                        className="p-1.5 rounded-lg bg-gray-50 text-gray-400 hover:text-[#0eb59a] transition-all shrink-0"
-                      >
-                        <Eye size={13} />
-                      </motion.button>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ══ Success Metrics ══ */}
+            {activeTab === 'Success Metrics' && (
+              <motion.div key="success" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }} className="space-y-5">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {successKpis.map((kpi, idx) => (
+                    <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }}
+                      className={`bg-white rounded-2xl p-5 border-l-4 ${kpi.border} cursor-default`}
+                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                      <div className={`w-8 h-8 ${kpi.bg} rounded-xl flex items-center justify-center mb-3`}>
+                        <kpi.icon size={15} className={kpi.color} />
+                      </div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 text-left">{kpi.label}</p>
+                      <p className="text-3xl font-black text-[#1C3627] mb-1.5 text-left">
+                        <AnimatedNumber value={kpi.value} suffix="%" />
+                      </p>
+                      <p className="text-[10px] text-gray-400 text-left">{kpi.sub}</p>
                     </motion.div>
                   ))}
                 </div>
 
-                {/* Match Score Distribution */}
-                <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                  <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 mb-4 text-left">
-                    <Target size={14} className="text-[#0eb59a]" /> AI Match Score Distribution
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {expertsList.map((expert, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: idx * 0.08 }}
-                        whileHover={{ scale: 1.04, transition: { duration: 0.15 } }}
-                        className="bg-[#FAFBF9] rounded-xl p-4 border border-gray-100 text-center cursor-default"
-                      >
-                        <div className="relative w-14 h-14 mx-auto mb-2">
-                          <DonutChart
-                            segments={[
-                              { value: expert.match, color: '#0eb59a' },
-                              { value: 100 - expert.match, color: '#F3F4F6' }
-                            ]}
-                            size={56}
-                            strokeWidth={8}
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-[11px] font-black text-[#134e40] text-center">{expert.match}%</span>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                  <Card className="lg:col-span-2 p-5 overflow-hidden">
+                    <SectionHeading icon={Clipboard} label="Milestone Governance & Delivery Log" />
+                    <div className="space-y-3 mt-4">
+                      {milestonePerformance.map((item, idx) => (
+                        <motion.div key={idx} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}
+                          className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 bg-gray-50 border border-gray-100 rounded-xl">
+                          <div className="text-left">
+                            <h4 className="font-bold text-xs text-[#1C3627] text-left">{item.title}</h4>
+                            <p className="text-[10px] text-gray-400 text-left">Expert: {item.expert} · Engagement: {item.engagement}</p>
+                          </div>
+                          <div className="flex items-center gap-4 self-end md:self-center">
+                            {item.quality && (
+                              <div className="text-right">
+                                <p className="text-xs font-black text-[#0eb59a] text-right">{item.quality}%</p>
+                                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-wider text-right">Quality</p>
+                              </div>
+                            )}
+                            <div className="text-right">
+                              <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border ${item.onTime ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+                                {item.onTime ? 'On Time' : 'Delayed'}
+                              </span>
+                              <p className="text-[8px] text-gray-400 mt-0.5 text-right">{item.date}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  <Card className="p-5">
+                    <SectionHeading icon={Users} label="Expert Performance Matrix" />
+                    <div className="space-y-4 mt-5">
+                      {expertPerformance.map((exp, idx) => (
+                        <div key={idx} className="p-3 bg-[#FAFBF9] border border-gray-100 rounded-xl text-left">
+                          <div className="flex items-center gap-2.5 mb-2.5">
+                            <img src={exp.avatar} className="w-8 h-8 rounded-lg object-cover" alt={exp.name} />
+                            <div className="text-left">
+                              <h4 className="font-black text-xs text-[#1C3627] leading-none text-left">{exp.name}</h4>
+                              <p className="text-[10px] text-gray-400 mt-1 text-left">{exp.role}</p>
+                            </div>
+                            <span className="ml-auto text-xs font-black text-[#0eb59a] bg-teal-50 px-2 py-0.5 rounded-lg border border-teal-100">{exp.overallScore}%</span>
+                          </div>
+                          <div className="space-y-1.5">
+                            {[{ l: 'Quality', v: exp.qualityScore, c: '#0eb59a' },{ l: 'Delivery', v: exp.deliveryScore, c: '#3B82F6' },{ l: 'Communication', v: exp.communicationScore, c: '#8B5CF6' }].map((sc, i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <span className="text-[9px] font-bold text-gray-500 w-16 text-left">{sc.l}</span>
+                                <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
+                                  <div className="h-full rounded-full" style={{ width: `${sc.v}%`, backgroundColor: sc.c }} />
+                                </div>
+                                <span className="text-[9px] font-black text-gray-500 w-6 text-right">{sc.v}%</span>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                        <p className="text-[11px] font-black text-[#1C3627] text-center">{expert.name.split(' ')[0]}</p>
-                        <p className="text-[10px] text-gray-400 text-center">{expert.role.split(' ').slice(-1)[0]}</p>
-                      </motion.div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  </Card>
                 </div>
               </motion.div>
             )}
 
-            {/* ══════════════════════════════════════════
-                TAB 4: PAYMENTS
-            ══════════════════════════════════════════ */}
-            {activeTab === 'Payments' && (
-              <motion.div
-                key="payments-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-                className="space-y-4"
-              >
-                {/* KPIs */}
+            {/* ══ ROI Tracking ══ */}
+            {activeTab === 'ROI Tracking' && (
+              <motion.div key="roi" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }} className="space-y-5">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {[
-                    { label: 'Total Committed', value: '₹27L', border: 'border-l-[#0eb59a]', numColor: 'text-[#134e40]' },
-                    { label: 'Released', value: '₹11.5L', border: 'border-l-emerald-400', numColor: 'text-emerald-700' },
-                    { label: 'In Escrow', value: '₹6L', border: 'border-l-amber-400', numColor: 'text-amber-700' },
-                    { label: 'Pending', value: '₹9.5L', border: 'border-l-purple-400', numColor: 'text-purple-700' },
+                    { label: 'Blended ROI Score', value: '295%', border: 'border-l-[#0eb59a]', numColor: 'text-[#134e40]', sub: 'Return on Talent spend' },
+                    { label: 'Talent Acquisition Cost', value: '₹19.0L', border: 'border-l-blue-400', numColor: 'text-blue-700', sub: 'Released + Escrow' },
+                    { label: 'Value Delivered', value: '₹75.0L', border: 'border-l-purple-400', numColor: 'text-purple-700', sub: 'Est. business impact' },
+                    { label: 'Net Value Created', value: '₹56.0L', border: 'border-l-emerald-400', numColor: 'text-emerald-700', sub: 'Net financial gain' },
                   ].map((s, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.06 }}
-                      whileHover={{ y: -3, transition: { duration: 0.15 } }}
-                      className={`bg-white rounded-2xl p-4 border-l-4 ${s.border} cursor-default`}
-                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}
-                    >
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 text-left">{s.label}</p>
-                      <p className={`text-2xl font-black ${s.numColor} text-left`}>{s.value}</p>
+                    <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }}
+                      className={`bg-white rounded-2xl p-5 border-l-4 ${s.border} cursor-default`}
+                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 text-left">{s.label}</p>
+                      <p className="text-2xl font-black text-[#1C3627] mb-1.5 text-left">{s.value}</p>
+                      <p className="text-[10px] text-gray-400 text-left">{s.sub}</p>
                     </motion.div>
                   ))}
                 </div>
 
-                {/* Spend by Engagement */}
-                <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                  <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 mb-4 text-left">
-                    <BarChart2 size={14} className="text-[#0eb59a]" /> Spend by Engagement
-                  </h3>
-                  <div className="space-y-4">
-                    {[
-                      { title: 'Series B Funding Strategy', spent: 9, budget: 18, color: '#0eb59a' },
-                      { title: 'Go-to-Market Expansion', spent: 5.5, budget: 9, color: '#3B82F6' },
-                      { title: 'Operations Restructuring', spent: 4.5, budget: 4.5, color: '#8B5CF6' },
-                    ].map((item, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        whileHover={{ x: 3, transition: { duration: 0.15 } }}
-                        className="cursor-default"
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs font-bold text-gray-600 text-left">{item.title}</span>
-                          <span className="text-xs font-black text-[#1C3627] text-right">₹{item.spent}L / ₹{item.budget}L</span>
-                        </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(item.spent / item.budget) * 100}%` }}
-                            transition={{ duration: 1, delay: 0.2 + idx * 0.1, ease: 'easeOut' }}
-                            style={{ height: '100%', backgroundColor: item.color, borderRadius: '999px' }}
-                          />
-                        </div>
-                        <p className="text-[10px] text-gray-400 mt-1 text-left">{Math.round((item.spent / item.budget) * 100)}% of budget used</p>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                  <Card className="lg:col-span-2 p-5">
+                    <SectionHeading icon={BarChart} label="Cost vs Value Delivered by Engagement" />
+                    <div className="space-y-4.5 mt-5">
+                      {roiEngagements.map((item, idx) => (
+                        <motion.div key={idx} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }}
+                          className="p-3.5 bg-gray-50 border border-gray-100 rounded-xl text-left">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-black text-[#1C3627] text-left">{item.title}</span>
+                            <span className="text-xs font-black text-[#0eb59a] bg-teal-50 px-2 py-0.5 rounded-lg border border-teal-100">{item.roi}% ROI</span>
+                          </div>
+                          <div className="space-y-2">
+                            <div>
+                              <div className="flex justify-between text-[9px] text-gray-400 mb-0.5">
+                                <span className="text-left">Value Delivered</span>
+                                <span className="font-bold text-[#1C3627] text-right">{item.valueDelivered}</span>
+                              </div>
+                              <ProgressBar value={100} color={item.color} delay={idx * 0.1} />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-[9px] text-gray-400 mb-0.5">
+                                <span className="text-left">Acquisition Cost</span>
+                                <span className="font-bold text-[#1C3627] text-right">{item.cost}</span>
+                              </div>
+                              <ProgressBar value={(item.costNum / item.valueNum) * 100} color="#6366f1" delay={idx * 0.15} />
+                            </div>
+                          </div>
+                          <p className="text-[9px] text-gray-400 mt-2 text-left">Calculated over a {item.period} engagement timeline.</p>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </Card>
 
-                {/* Payment Table */}
-                <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                  <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-                    <h3 className="font-black text-[#1C3627] text-sm text-left">Payment History</h3>
-                    <motion.button
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => navigate('/payments')}
-                      className="text-xs font-bold text-[#0eb59a] hover:text-[#134e40] transition-colors flex items-center gap-1"
-                    >
-                      View All <ChevronRight size={12} />
-                    </motion.button>
-                  </div>
-                  {paymentsList.map((p, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.06 }}
-                      whileHover={{ backgroundColor: '#FAFBF9', transition: { duration: 0.15 } }}
-                      className={`flex items-center gap-4 px-5 py-3.5 cursor-default ${idx < paymentsList.length - 1 ? 'border-b border-gray-50' : ''}`}
-                    >
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                        p.status === 'Released' ? 'bg-emerald-50' : p.status === 'In Escrow' ? 'bg-amber-50' : 'bg-gray-50'
-                      }`}>
-                        {p.status === 'Released' ? <Unlock size={13} className="text-emerald-500" /> :
-                         p.status === 'In Escrow' ? <Lock size={13} className="text-amber-500" /> :
-                         <Lock size={13} className="text-gray-300" />}
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <p className="font-bold text-[#1C3627] text-sm truncate text-left">{p.milestone}</p>
-                        <p className="text-[10px] text-gray-400 text-left">{p.engagement} · {p.date}</p>
-                      </div>
-                      <p className="font-black text-[#1C3627] text-sm shrink-0">{p.amount}</p>
-                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border shrink-0 ${statusColor(p.status)}`}>
-                        {p.status}
-                      </span>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* ══════════════════════════════════════════
-                TAB 5: REQUIREMENTS
-            ══════════════════════════════════════════ */}
-            {activeTab === 'Requirements' && (
-              <motion.div
-                key="requirements-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-                className="space-y-4"
-              >
-                {/* KPIs */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  {[
-                    { label: 'Total Posted', value: '4', border: 'border-l-[#0eb59a]', numColor: 'text-[#134e40]' },
-                    { label: 'Active', value: '2', border: 'border-l-blue-400', numColor: 'text-blue-700' },
-                    { label: 'Total Experts Matched', value: '25', border: 'border-l-amber-400', numColor: 'text-amber-700' },
-                    { label: 'Conversion Rate', value: '50%', border: 'border-l-emerald-400', numColor: 'text-emerald-700' },
-                  ].map((s, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.06 }}
-                      whileHover={{ y: -3, transition: { duration: 0.15 } }}
-                      className={`bg-white rounded-2xl p-4 border-l-4 ${s.border} cursor-default`}
-                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}
-                    >
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 text-left">{s.label}</p>
-                      <p className={`text-3xl font-black ${s.numColor} text-left`}>{s.value}</p>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Requirements List */}
-                <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                  <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-                    <h3 className="font-black text-[#1C3627] text-sm text-left">All Requirements</h3>
-                    <motion.button
-                      whileHover={{ scale: 1.04 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => navigate('/requirements')}
-                      className="text-xs font-bold text-[#0eb59a] hover:text-[#134e40] transition-colors flex items-center gap-1"
-                    >
-                      Manage <ChevronRight size={12} />
-                    </motion.button>
-                  </div>
-                  {requirementsList.map((req, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.07 }}
-                      whileHover={{ backgroundColor: '#FAFBF9', transition: { duration: 0.15 } }}
-                      className={`px-5 py-4 cursor-default ${idx < requirementsList.length - 1 ? 'border-b border-gray-50' : ''}`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="text-left">
-                          <h4 className="font-black text-[#1C3627] text-sm text-left">{req.title}</h4>
-                          <p className="text-xs text-gray-400 mt-0.5 text-left">{req.type} · {req.budget} · Posted {req.posted}</p>
+                  <Card className="p-5">
+                    <SectionHeading icon={PieChart} label="Business Impact Vectors" />
+                    <div className="flex flex-col items-center gap-4 mt-5">
+                      <div className="relative">
+                        <DonutChart segments={roiBreakdown} size={110} strokeWidth={14} />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center">
+                            <p className="text-[13px] font-black text-[#134e40]">₹75.0L</p>
+                            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wide">Delivered</p>
+                          </div>
                         </div>
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border shrink-0 ${statusColor(req.status)}`}>
-                          {req.status}
-                        </span>
                       </div>
-                      <div className="flex items-center gap-6">
-                        {[
-                          { label: 'Matched', value: req.experts, color: 'text-[#134e40]' },
-                          { label: 'Shortlisted', value: req.shortlisted, color: 'text-blue-600' },
-                          { label: 'Engaged', value: req.engaged, color: 'text-emerald-600' },
-                        ].map((item, iIdx) => (
-                          <div key={iIdx} className="flex items-center gap-1.5">
-                            <span className={`text-sm font-black ${item.color} text-left`}>{item.value}</span>
-                            <span className="text-[10px] text-gray-400 font-medium text-left">{item.label}</span>
+                      <div className="w-full space-y-2.5">
+                        {roiBreakdown.map((seg, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-left">
+                            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
+                            <span className="text-[11px] text-gray-600 font-semibold flex-1 text-left">{seg.label}</span>
+                            <span className="text-[11px] font-black text-[#1C3627] text-right">{seg.value}%</span>
                           </div>
                         ))}
-                        {req.experts > 0 && (
-                          <div className="flex-1 ml-2">
-                            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${(req.engaged / req.experts) * 100}%` }}
-                                transition={{ duration: 0.8, delay: 0.3 + idx * 0.1 }}
-                                className="h-full bg-[#0eb59a] rounded-full"
-                              />
-                            </div>
-                            <p className="text-[9px] text-gray-400 mt-0.5 text-left">{Math.round((req.engaged / req.experts) * 100)}% conversion</p>
-                          </div>
-                        )}
                       </div>
+                    </div>
+                  </Card>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ══ Risk Analysis ══ */}
+            {activeTab === 'Risk Analysis' && (
+              <motion.div key="risk" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }} className="space-y-5">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {riskSummary.map((kpi, idx) => (
+                    <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }}
+                      className="bg-white rounded-2xl p-5 border-l-4 border-l-red-400 cursor-default" style={{ borderLeftColor: idx === 0 || idx === 2 ? '#EF4444' : '#F59E0B', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                      <div className={`w-8 h-8 ${kpi.bg} rounded-xl flex items-center justify-center mb-3`}>
+                        <kpi.icon size={15} className={kpi.color} />
+                      </div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 text-left">{kpi.label}</p>
+                      <p className="text-3xl font-black text-[#1C3627] mb-1.5 text-left">{kpi.value}</p>
+                      <p className="text-[10px] text-gray-400 text-left">{kpi.sub}</p>
                     </motion.div>
                   ))}
                 </div>
 
-                {/* Funnel Visualization */}
-                <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                  <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 mb-5 text-left">
-                    <Layers size={14} className="text-[#0eb59a]" /> Hiring Funnel — All Requirements
-                  </h3>
-                  <div className="flex items-end gap-4 justify-center h-40">
-                    {requirementsFunnel.map((stage, idx) => {
-                      const maxVal = requirementsFunnel[0].value;
-                      const heightPct = (stage.value / maxVal) * 120;
-                      return (
-                        <div key={idx} className="flex flex-col items-center gap-2 flex-1">
-                          <motion.span
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.5 + idx * 0.1 }}
-                            className="text-[11px] font-black text-center"
-                            style={{ color: stage.color }}
-                          >
-                            {stage.value}
-                          </motion.span>
-                          <div className="w-full flex flex-col justify-end" style={{ height: '120px' }}>
-                            <motion.div
-                              initial={{ height: 0 }}
-                              animate={{ height: `${heightPct}px` }}
-                              transition={{ duration: 0.8, delay: idx * 0.12, ease: 'easeOut' }}
-                              whileHover={{ filter: 'brightness(1.15)', transition: { duration: 0.15 } }}
-                              style={{ borderRadius: '8px 8px 4px 4px', backgroundColor: stage.color, opacity: 0.85 }}
-                              className="w-full"
-                            />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                  <Card className="lg:col-span-2 p-5">
+                    <SectionHeading icon={AlertTriangle} label="PMO Governance & Risk Log" iconBg="bg-red-50" iconColor="text-red-500" />
+                    <div className="space-y-3 mt-4">
+                      {riskItems.map((item, idx) => (
+                        <motion.div key={idx} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.06 }}
+                          className="p-3.5 bg-gray-50 border border-gray-100 rounded-xl flex flex-col md:flex-row md:items-start justify-between gap-3 text-left">
+                          <div className="flex-1 min-w-0 text-left">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <div className="w-5 h-5 bg-white rounded-md flex items-center justify-center shrink-0 border border-gray-150">
+                                <item.icon size={10} className="text-gray-500" />
+                              </div>
+                              <h4 className="font-bold text-xs text-[#1C3627] text-left truncate">{item.title}</h4>
+                            </div>
+                            <p className="text-[11px] text-gray-505 font-semibold mb-1 text-left">Engagement: {item.engagement}</p>
+                            <p className="text-[10px] text-gray-400 text-left"><span className="font-black text-red-500">Impact:</span> {item.impact}</p>
+                            <p className="text-[10px] text-gray-400 mt-0.5 text-left"><span className="font-black text-teal-600">PMO Action:</span> {item.recommendation}</p>
                           </div>
-                          <span className="text-[10px] font-bold text-gray-500 text-center">{stage.stage}</span>
+                          <div className="flex items-center gap-3 self-end md:self-start mt-2 md:mt-0 shrink-0">
+                            <RiskBadge level={item.severity} />
+                            <span className="text-[9px] text-gray-400 font-medium">{item.date}</span>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  <Card className="p-5">
+                    <SectionHeading icon={DollarSign} label="Engagement Budget Health" />
+                    <div className="space-y-4 mt-5">
+                      {budgetHealth.map((item, idx) => (
+                        <div key={idx} className="p-3.5 bg-[#FAFBF9] border border-gray-100 rounded-xl text-left">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-bold text-xs text-[#1C3627] text-left">{item.engagement}</h4>
+                            <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border ${
+                              item.risk === 'High' ? 'text-red-700 bg-red-50 border-red-200' :
+                              item.risk === 'Medium' ? 'text-amber-700 bg-amber-50 border-amber-200' :
+                              'text-emerald-700 bg-emerald-50 border-emerald-200'
+                            }`}>{item.risk} Risk</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] text-gray-400 mb-1">
+                            <span className="text-left">Budget Utilisation</span>
+                            <span className="font-black text-[#1C3627] text-right">₹{item.spent}L / ₹{item.budget}L</span>
+                          </div>
+                          <ProgressBar value={(item.spent / item.budget) * 100} color={item.color} delay={idx * 0.1} />
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ══ PMO Oversight ══ */}
+            {activeTab === 'PMO Oversight' && (
+              <motion.div key="pmo" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }} className="space-y-5">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {pmoHealth.map((kpi, idx) => (
+                    <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }}
+                      className={`bg-white rounded-2xl p-5 border-l-4 ${kpi.border} cursor-default`}
+                      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                      <div className={`w-8 h-8 ${kpi.bg} rounded-xl flex items-center justify-center mb-3`}>
+                        <kpi.icon size={15} className={kpi.color} />
+                      </div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 text-left">{kpi.label}</p>
+                      <p className="text-3xl font-black text-[#1C3627] mb-1.5 text-left">
+                        <AnimatedNumber value={kpi.value} suffix="%" />
+                      </p>
+                      <p className="text-[10px] text-gray-400 text-left">{kpi.sub}</p>
+                    </motion.div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                  <Card className="p-5">
+                    <SectionHeading icon={Clipboard} label="PMO Governance & Compliance Checklist" />
+                    <div className="space-y-3 mt-4">
+                      {governanceChecklist.map((item, idx) => (
+                        <motion.div key={idx} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}
+                          className="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-xl text-left">
+                          <div className="text-left flex-1 min-w-0 pr-3">
+                            <h4 className="font-bold text-[11px] text-[#1C3627] text-left truncate">{item.item}</h4>
+                            <p className="text-[9px] text-gray-400 text-left">Checked: {item.date} · Priority: {item.priority}</p>
+                          </div>
+                          <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border shrink-0 ${
+                            item.status === 'Compliant' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'
+                          }`}>{item.status}</span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  <Card className="p-5">
+                    <SectionHeading icon={CheckSquare} label="PMO SLA Compliance Adherence" />
+                    <div className="space-y-4 mt-5">
+                      {slaTracking.map((item, idx) => (
+                        <div key={idx} className="cursor-default text-left">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[11px] font-bold text-gray-600 text-left">{item.metric}</span>
+                            <span className="text-[11px] font-black text-[#1C3627] text-right">{item.actual} / {item.target}</span>
+                          </div>
+                          <ProgressBar value={item.pct} color={item.status === 'On Track' ? '#0eb59a' : '#EF4444'} delay={idx * 0.1} />
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  <Card className="p-5">
+                    <SectionHeading icon={Shield} label="Compliance Audit Trail" />
+                    <div className="space-y-3 mt-4">
+                      {auditTrail.map((trail, idx) => (
+                        <motion.div key={idx} initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}
+                          className="p-3 bg-[#FAFBF9] border border-gray-100 rounded-xl text-left flex items-start gap-2.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#0eb59a] shrink-0 mt-1.5" />
+                          <div className="text-left flex-1 min-w-0">
+                            <h4 className="font-bold text-[11px] text-[#1C3627] text-left leading-tight">{trail.action}</h4>
+                            <p className="text-[9px] text-gray-400 mt-1 text-left">By: {trail.user} · Amount: {trail.amount}</p>
+                            <p className="text-[9px] text-gray-400 text-left">{trail.timestamp}</p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </Card>
                 </div>
               </motion.div>
             )}

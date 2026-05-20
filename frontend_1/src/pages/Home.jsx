@@ -400,7 +400,6 @@ const Home = () => {
         <AnimatedSection className="py-16 px-6 max-w-7xl mx-auto">
             <div className="mb-10 text-center md:text-left flex flex-col md:flex-row justify-between items-end gap-4">
                 <h2 className="text-3xl md:text-5xl text-gray-900 font-serif font-bold tracking-tight">Be a part of our story.</h2>
-                <p className="text-gray-500 text-lg max-w-md md:text-right font-light">A high-trust ecosystem for managed consulting, interim leadership, and strategic transformation.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

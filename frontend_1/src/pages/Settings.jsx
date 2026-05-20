@@ -176,7 +176,6 @@ const Settings = () => {
     { icon: Users, label: 'Experts', path: '/experts' },
     { icon: CreditCard, label: 'Payments', path: '/payments' },
     { icon: BarChart2Icon, label: 'Analytics', path: '/analytics' },
-    { icon: ShieldCheck, label: 'PMO Services', path: '/pmo' },
     { icon: SettingsIcon, label: 'Settings', path: '/settings', active: true },
   ];
 
