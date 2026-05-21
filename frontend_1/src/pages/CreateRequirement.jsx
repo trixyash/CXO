@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -12,6 +12,8 @@ import {
 
 const CreateRequirement = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const draftId = searchParams.get('id');
 
   // Authentication Guard
   useEffect(() => {
@@ -35,6 +37,37 @@ const CreateRequirement = () => {
       }
     };
   }, [navigate]);
+
+  useEffect(() => {
+    const fetchDraft = async () => {
+      if (draftId) {
+        const { data, error } = await supabase
+          .from('company_requirements')
+          .select('*')
+          .eq('id', draftId)
+          .single();
+        
+        if (data && !error) {
+          setFormData({
+            engagementType: data.engagement_type || '',
+            businessProblems: data.business_problems || [],
+            businessProblemText: data.business_problem_text || '',
+            roleTitle: data.role_title || '',
+            skills: data.skills || [],
+            experienceYears: data.experience_years || '10-13',
+            industries: data.industries || [],
+            budgetMin: data.budget_min ? data.budget_min.toString() : '',
+            budgetMax: data.budget_max ? data.budget_max.toString() : '',
+            duration: data.duration || '',
+            commitment: data.commitment || '',
+            urgency: data.urgency || '',
+            location: data.location || ''
+          });
+        }
+      }
+    };
+    fetchDraft();
+  }, [draftId]);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -232,14 +265,24 @@ const CreateRequirement = () => {
         status: status
       };
 
-      const { error } = await supabase
-        .from('company_requirements')
-        .insert([payload]);
+      let dbError;
+      if (draftId) {
+        const { error } = await supabase
+          .from('company_requirements')
+          .update(payload)
+          .eq('id', draftId);
+        dbError = error;
+      } else {
+        const { error } = await supabase
+          .from('company_requirements')
+          .insert([payload]);
+        dbError = error;
+      }
 
-      if (!error) {
+      if (!dbError) {
         navigate('/requirements');
       } else {
-        console.error("Failed to save requirement:", error);
+        console.error("Failed to save requirement:", dbError);
       }
     } catch (error) {
       console.error("Error saving requirement:", error);

@@ -546,7 +546,7 @@ const Requirements = () => {
                         transition={{ delay: idx * 0.05, duration: 0.28 }}
                         whileHover={{ y: -3, transition: { duration: 0.2 } }}
                         whileTap={{ scale: 0.995 }}
-                        onClick={() => req.status !== 'Draft' && setSelectedRequirement(isSelected ? null : req)}
+                        onClick={() => req.status === 'Draft' ? navigate(`/requirements/create?id=${req.id}`) : setSelectedRequirement(isSelected ? null : req)}
                         className={`
                           relative rounded-2xl border overflow-hidden cursor-pointer
                           transition-all duration-200
