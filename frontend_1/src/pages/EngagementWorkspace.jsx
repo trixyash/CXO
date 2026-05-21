@@ -43,6 +43,7 @@ const EngagementWorkspace = () => {
     };
   }, [navigate]);
 
+  const [companyProfile, setCompanyProfile] = useState(null);
   const [activeTab, setActiveTab] = useState('Overview');
   const [messageText, setMessageText] = useState('');
   const [showApproveModal, setShowApproveModal] = useState(null);
@@ -357,15 +358,22 @@ const EngagementWorkspace = () => {
       >
         {/* Brand */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
-          <div className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center shrink-0">
-            <span className="text-white font-black text-sm">C</span>
-          </div>
+          <motion.div whileHover={{ scale: 1.05, rotate: 2 }} whileTap={{ scale: 0.95 }}
+            className="w-9 h-9 bg-gradient-to-br from-[#134e40] to-[#0eb59a] rounded-xl flex items-center justify-center text-white font-black text-xs shadow-md overflow-hidden shrink-0">
+            {companyProfile?.logo_url ? (
+              <img src={companyProfile.logo_url} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-black text-sm">
+                {companyProfile?.company_name ? companyProfile.company_name.charAt(0).toUpperCase() : 'C'}
+              </span>
+            )}
+          </motion.div>
           <motion.div
             animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden whitespace-nowrap"
+            className="overflow-hidden whitespace-nowrap flex flex-col"
           >
-            <p className="text-[#134e40] font-black text-sm leading-none">CXO Connect</p>
+            <p className="text-[#134e40] font-black text-sm leading-none">{companyProfile?.company_name || 'CXO Connect'}</p>
             <p className="text-gray-400 text-[10px] mt-0.5">Company Portal</p>
           </motion.div>
           <motion.button
@@ -495,9 +503,18 @@ const EngagementWorkspace = () => {
               </div>
 
               {/* Avatar */}
-              <button className="w-9 h-9 bg-[#134e40] rounded-xl flex items-center justify-center text-white text-xs font-black hover:ring-2 hover:ring-[#0eb59a] hover:ring-offset-2 transition-all">
-                AC
-              </button>
+              <motion.div
+              whileHover={{ scale: 1.08, ringWidth: 2, ringColor: '#0eb59a', ringOffsetWidth: 2 }}
+              whileTap={{ scale: 0.94 }}
+              className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center text-white font-black text-xs cursor-pointer shadow-md transition-all duration-200 overflow-hidden"
+              title="Account"
+            >
+              {companyProfile?.logo_url ? (
+                <img src={companyProfile.logo_url} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                companyProfile?.company_name ? companyProfile.company_name.substring(0, 2).toUpperCase() : 'AC'
+              )}
+            </motion.div>
             </div>
           </div>
 

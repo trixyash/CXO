@@ -31,6 +31,50 @@ export const getCompanyProfile = async (req, res) => {
   }
 };
 
+// ================= GET TEAM MEMBERS =================
+export const getTeamMembers = async (req, res) => {
+  try {
+    const email = req.user.email;
+    if (!email) {
+      return res.status(400).json({ error: "Email not found in token" });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("company_applications")
+      .select("admin_name, admin_email")
+      .eq("admin_email", email)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      console.error("Error fetching team members:", error);
+      return res.status(500).json({ error: "Failed to fetch team members" });
+    }
+
+    if (!data) {
+      return res.status(404).json({ error: "Company profile not found" });
+    }
+
+    // Return the admin as a single team member
+    const teamMembers = [
+      {
+        id: 1, // Placeholder ID or generate UUID
+        name: data.admin_name || "Admin",
+        email: data.admin_email,
+        role: "Admin",
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.admin_name || "A")}&background=134e40&color=fff`,
+        status: "Active",
+        lastActive: "Now",
+        isOwner: true
+      }
+    ];
+
+    res.json(teamMembers);
+  } catch (err) {
+    console.error("getTeamMembers error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 // Helper function to map DB expert record to frontend component format
 export const mapDbExpert = (expert, idx = 0) => {
   const initials = expert.full_name
