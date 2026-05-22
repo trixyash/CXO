@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import OTPBox from "../components/OTPBox";
@@ -9,6 +9,19 @@ const SignIn = () => {
 	const location = useLocation();
 	const queryParams = new URLSearchParams(location.search);
 	const role = queryParams.get("role") || "company";
+
+	useEffect(() => {
+		const isExpertMock = localStorage.getItem("sb-mock-auth") === "true";
+		const isCompanyDemo = localStorage.getItem("demo_company") === "true";
+		
+		if (isExpertMock || isCompanyDemo) {
+			localStorage.removeItem("sb-mock-auth");
+			localStorage.removeItem("demo_company");
+			localStorage.removeItem("mock-role");
+			// Force a hard reload to re-initialize the Supabase client
+			window.location.reload();
+		}
+	}, []);
 
 	const [identifier, setIdentifier] = useState("");
 	const [loginMethod, setLoginMethod] = useState("otp"); // for experts

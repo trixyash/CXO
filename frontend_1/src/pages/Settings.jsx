@@ -17,6 +17,7 @@ import {
 const Settings = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Company Profile');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showRemoveMemberModal, setShowRemoveMemberModal] = useState(null);
@@ -337,7 +338,45 @@ const Settings = () => {
   ];
 
   // ── HELPERS ──
-  const handleSave = () => {
+  const handleSaveProfile = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("You must be logged in to save.");
+        return;
+      }
+      
+      const updates = {
+        company_name: profile.companyName,
+        industry: profile.industry,
+        org_size: profile.size,
+        website: profile.website,
+        linkedin: profile.linkedIn,
+        about: profile.description,
+        company_age: profile.founded,
+        gstin: profile.gst,
+        contact_number: profile.adminPhone,
+      };
+
+      const { error } = await supabase
+        .from('company_applications')
+        .update(updates)
+        .eq('admin_email', profile.adminEmail);
+
+      if (error) {
+        console.error("Error updating profile:", error);
+        alert("Failed to update profile. Make sure you added the RLS policy.");
+      } else {
+        setSaveSuccess(true);
+        setIsEditingProfile(false);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveNotifications = () => {
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
   };
@@ -624,13 +663,22 @@ const Settings = () => {
 
                   {/* Company Identity */}
                   <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-                    <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 mb-4 text-left">
-                      <Building size={14} className="text-[#0eb59a]" /> Company Identity
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 text-left">
+                        <Building size={14} className="text-[#0eb59a]" /> Company Identity
+                      </h3>
+                      <button 
+                        onClick={() => setIsEditingProfile(!isEditingProfile)} 
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-[#0eb59a] hover:bg-teal-50 transition-colors"
+                        title={isEditingProfile ? "Cancel editing" : "Edit Profile"}
+                      >
+                        {isEditingProfile ? <X size={16} /> : <Edit3 size={16} />}
+                      </button>
+                    </div>
 
                     {/* Logo */}
                     <div className="flex items-center gap-4 mb-5 p-4 bg-[#FAFBF9] rounded-xl border border-gray-100">
-                      <div className="relative group cursor-pointer" onClick={handleUploadLogo}>
+                      <div className={`relative group ${isEditingProfile ? 'cursor-pointer' : ''}`} onClick={isEditingProfile ? handleUploadLogo : undefined}>
                         <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center shadow-md overflow-hidden">
                           {profile.logoUrl ? (
                             <img src={profile.logoUrl} alt="Logo" className="w-full h-full object-cover" />
@@ -640,21 +688,24 @@ const Settings = () => {
                             </span>
                           )}
                         </div>
-                        <motion.div
-                          whileHover={{ opacity: 1 }}
-                          className="absolute inset-0 bg-black/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                        >
-                          <Upload size={16} className="text-white" />
-                        </motion.div>
+                        {isEditingProfile && (
+                          <motion.div
+                            whileHover={{ opacity: 1 }}
+                            className="absolute inset-0 bg-black/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                          >
+                            <Upload size={16} className="text-white" />
+                          </motion.div>
+                        )}
                       </div>
                       <div className="text-left">
                         <p className="font-bold text-[#1C3627] text-sm text-left">Company Logo</p>
                         <p className="text-xs text-gray-400 mb-2 text-left">PNG or JPG, minimum 200x200px</p>
                         <motion.button
-                          whileHover={{ scale: 1.04, backgroundColor: '#F0FDF4', borderColor: '#0eb59a' }}
-                          whileTap={{ scale: 0.96 }}
-                          onClick={handleUploadLogo}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs font-bold rounded-lg hover:text-[#0eb59a] transition-all"
+                          whileHover={isEditingProfile ? { scale: 1.04, backgroundColor: '#F0FDF4', borderColor: '#0eb59a' } : {}}
+                          whileTap={isEditingProfile ? { scale: 0.96 } : {}}
+                          onClick={isEditingProfile ? handleUploadLogo : undefined}
+                          disabled={!isEditingProfile}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs font-bold rounded-lg transition-all ${!isEditingProfile ? 'opacity-50 cursor-not-allowed' : 'hover:text-[#0eb59a]'}`}
                         >
                           <Upload size={12} /> Upload Logo
                         </motion.button>
@@ -683,7 +734,8 @@ const Settings = () => {
                               type={field.type}
                               value={profile[field.key]}
                               onChange={e => setProfile(prev => ({ ...prev, [field.key]: e.target.value }))}
-                              className={`w-full py-2.5 bg-[#FAFBF9] border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0eb59a]/20 focus:border-[#0eb59a]/50 transition-all text-left ${field.icon ? 'pl-9 pr-4' : 'px-4'}`}
+                              disabled={!isEditingProfile}
+                              className={`w-full py-2.5 bg-[#FAFBF9] border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0eb59a]/20 focus:border-[#0eb59a]/50 transition-all text-left ${field.icon ? 'pl-9 pr-4' : 'px-4'} ${!isEditingProfile ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`}
                             />
                           </div>
                         </div>
@@ -698,7 +750,8 @@ const Settings = () => {
                         value={profile.description}
                         onChange={e => setProfile(prev => ({ ...prev, description: e.target.value }))}
                         rows={3}
-                        className="w-full px-4 py-2.5 bg-[#FAFBF9] border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0eb59a]/20 focus:border-[#0eb59a]/50 transition-all resize-none text-left"
+                        disabled={!isEditingProfile}
+                        className={`w-full px-4 py-2.5 bg-[#FAFBF9] border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0eb59a]/20 focus:border-[#0eb59a]/50 transition-all resize-none text-left ${!isEditingProfile ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`}
                       />
                     </div>
                   </div>
@@ -721,7 +774,8 @@ const Settings = () => {
                           <select
                             value={profile[field.key]}
                             onChange={e => setProfile(prev => ({ ...prev, [field.key]: e.target.value }))}
-                            className="w-full px-4 py-2.5 bg-[#FAFBF9] border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0eb59a]/20 focus:border-[#0eb59a]/50 transition-all text-left"
+                            disabled={!isEditingProfile}
+                            className={`w-full px-4 py-2.5 bg-[#FAFBF9] border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0eb59a]/20 focus:border-[#0eb59a]/50 transition-all text-left ${!isEditingProfile ? 'bg-gray-100 cursor-not-allowed text-gray-500 appearance-none' : ''}`}
                           >
                             {field.options.map(opt => (
                               <option key={opt} value={opt}>{opt}</option>
@@ -746,7 +800,8 @@ const Settings = () => {
                             type="email"
                             value={profile.adminEmail}
                             onChange={e => setProfile(prev => ({ ...prev, adminEmail: e.target.value }))}
-                            className="w-full pl-9 pr-4 py-2.5 bg-[#FAFBF9] border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0eb59a]/20 focus:border-[#0eb59a]/50 transition-all"
+                            disabled={!isEditingProfile}
+                            className={`w-full pl-9 pr-4 py-2.5 bg-[#FAFBF9] border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0eb59a]/20 focus:border-[#0eb59a]/50 transition-all ${!isEditingProfile ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`}
                           />
                         </div>
                       </div>
@@ -758,7 +813,8 @@ const Settings = () => {
                             type="tel"
                             value={profile.adminPhone}
                             onChange={e => setProfile(prev => ({ ...prev, adminPhone: e.target.value }))}
-                            className="w-full pl-9 pr-4 py-2.5 bg-[#FAFBF9] border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0eb59a]/20 focus:border-[#0eb59a]/50 transition-all"
+                            disabled={!isEditingProfile}
+                            className={`w-full pl-9 pr-4 py-2.5 bg-[#FAFBF9] border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0eb59a]/20 focus:border-[#0eb59a]/50 transition-all ${!isEditingProfile ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`}
                           />
                         </div>
                       </div>
@@ -766,11 +822,12 @@ const Settings = () => {
                   </div>
 
                   {/* Save Button */}
-                  <div className="flex justify-end">
-                    <motion.button
+                  {isEditingProfile && (
+                    <div className="flex justify-end">
+                      <motion.button
                       whileHover={{ scale: 1.04, boxShadow: '0 8px 25px rgba(20,78,64,0.3)' }}
                       whileTap={{ scale: 0.96 }}
-                      onClick={handleSave}
+                      onClick={handleSaveProfile}
                       style={{
                         padding: '12px 28px',
                         background: 'linear-gradient(135deg, #134e40, #0eb59a)',
@@ -786,9 +843,10 @@ const Settings = () => {
                         boxShadow: '0 4px 15px rgba(20,78,64,0.2)',
                       }}
                     >
-                      <Save size={15} /> Save Company Profile
-                    </motion.button>
-                  </div>
+                        <Save size={15} /> Save Company Profile
+                      </motion.button>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
@@ -975,7 +1033,7 @@ const Settings = () => {
                     <motion.button
                       whileHover={{ scale: 1.04, boxShadow: '0 8px 25px rgba(20,78,64,0.3)' }}
                       whileTap={{ scale: 0.96 }}
-                      onClick={handleSave}
+                      onClick={handleSaveNotifications}
                       style={{
                         padding: '12px 28px',
                         background: 'linear-gradient(135deg, #134e40, #0eb59a)',
