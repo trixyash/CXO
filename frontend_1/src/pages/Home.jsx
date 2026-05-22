@@ -122,7 +122,7 @@ const Home = () => {
                         Get Started
                         <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </button>
-                    <button onClick={(e) => { e.preventDefault(); document.getElementById('about-us')?.scrollIntoView({ behavior: 'smooth' }); }} className="px-10 py-4 rounded-full bg-white text-[#134e40] border-2 border-[#134e40] font-semibold text-lg hover:bg-[#134e40] hover:text-white transition-all duration-300 w-full sm:w-auto shadow-sm">
+                    <button onClick={(e) => { e.preventDefault(); document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' }); }} className="px-10 py-4 rounded-full bg-white text-[#134e40] border-2 border-[#134e40] font-semibold text-lg hover:bg-[#134e40] hover:text-white transition-all duration-300 w-full sm:w-auto shadow-sm">
                         Learn More
                     </button>
                 </div>
@@ -161,7 +161,7 @@ const Home = () => {
         </div>
 
         {/* Two-sided marketplace — tighter padding */}
-        <AnimatedSection className="py-14 px-6 max-w-7xl mx-auto">
+        <AnimatedSection className="py-14 px-6 max-w-7xl mx-auto" id="about-platform">
             <div className="bg-[#134e40] rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row shadow-2xl relative group">
                 <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/5 blur-[100px] rounded-full pointer-events-none group-hover:scale-150 transition-transform duration-1000"></div>
                 <div className="flex-1 p-10 md:p-14 flex flex-col justify-center relative z-10">
@@ -177,31 +177,51 @@ const Home = () => {
                         The premier <br className="hidden md:block" />two-sided marketplace.
                     </h2>
                     <div className="space-y-6 max-w-xl">
-                        <p className="text-teal-50 text-xl font-light opacity-90">CXOConnect bridges the gap between:</p>
-                        <ul className="space-y-4">
-                            <li className="flex items-start gap-4">
-                                <div className="mt-1 bg-[#0eb59a]/20 p-1 rounded-full">
-                                    <Check className="text-[#0eb59a]" size={16} />
-                                </div>
-                                <span className="text-teal-50 text-lg leading-relaxed"><strong className="text-white font-semibold">Companies</strong> seeking impactful leadership.</span>
-                            </li>
-                            <li className="flex items-start gap-4">
-                                <div className="mt-1 bg-[#0eb59a]/20 p-1 rounded-full">
-                                    <Check className="text-[#0eb59a]" size={16} />
-                                </div>
-                                <span className="text-teal-50 text-lg leading-relaxed"><strong className="text-white font-semibold">Senior Professionals</strong> seeking flexible engagements.</span>
-                            </li>
-                        </ul>
-                        <div className="border-l-4 border-[#0eb59a] pl-6 py-2 bg-white/5 rounded-r-2xl">
-                            <p className="text-teal-50/90 text-base leading-relaxed italic">
-                                Supported by an expert Admin layer to ensure trust, meticulous vetting, and seamless managed delivery.
-                            </p>
-                        </div>
-                        <div className="pt-2">
-                            <button onClick={openModal} className="bg-white text-[#134e40] px-10 py-4 rounded-full font-bold hover:bg-[#0eb59a] hover:text-white transition-all duration-300 inline-flex items-center gap-3 group/btn shadow-lg">
-                                Explore Engagements <ChevronRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
-                            </button>
-                        </div>
+                      <p className="text-teal-50 text-xl font-light opacity-90">
+                        CXOConnect bridges the gap between:
+                      </p>
+                      
+                      <ul className="space-y-4">
+                        <li className="flex items-start gap-4">
+                          <div className="mt-1 bg-[#0eb59a]/20 p-1.5 rounded-full shrink-0">
+                            <Check className="text-[#0eb59a]" size={16} />
+                          </div>
+                          <span className="text-teal-50 text-lg leading-relaxed">
+                            <strong className="text-white font-bold">Companies</strong>{' '}
+                            seeking impactful leadership.
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-4">
+                          <div className="mt-1 bg-[#0eb59a]/20 p-1.5 rounded-full shrink-0">
+                            <Check className="text-[#0eb59a]" size={16} />
+                          </div>
+                          <span className="text-teal-50 text-lg leading-relaxed">
+                            <strong className="text-white font-bold">
+                              Senior Professionals
+                            </strong>{' '}
+                            seeking flexible engagements.
+                          </span>
+                        </li>
+                      </ul>
+
+                      <div className="border-l-4 border-[#0eb59a] pl-6 py-2 
+                      bg-white/5 rounded-r-2xl">
+                        <p className="text-teal-50/90 text-base leading-relaxed italic">
+                          Supported by an expert Admin layer to ensure trust, meticulous 
+                          vetting, and seamless managed delivery.
+                        </p>
+                      </div>
+
+                      <div className="pt-2">
+                        <button onClick={openModal} 
+                        className="bg-white text-[#134e40] px-10 py-4 rounded-full 
+                        font-bold hover:bg-[#0eb59a] hover:text-white transition-all 
+                        duration-300 inline-flex items-center gap-3 group/btn shadow-lg">
+                          Explore Engagements 
+                          <ChevronRight size={20} 
+                          className="group-hover/btn:translate-x-1 transition-transform" />
+                        </button>
+                      </div>
                     </div>
                 </div>
                 <div className="flex-1 min-h-[400px] relative overflow-hidden">
@@ -210,144 +230,147 @@ const Home = () => {
             </div>
         </AnimatedSection>
 
-        {/* How It Works — mint green bg, tighter padding */}
-        <AnimatedSection className="py-10 w-full relative overflow-hidden bg-[#f0fdf4]" id="about-us">
-            <div className="max-w-7xl mx-auto px-6 relative z-10">
-                <div className="bg-white rounded-[2.5rem] border border-teal-100 shadow-[0_8px_30px_rgb(0,0,0,0.06)] py-10 px-6 lg:px-12 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#0eb59a]/5 rounded-full blur-[100px] pointer-events-none"></div>
-                    <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#134e40]/5 rounded-full blur-[100px] pointer-events-none"></div>
+        {/* How It Works & Problems sections merged under #services */}
+        <section id="services">
+            {/* How It Works — mint green bg, tighter padding */}
+            <AnimatedSection className="py-10 w-full relative overflow-hidden bg-[#f0fdf4]">
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    <div className="bg-white rounded-[2.5rem] border border-teal-100 shadow-[0_8px_30px_rgb(0,0,0,0.06)] py-10 px-6 lg:px-12 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#0eb59a]/5 rounded-full blur-[100px] pointer-events-none"></div>
+                        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#134e40]/5 rounded-full blur-[100px] pointer-events-none"></div>
 
-                    <div className="text-center mb-10 relative z-10">
-                        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 tracking-tight font-serif">How It Works</h2>
-                            <p className="text-base text-gray-500 font-light">Two distinct journeys, one perfect match</p>
-                        </motion.div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-0 relative z-10">
-                        <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gray-200 to-transparent -translate-x-1/2"></div>
-
-                        {/* For CXOs */}
-                        <div className="lg:pr-10 flex flex-col gap-6">
-                            <div className="text-center lg:text-left">
-                                <h3 className="text-2xl font-bold text-[#0eb59a] mb-1 tracking-tight">For CXOs</h3>
-                                <p className="text-gray-500 text-sm font-light">Your path to meaningful leadership roles</p>
-                            </div>
-                            <div className="space-y-5">
-                                {[
-                                    { icon: Edit, title: "Build your leadership profile, your way", desc: "Share your expertise, past outcomes, and availability, guided step-by-step with personal assistant support" },
-                                    { icon: Search, title: "Get discovered by the right companies", desc: "Our AI matching engine scores your leadership style and culture fit against founder needs before any introduction is made" },
-                                    { icon: Lock, title: "Unlock high-value engagements", desc: "Access pre-qualified fractional, interim, and advisory roles with contracts and payments built in" },
-                                ].map(({ icon: Icon, title, desc }) => (
-                                    <motion.div key={title} whileHover={{ x: 8 }} className="flex flex-col sm:flex-row items-center sm:items-start gap-4 group text-center sm:text-left">
-                                        <div className="shrink-0 w-10 h-10 rounded-xl bg-[#f0fdfa] border border-[#ccfbf1] flex items-center justify-center text-[#0eb59a] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#0eb59a] group-hover:text-white transition-all duration-300">
-                                            <Icon size={20} />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-[#0eb59a] transition-colors">{title}</h4>
-                                            <p className="text-gray-600 leading-relaxed text-sm font-light">{desc}</p>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
+                        <div className="text-center mb-10 relative z-10">
+                            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+                                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 tracking-tight font-serif">How It Works</h2>
+                                <p className="text-base text-gray-500 font-light">Two distinct journeys, one perfect match</p>
+                            </motion.div>
                         </div>
 
-                        {/* For Companies */}
-                        <div className="lg:pl-10 flex flex-col gap-6 mt-10 lg:mt-0">
-                            <div className="text-center lg:text-left">
-                                <h3 className="text-2xl font-bold text-[#134e40] mb-1 tracking-tight">For Companies</h3>
-                                <p className="text-gray-500 text-sm font-light">Find your next strategic leader</p>
-                            </div>
-                            <div className="space-y-5">
-                                {[
-                                    { icon: Monitor, title: "Define your leadership need in minutes", desc: "Use our guided requirement wizard to articulate your real business challenge — not just a job title" },
-                                    { icon: Users, title: "Get matched with verified senior leaders", desc: "AI-powered shortlisting of CXOs who fit your industry, stage, and culture, not just keywords" },
-                                    { icon: CheckCircle2, title: "Onboard with confidence and governance", desc: "Kick off engagements with structured milestones, escrow-backed payments, and PMO oversight from day one" },
-                                ].map(({ icon: Icon, title, desc }) => (
-                                    <motion.div key={title} whileHover={{ x: 8 }} className="flex flex-col sm:flex-row items-center sm:items-start gap-4 group text-center sm:text-left">
-                                        <div className="shrink-0 w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[#134e40] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#134e40] group-hover:text-white transition-all duration-300">
-                                            <Icon size={20} />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-[#134e40] transition-colors">{title}</h4>
-                                            <p className="text-gray-600 leading-relaxed text-sm font-light">{desc}</p>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </AnimatedSection>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-0 relative z-10">
+                            <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gray-200 to-transparent -translate-x-1/2"></div>
 
-        {/* What Problem Carousel — tighter padding */}
-        <AnimatedSection className="py-20 w-full overflow-hidden relative" id="problems">
-            <div className="absolute inset-0 bg-[#111827]">
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1914] to-[#111827]"></div>
-            </div>
-            <div className="max-w-[100vw] mx-auto relative z-10 flex flex-col items-center overflow-hidden">
-                <h2 className="text-center text-4xl md:text-5xl text-white mb-14 font-serif font-bold tracking-tight px-6">What problem can we <span className="text-[#0eb59a]">solve together?</span></h2>
-
-                <div className="relative w-full flex items-center justify-center px-4 md:px-0">
-                    <div className="w-full max-w-7xl relative flex justify-center items-center h-[500px]">
-                        <AnimatePresence initial={false}>
-                            {slides.map((slide, idx) => {
-                                let position = 'hidden';
-                                let zIndex = 0;
-                                let x = 0;
-                                let scale = 0.8;
-                                let opacity = 0;
-                                let blur = 'blur(10px)';
-
-                                if (idx === currentSlide) {
-                                    position = 'center'; zIndex = 30; x = 0; scale = 1; opacity = 1; blur = 'blur(0px)';
-                                } else if (idx === currentSlide - 1 || (currentSlide === 0 && idx === maxSlide)) {
-                                    position = 'left'; zIndex = 20; x = '-70%'; scale = 0.85; opacity = 0.6; blur = 'blur(6px)';
-                                } else if (idx === currentSlide + 1 || (currentSlide === maxSlide && idx === 0)) {
-                                    position = 'right'; zIndex = 20; x = '70%'; scale = 0.85; opacity = 0.6; blur = 'blur(6px)';
-                                }
-
-                                if (position === 'hidden') return null;
-
-                                return (
-                                    <motion.div
-                                        key={idx}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ x, scale, opacity, filter: blur, zIndex }}
-                                        transition={{ duration: 0.6, ease: "easeInOut" }}
-                                        className="absolute w-[90%] md:w-[60%] lg:w-[45%] h-full cursor-pointer"
-                                        onClick={() => setCurrentSlide(idx)}
-                                    >
-                                        <div className="w-full h-full rounded-[2rem] overflow-hidden relative shadow-2xl group border border-white/10">
-                                            <img src={slide.image} alt={slide.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90"></div>
-                                            <div className="absolute bottom-0 left-0 w-full p-10 z-10 flex flex-col justify-end">
-                                                <h3 className="text-3xl text-white mb-4 font-semibold">{slide.title}</h3>
-                                                <p className="text-gray-300 leading-relaxed text-lg line-clamp-3">{slide.content}</p>
+                            {/* For CXOs */}
+                            <div className="lg:pr-10 flex flex-col gap-6">
+                                <div className="text-center lg:text-left">
+                                    <h3 className="text-2xl font-bold text-[#0eb59a] mb-1 tracking-tight">For CXOs</h3>
+                                    <p className="text-gray-500 text-sm font-light">Your path to meaningful leadership roles</p>
+                                </div>
+                                <div className="space-y-5">
+                                    {[
+                                        { icon: Edit, title: "Build your leadership profile, your way", desc: "Share your expertise, past outcomes, and availability, guided step-by-step with personal assistant support" },
+                                        { icon: Search, title: "Get discovered by the right companies", desc: "Our AI matching engine scores your leadership style and culture fit against founder needs before any introduction is made" },
+                                        { icon: Lock, title: "Unlock high-value engagements", desc: "Access pre-qualified fractional, interim, and advisory roles with contracts and payments built in" },
+                                    ].map(({ icon: Icon, title, desc }) => (
+                                        <motion.div key={title} whileHover={{ x: 8 }} className="flex flex-col sm:flex-row items-center sm:items-start gap-4 group text-center sm:text-left">
+                                            <div className="shrink-0 w-10 h-10 rounded-xl bg-[#f0fdf4] border border-[#ccfbf1] flex items-center justify-center text-[#0eb59a] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#0eb59a] group-hover:text-white transition-all duration-300">
+                                                <Icon size={20} />
                                             </div>
-                                        </div>
-                                    </motion.div>
-                                );
-                            })}
-                        </AnimatePresence>
+                                            <div>
+                                                <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-[#0eb59a] transition-colors">{title}</h4>
+                                                <p className="text-gray-600 leading-relaxed text-sm font-light">{desc}</p>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </div>
 
-                        <button className="absolute left-[5%] lg:left-[15%] z-40 bg-[#134e40]/80 backdrop-blur-md shadow-2xl text-white rounded-full w-14 h-14 flex items-center justify-center cursor-pointer transition-all hover:bg-[#0eb59a] hover:scale-110" onClick={prevSlide}>
-                            <ChevronLeft size={28} />
-                        </button>
-                        <button className="absolute right-[5%] lg:right-[15%] z-40 bg-[#134e40]/80 backdrop-blur-md shadow-2xl text-white rounded-full w-14 h-14 flex items-center justify-center cursor-pointer transition-all hover:bg-[#0eb59a] hover:scale-110" onClick={nextSlide}>
-                            <ChevronRight size={28} />
-                        </button>
+                            {/* For Companies */}
+                            <div className="lg:pl-10 flex flex-col gap-6 mt-10 lg:mt-0">
+                                <div className="text-center lg:text-left">
+                                    <h3 className="text-2xl font-bold text-[#134e40] mb-1 tracking-tight">For Companies</h3>
+                                    <p className="text-gray-500 text-sm font-light">Find your next strategic leader</p>
+                                </div>
+                                <div className="space-y-5">
+                                    {[
+                                        { icon: Monitor, title: "Define your leadership need in minutes", desc: "Use our guided requirement wizard to articulate your real business challenge — not just a job title" },
+                                        { icon: Users, title: "Get matched with verified senior leaders", desc: "AI-powered shortlisting of CXOs who fit your industry, stage, and culture, not just keywords" },
+                                        { icon: CheckCircle2, title: "Onboard with confidence and governance", desc: "Kick off engagements with structured milestones, escrow-backed payments, and PMO oversight from day one" },
+                                    ].map(({ icon: Icon, title, desc }) => (
+                                        <motion.div key={title} whileHover={{ x: 8 }} className="flex flex-col sm:flex-row items-center sm:items-start gap-4 group text-center sm:text-left">
+                                            <div className="shrink-0 w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[#134e40] shadow-sm group-hover:scale-110 group-hover:shadow-md group-hover:bg-[#134e40] group-hover:text-white transition-all duration-300">
+                                                <Icon size={20} />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-[#134e40] transition-colors">{title}</h4>
+                                                <p className="text-gray-600 leading-relaxed text-sm font-light">{desc}</p>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </AnimatedSection>
 
-                <div className="flex gap-3 justify-center mt-10 z-20 relative">
-                    {slides.map((_, i) => (
-                        <span key={i} className={`h-3 rounded-full cursor-pointer transition-all duration-500 ${i === currentSlide ? 'bg-[#0eb59a] w-10 shadow-[0_0_10px_#0eb59a]' : 'bg-white/30 w-3 hover:bg-white/60'}`} onClick={() => setCurrentSlide(i)}></span>
-                    ))}
+            {/* What Problem Carousel — tighter padding */}
+            <AnimatedSection className="py-20 w-full overflow-hidden relative">
+                <div className="absolute inset-0 bg-[#111827]">
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1914] to-[#111827]"></div>
                 </div>
-            </div>
-        </AnimatedSection>
+                <div className="max-w-[100vw] mx-auto relative z-10 flex flex-col items-center overflow-hidden">
+                    <h2 className="text-center text-4xl md:text-5xl text-white mb-14 font-serif font-bold tracking-tight px-6">What problem can we <span className="text-[#0eb59a]">solve together?</span></h2>
+
+                    <div className="relative w-full flex items-center justify-center px-4 md:px-0">
+                        <div className="w-full max-w-7xl relative flex justify-center items-center h-[500px]">
+                            <AnimatePresence initial={false}>
+                                {slides.map((slide, idx) => {
+                                    let position = 'hidden';
+                                    let zIndex = 0;
+                                    let x = 0;
+                                    let scale = 0.8;
+                                    let opacity = 0;
+                                    let blur = 'blur(10px)';
+
+                                    if (idx === currentSlide) {
+                                        position = 'center'; zIndex = 30; x = 0; scale = 1; opacity = 1; blur = 'blur(0px)';
+                                    } else if (idx === currentSlide - 1 || (currentSlide === 0 && idx === maxSlide)) {
+                                        position = 'left'; zIndex = 20; x = '-70%'; scale = 0.85; opacity = 0.6; blur = 'blur(6px)';
+                                    } else if (idx === currentSlide + 1 || (currentSlide === maxSlide && idx === 0)) {
+                                        position = 'right'; zIndex = 20; x = '70%'; scale = 0.85; opacity = 0.6; blur = 'blur(6px)';
+                                    }
+
+                                    if (position === 'hidden') return null;
+
+                                    return (
+                                        <motion.div
+                                            key={idx}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ x, scale, opacity, filter: blur, zIndex }}
+                                            transition={{ duration: 0.6, ease: "easeInOut" }}
+                                            className="absolute w-[90%] md:w-[60%] lg:w-[45%] h-full cursor-pointer"
+                                            onClick={() => setCurrentSlide(idx)}
+                                        >
+                                            <div className="w-full h-full rounded-[2rem] overflow-hidden relative shadow-2xl group border border-white/10">
+                                                <img src={slide.image} alt={slide.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90"></div>
+                                                <div className="absolute bottom-0 left-0 w-full p-10 z-10 flex flex-col justify-end">
+                                                    <h3 className="text-3xl text-white mb-4 font-semibold">{slide.title}</h3>
+                                                    <p className="text-gray-300 leading-relaxed text-lg line-clamp-3">{slide.content}</p>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </AnimatePresence>
+
+                            <button className="absolute left-[5%] lg:left-[15%] z-40 pointer-events-auto bg-[#134e40]/80 backdrop-blur-md shadow-2xl text-white rounded-full w-14 h-14 flex items-center justify-center cursor-pointer transition-all hover:bg-[#0eb59a] hover:scale-110" onClick={prevSlide}>
+                                <ChevronLeft size={28} />
+                            </button>
+                            <button className="absolute right-[5%] lg:right-[15%] z-40 pointer-events-auto bg-[#134e40]/80 backdrop-blur-md shadow-2xl text-white rounded-full w-14 h-14 flex items-center justify-center cursor-pointer transition-all hover:bg-[#0eb59a] hover:scale-110" onClick={nextSlide}>
+                                <ChevronRight size={28} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-3 justify-center mt-10 z-20 relative">
+                        {slides.map((_, i) => (
+                            <span key={i} className={`h-3 rounded-full cursor-pointer transition-all duration-500 ${i === currentSlide ? 'bg-[#0eb59a] w-10 shadow-[0_0_10px_#0eb59a]' : 'bg-white/30 w-3 hover:bg-white/60'}`} onClick={() => setCurrentSlide(i)}></span>
+                        ))}
+                    </div>
+                </div>
+            </AnimatedSection>
+        </section>
 
         {/* Membership — dark bg, full width, premium feel */}
         <AnimatedSection className="py-16 w-full bg-[#0f172a]" id="membership">
