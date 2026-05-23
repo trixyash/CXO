@@ -23,6 +23,23 @@ const SignIn = () => {
 		}
 	}, []);
 
+	useEffect(() => {
+		// Handle error query parameter from redirects (e.g. from expired magic link)
+		const urlError = queryParams.get("error");
+		if (urlError) {
+			setError(decodeURIComponent(urlError));
+			
+			// Clean up the URL search params so the error message doesn't persist on page reloads
+			const newParams = new URLSearchParams(location.search);
+			newParams.delete("error");
+			const newSearch = newParams.toString();
+			navigate({
+				pathname: location.pathname,
+				search: newSearch ? `?${newSearch}` : ""
+			}, { replace: true });
+		}
+	}, [location.search, navigate]);
+
 	const [identifier, setIdentifier] = useState("");
 	const [loginMethod, setLoginMethod] = useState("otp"); // for experts
 	const [loading, setLoading] = useState(false);
@@ -39,6 +56,7 @@ const SignIn = () => {
 		setMessage("");
 
 		try {
+			localStorage.setItem('logging_in_role', role);
 			if (role === "company") {
 				const cleanEmail = identifier.trim();
 				console.log("🔍 Searching for company admin email:", `"${cleanEmail}"`);
@@ -172,6 +190,7 @@ const SignIn = () => {
 
 	const handleOAuthSignIn = async (provider) => {
 		try {
+			localStorage.setItem('logging_in_role', role);
 			const { data, error } = await supabase.auth.signInWithOAuth({
 				provider: provider,
 				options: {

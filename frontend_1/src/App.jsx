@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import JoinCompany from './pages/JoinCompany';
@@ -30,6 +31,51 @@ import AuthModal from './components/AuthModal';
 
 const AppContent = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // 1. Check if there is an auth error stored in sessionStorage by main.jsx (most reliable for initial load)
+    const storedError = sessionStorage.getItem('auth_error');
+    if (storedError) {
+      try {
+        const { message, role } = JSON.parse(storedError);
+        sessionStorage.removeItem('auth_error');
+        navigate(`/signin?role=${role}&error=${encodeURIComponent(message)}`);
+        return;
+      } catch (err) {
+        console.error("Error parsing stored auth error:", err);
+      }
+    }
+
+    // 2. Check current URL hash as a fallback (for in-page hash changes)
+    if (window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const error = hashParams.get("error");
+      const errorDescription = hashParams.get("error_description");
+      const errorCode = hashParams.get("error_code");
+
+      if (error || errorCode || errorDescription) {
+        console.error("Auth error detected in hash:", { error, errorCode, errorDescription });
+        
+        // Clean up the hash from the URL so it doesn't loop or clutter the address bar
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        
+        // Retrieve the stored logging-in role (fallback to expert if not found)
+        const targetRole = localStorage.getItem('logging_in_role') || 'expert';
+        localStorage.removeItem('logging_in_role');
+
+        let friendlyMessage = errorDescription || error || "Authentication failed.";
+        // Translate the error message to be more friendly and helpful
+        if (errorCode === "otp_expired" || friendlyMessage.toLowerCase().includes("expired") || friendlyMessage.toLowerCase().includes("invalid")) {
+          friendlyMessage = "The sign-in link has expired or has already been used. This is common if your email provider scans links for safety. Please try signing in again, or choose the OTP method for a more reliable login.";
+        }
+        
+        // Redirect to the sign-in page with the correct role and the friendly error message
+        navigate(`/signin?role=${targetRole}&error=${encodeURIComponent(friendlyMessage)}`);
+      }
+    }
+  }, [navigate]);
+
   const showNavbar = location.pathname === '/' || location.pathname === '/privacy-policy' || location.pathname === '/terms-of-service';
   const isDashboard = location.pathname === '/company-dashboard' || location.pathname === '/expert-dashboard' || location.pathname === '/requirements' || location.pathname === '/requirements/create' || location.pathname === '/experts' || location.pathname.startsWith('/experts/') || location.pathname.startsWith('/engagements') || location.pathname === '/settings' || location.pathname.startsWith('/expert-opportunities') || location.pathname.startsWith('/expert-engagements') || location.pathname === '/expert-earnings' || location.pathname === '/expert-profile' || location.pathname === '/analytics';
 
