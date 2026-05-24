@@ -339,6 +339,58 @@ const ExpertDashboard = () => {
     { label: 'Resume uploaded', done: !!profile?.resume_url },
   ];
 
+  const canGoLeft = opportunityCarouselIndex > 0;
+  const canGoRight = opportunityCarouselIndex < recommendedOpportunities.length - itemsPerView;
+
+  const handleManualNav = (index) => {
+    const maxIndex = Math.max(0, recommendedOpportunities.length - itemsPerView);
+    const clampedIndex = Math.min(Math.max(0, index), maxIndex);
+    setOpportunityCarouselIndex(clampedIndex);
+    setAutoPlayProgress(0);
+  };
+
+  // Autoplay and Progress Timer Effect
+  useEffect(() => {
+    if (isCarouselHovered) {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+        autoPlayRef.current = null;
+      }
+      return;
+    }
+
+    const startTime = Date.now() - (autoPlayProgress / 100) * AUTO_PLAY_INTERVAL;
+    
+    autoPlayRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(100, (elapsed / AUTO_PLAY_INTERVAL) * 100);
+      
+      setAutoPlayProgress(pct);
+
+      if (pct >= 100) {
+        const maxIndex = Math.max(0, recommendedOpportunities.length - itemsPerView);
+        let nextIndex = opportunityCarouselIndex + carouselDirection;
+        
+        if (nextIndex > maxIndex) {
+          nextIndex = Math.max(0, maxIndex - 1);
+          setCarouselDirection(-1);
+        } else if (nextIndex < 0) {
+          nextIndex = Math.min(maxIndex, 1);
+          setCarouselDirection(1);
+        }
+        
+        setOpportunityCarouselIndex(Math.max(0, Math.min(maxIndex, nextIndex)));
+        setAutoPlayProgress(0);
+      }
+    }, 16);
+
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+    };
+  }, [isCarouselHovered, opportunityCarouselIndex, carouselDirection, itemsPerView, autoPlayProgress, recommendedOpportunities.length]);
+
   const nextOpportunity = () => {
     if (canGoRight) {
       handleManualNav(opportunityCarouselIndex + 1);
@@ -376,19 +428,12 @@ const ExpertDashboard = () => {
       >
         {/* LOGO AREA */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
-          <div
-            style={{ background: 'linear-gradient(135deg, #134e40 0%, #0eb59a 100%)' }}
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
-          >
-            <span className="text-white font-black text-xs tracking-tight">CX</span>
-          </div>
           <motion.div
-            animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
+            animate={{ width: isSidebarOpen ? 'auto' : 0, opacity: isSidebarOpen ? 1 : 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden whitespace-nowrap"
+            className="overflow-hidden shrink-0 flex items-center"
           >
-            <p className="text-[#134e40] font-black text-sm leading-none">CXO Connect</p>
-            <p className="text-gray-400 text-[10px] mt-0.5">Expert Portal</p>
+            <img src="/LOGO_FINAL.png" alt="CXO Connect" className="w-[160px] h-auto object-contain shrink-0" />
           </motion.div>
           <motion.button
             animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}

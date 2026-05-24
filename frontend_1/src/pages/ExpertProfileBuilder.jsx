@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 const ExpertProfileBuilder = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState('Basic Info');
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -37,6 +38,7 @@ const ExpertProfileBuilder = () => {
     yearsExperience: '18',
     currentRole: 'Fractional CFO',
     languages: ['English', 'Hindi', 'Mandarin'],
+    profileUrl: '',
   });
 
   const [skills, setSkills] = useState([
@@ -227,6 +229,7 @@ const ExpertProfileBuilder = () => {
             yearsExperience: data.years_experience || '',
             currentRole: data.current_role || '',
             languages: ['English', 'Hindi'],
+            profileUrl: data.profile_url || '',
           });
 
           if (data.key_skills) {
@@ -265,7 +268,8 @@ const ExpertProfileBuilder = () => {
         linkedin: profile.linkedin,
         portfolio_website: profile.website,
         github: '',
-        work_samples: ''
+        work_samples: '',
+        profile_url: profile.profileUrl || ''
       };
 
       const response = await fetch(`${baseUrl}/api/expert/profile`, {
@@ -288,6 +292,46 @@ const ExpertProfileBuilder = () => {
     } catch (err) {
       console.error("Error saving profile:", err);
       alert("Failed to save profile");
+    }
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file.');
+      return;
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Please sign in first');
+        return;
+      }
+
+      const fileName = `${Date.now()}-${file.name}`;
+      const { data: fileData, error: uploadError } = await supabase.storage
+        .from('expert-profiles')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      if (fileData) {
+        const publicUrl = supabase.storage
+          .from('expert-profiles')
+          .getPublicUrl(fileName)?.data?.publicUrl;
+
+        if (publicUrl) {
+          setProfile(prev => ({ ...prev, profileUrl: publicUrl }));
+        }
+      }
+    } catch (err) {
+      console.error('Error uploading photo:', err);
+      alert(`Failed to upload photo: ${err.message || 'Unknown error'}`);
     }
   };
 
@@ -501,10 +545,32 @@ const ExpertProfileBuilder = () => {
 
                     {/* Photo upload */}
                     <div className="flex items-center gap-5 mb-6">
-                      <div className="relative group cursor-pointer">
-                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center shadow-lg">
-                          <span className="text-2xl font-black text-white">DC</span>
-                        </div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handlePhotoUpload}
+                      />
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="relative group cursor-pointer"
+                      >
+                        {profile.profileUrl ? (
+                          <img
+                            src={profile.profileUrl}
+                            alt="Profile"
+                            className="w-20 h-20 rounded-2xl object-cover shadow-lg border border-gray-100"
+                          />
+                        ) : (
+                          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#134e40] to-[#0eb59a] flex items-center justify-center shadow-lg">
+                            <span className="text-2xl font-black text-white">
+                              {profile.firstName && profile.lastName
+                                ? `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase()
+                                : (profile.firstName ? profile.firstName[0].toUpperCase() : 'EX')}
+                            </span>
+                          </div>
+                        )}
                         <motion.div
                           whileHover={{ scale: 1.05 }}
                           className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
@@ -517,6 +583,7 @@ const ExpertProfileBuilder = () => {
                         <p className="text-xs text-gray-400 mb-2">Square image, min 400×400px. Your face should be clearly visible.</p>
                         <motion.button
                           whileHover={{ scale: 1.03 }}
+                          onClick={() => fileInputRef.current?.click()}
                           className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-100 transition-all"
                         >
                           <Upload size={13} /> Upload Photo
