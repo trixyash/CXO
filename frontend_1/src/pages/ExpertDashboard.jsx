@@ -7,7 +7,7 @@ import {
   ChevronRight, ChevronLeft, Clock, Briefcase, Eye, Zap,
   Award, MessageSquare, User, Check, TrendingUp, Shield,
   BarChart2, CreditCard, Users, Target, Grid, Plus,
-  UserCircle, LogOut, X, Menu, MapPin
+  UserCircle, LogOut, X, Menu, MapPin, CheckCircle
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -357,6 +357,63 @@ const ExpertDashboard = () => {
       urgent: false,
       typeColor: 'text-blue-700 bg-blue-50 border-blue-100',
       path: '/expert-engagements/1?tab=messages',
+    },
+  ];
+
+  const todaySchedule = [
+    {
+      type: 'call',
+      time: '11:00 AM',
+      title: 'Weekly Sync & Alignment',
+      company: 'Acme Corp',
+      duration: '30 min',
+      color: 'bg-emerald-500',
+      path: '/expert-engagements/1?tab=messages',
+    },
+    {
+      type: 'review',
+      time: '02:30 PM',
+      title: 'Financial Model Review',
+      company: 'TechScale Ventures',
+      duration: '45 min',
+      color: 'bg-[#134e40]',
+      path: '/expert-engagements/2?tab=contracts',
+    },
+    {
+      type: 'advisory',
+      time: '04:00 PM',
+      title: 'Q2 Strategy Briefing',
+      company: 'HealthTech Startup',
+      duration: '60 min',
+      color: 'bg-amber-500',
+      path: '/expert-opportunities/1',
+    },
+  ];
+
+  const performanceStats = [
+    {
+      label: 'Avg Response',
+      value: '< 2 hrs',
+      sub: 'Top 5% speed',
+      icon: Clock,
+      bg: 'bg-emerald-50',
+      color: 'text-[#0eb59a]',
+    },
+    {
+      label: 'Client Rating',
+      value: '4.92 / 5',
+      sub: '23 reviews',
+      icon: Star,
+      bg: 'bg-amber-50',
+      color: 'text-amber-500',
+    },
+    {
+      label: 'Completion',
+      value: '98%',
+      sub: 'On-time delivery',
+      icon: CheckCircle,
+      bg: 'bg-teal-50/50',
+      color: 'text-[#134e40]',
     },
   ];
 
