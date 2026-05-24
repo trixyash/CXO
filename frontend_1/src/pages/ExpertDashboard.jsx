@@ -400,136 +400,58 @@ const ExpertDashboard = () => {
     { label: 'Resume uploaded', done: !!profile?.resume_url },
   ];
 
-  const todaySchedule = [
-    {
-      time: '09:30 AM',
-      title: 'Discovery Call',
-      company: 'HealthTech Startup',
-      duration: '45 min',
-      type: 'call',
-      color: 'bg-[#0eb59a]',
-      path: '/expert-engagements/1',
-    },
-    {
-      time: '02:00 PM',
-      title: 'Milestone Review',
-      company: 'Acme Corp',
-      duration: '30 min',
-      type: 'review',
-      color: 'bg-[#134e40]',
-      path: '/expert-engagements/1?tab=milestones',
-    },
-    {
-      time: '04:30 PM',
-      title: 'Opportunity Interview',
-      company: 'D2C Brand',
-      duration: '60 min',
-      type: 'interview',
-      color: 'bg-amber-500',
-      path: '/expert-opportunities/2',
-    },
-  ];
+  const canGoLeft = opportunityCarouselIndex > 0;
+  const canGoRight = opportunityCarouselIndex < recommendedOpportunities.length - itemsPerView;
 
-  const performanceStats = [
-    {
-      label: 'Proposal Win Rate',
-      value: '67%',
-      sub: 'Above platform avg',
-      icon: TrendingUp,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
-    },
-    {
-      label: 'Avg Response Time',
-      value: '< 4 hrs',
-      sub: 'Top 10% on platform',
-      icon: Clock,
-      color: 'text-[#0eb59a]',
-      bg: 'bg-teal-50',
-    },
-    {
-      label: 'Client Satisfaction',
-      value: '4.9 ★',
-      sub: 'Based on 12 reviews',
-      icon: Star,
-      color: 'text-amber-500',
-      bg: 'bg-amber-50',
-    },
-  ];
-
-  // ── AUTO-PLAY CAROUSEL LOGIC ──
-  const startProgress = useCallback(() => {
-    if (progressRef.current) {
-      cancelAnimationFrame(progressRef.current);
-    }
+  const handleManualNav = (index) => {
+    const maxIndex = Math.max(0, recommendedOpportunities.length - itemsPerView);
+    const clampedIndex = Math.min(Math.max(0, index), maxIndex);
+    setOpportunityCarouselIndex(clampedIndex);
     setAutoPlayProgress(0);
-    progressStartRef.current = Date.now();
-
-    const updateProgress = () => {
-      const elapsed = Date.now() - progressStartRef.current;
-      const progress = Math.min((elapsed / AUTO_PLAY_INTERVAL) * 100, 100);
-      setAutoPlayProgress(progress);
-
-      if (elapsed < AUTO_PLAY_INTERVAL) {
-        progressRef.current = requestAnimationFrame(updateProgress);
-      }
-    };
-
-    progressRef.current = requestAnimationFrame(updateProgress);
-  }, []);
-
-  const stopProgress = useCallback(() => {
-    if (progressRef.current) {
-      cancelAnimationFrame(progressRef.current);
-      progressRef.current = null;
-    }
-    setAutoPlayProgress(0);
-  }, []);
-
-  const startAutoPlay = useCallback(() => {
-    if (autoPlayRef.current) {
-      clearInterval(autoPlayRef.current);
-    }
-    startProgress();
-
-    autoPlayRef.current = setInterval(() => {
-      setOpportunityCarouselIndex((prevIndex) => {
-        const nextIndex = prevIndex + 1 >= recommendedOpportunities.length - itemsPerView + 1 ? 0 : prevIndex + 1;
-        const dir = nextIndex === 0 && prevIndex !== 0 ? -1 : 1;
-        setCarouselDirection(dir);
-        return nextIndex;
-      });
-      startProgress();
-    }, AUTO_PLAY_INTERVAL);
-  }, [itemsPerView, recommendedOpportunities.length, startProgress]);
-
-  const stopAutoPlay = useCallback(() => {
-    if (autoPlayRef.current) {
-      clearInterval(autoPlayRef.current);
-      autoPlayRef.current = null;
-    }
-    stopProgress();
-  }, [stopProgress]);
-
-  useEffect(() => {
-    if (!isCarouselHovered) {
-      startAutoPlay();
-    } else {
-      stopAutoPlay();
-    }
-    return () => stopAutoPlay();
-  }, [isCarouselHovered, startAutoPlay, stopAutoPlay]);
-
-  const handleManualNav = (newIndex) => {
-    const dir = newIndex > opportunityCarouselIndex ? 1 : -1;
-    setCarouselDirection(dir);
-    setOpportunityCarouselIndex(newIndex);
-    stopAutoPlay();
-    if (!isCarouselHovered) startAutoPlay();
   };
 
-  const canGoLeft = opportunityCarouselIndex > 0;
-  const canGoRight = opportunityCarouselIndex + itemsPerView < recommendedOpportunities.length;
+  // Autoplay and Progress Timer Effect
+  useEffect(() => {
+    if (isCarouselHovered) {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+        autoPlayRef.current = null;
+      }
+      return;
+    }
+
+    const startTime = Date.now() - (autoPlayProgress / 100) * AUTO_PLAY_INTERVAL;
+    
+    autoPlayRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(100, (elapsed / AUTO_PLAY_INTERVAL) * 100);
+      
+      setAutoPlayProgress(pct);
+
+      if (pct >= 100) {
+        const maxIndex = Math.max(0, recommendedOpportunities.length - itemsPerView);
+        let nextIndex = opportunityCarouselIndex + carouselDirection;
+        
+        if (nextIndex > maxIndex) {
+          nextIndex = Math.max(0, maxIndex - 1);
+          setCarouselDirection(-1);
+        } else if (nextIndex < 0) {
+          nextIndex = Math.min(maxIndex, 1);
+          setCarouselDirection(1);
+        }
+        
+        setOpportunityCarouselIndex(Math.max(0, Math.min(maxIndex, nextIndex)));
+        setAutoPlayProgress(0);
+      }
+    }, 16);
+
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+    };
+  }, [isCarouselHovered, opportunityCarouselIndex, carouselDirection, itemsPerView, autoPlayProgress, recommendedOpportunities.length]);
+
   const nextOpportunity = () => {
     if (canGoRight) {
       handleManualNav(opportunityCarouselIndex + 1);
@@ -566,31 +488,14 @@ const ExpertDashboard = () => {
         className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed left-0 top-0 h-screen"
       >
         {/* LOGO AREA */}
-        <div className="flex items-center border-b border-gray-50 px-3 py-4">
-
-          {/* Always visible — CX logo */}
-          <div
-            style={{ background: 'linear-gradient(135deg, #134e40 0%, #0eb59a 100%)' }}
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
+          <motion.div
+            animate={{ width: isSidebarOpen ? 'auto' : 0, opacity: isSidebarOpen ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden shrink-0 flex items-center"
           >
-            <span className="text-white font-black text-xs tracking-tight">CX</span>
-          </div>
-
-          {/* Expanded — brand text */}
-          {isSidebarOpen && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-              className="ml-3 overflow-hidden whitespace-nowrap flex-1"
-            >
-              <p className="text-[#134e40] font-black text-sm leading-none">CXO Connect</p>
-              <p className="text-gray-400 text-[10px] mt-0.5">Expert Portal</p>
-            </motion.div>
-          )}
-
-          {/* Toggle button — always visible */}
+            <img src="/LOGO_FINAL.png" alt="CXO Connect" className="w-[160px] h-auto object-contain shrink-0" />
+          </motion.div>
           <motion.button
             whileHover={{ scale: 1.1, backgroundColor: '#f0fdf4' }}
             whileTap={{ scale: 0.9 }}
