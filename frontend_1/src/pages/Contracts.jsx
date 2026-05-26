@@ -1,3 +1,4 @@
+import Logo from '../components/Logo';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
@@ -361,12 +362,7 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
             transition={{ duration: 0.2 }}
             className="overflow-hidden shrink-0 flex items-center"
           >
-            <img 
-              src="/LOGO_FINAL.png" 
-              alt="CXO Connect" 
-              className="w-[160px] h-auto object-contain shrink-0 cursor-pointer" 
-              onClick={() => window.location.reload()}
-            />
+            <div className="cursor-pointer" onClick={() => window.location.reload()}><Logo variant="dark" className="h-8" /></div>
           </motion.div>
           <motion.button
             animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}

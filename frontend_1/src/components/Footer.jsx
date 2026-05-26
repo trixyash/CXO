@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Twitter, Facebook, Instagram, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthModal } from './AuthModalContext';
+import Logo from './Logo';
 
 const Footer = () => {
     const navigate = useNavigate();
@@ -56,11 +57,7 @@ const Footer = () => {
                             className="inline-block cursor-pointer mb-8 group flex items-center shrink-0"
                             onClick={(e) => handleNavigation(e, '/')}
                         >
-                            <img
-                                src="/assets/images/LOGO_WHITE.png"
-                                alt="CXO Connect"
-                                className="h-10 md:h-12 w-auto object-contain"
-                            />
+                            <Logo variant="dark" className="h-10 md:h-12" />
                         </div>
                         <p className="text-gray-400 text-lg leading-relaxed font-light mb-10 transition-colors">
                             Bridging the gap between visionary companies and the senior leaders who bring their stories to life.

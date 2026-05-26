@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Menu, X, UserPlus } from 'lucide-react';
 import { useAuthModal } from './AuthModalContext';
+import Logo from './Logo';
 
 const smoothScrollTo = (targetPosition, duration) => {
     const startPosition = window.scrollY;
@@ -67,12 +68,8 @@ const Navbar = () => {
     return (
         <nav className={`fixed top-0 left-0 z-50 w-full transition-all duration-300 ease-in-out px-6 md:px-12 ${isOpen ? 'h-auto py-6 flex-col items-start bg-[#1c1c1c] border-b border-gray-800' : 'h-20'} flex justify-between items-center ${scrolled && !isOpen ? 'bg-[#1c1c1c]/80 backdrop-blur-xl shadow-lg border-b border-white/5' : 'bg-[#1c1c1c]'}`}>
             <div className="flex justify-between items-center w-full md:w-auto shrink-0 h-full">
-                <Link to="/" className="flex items-center shrink-0 gap-8 md:ml-4" onClick={() => setIsOpen(false)}>
-                    <img
-                        src="/favicon.png"
-                        alt="CXO Connect"
-                        className="h-9 md:h-10 lg:h-11 w-auto object-contain rounded-full"
-                    />
+                <Link to="/" className="flex items-center shrink-0 gap-4 md:ml-4" onClick={() => setIsOpen(false)}>
+                    <Logo variant="dark" className="h-9 md:h-10 lg:h-11" />
                     <span className="text-white font-bold text-xl md:text-2xl lg:text-3xl tracking-wide font-serif whitespace-nowrap">CXO CONNECT</span>
                 </Link>
                 <button className="block md:hidden bg-transparent border-none text-white hover:text-[#0eb59a] cursor-pointer ml-auto transition-colors" onClick={() => setIsOpen(!isOpen)}>

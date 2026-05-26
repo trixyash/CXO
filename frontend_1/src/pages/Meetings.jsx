@@ -1,3 +1,4 @@
+import Logo from '../components/Logo';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
@@ -136,12 +137,7 @@ const Meetings = () => {
             transition={{ duration: 0.2 }}
             className="overflow-hidden shrink-0 flex items-center"
           >
-            <img 
-              src="/LOGO_FINAL.png" 
-              alt="CXO Connect" 
-              className="w-[160px] h-auto object-contain shrink-0 cursor-pointer" 
-              onClick={() => navigate(isExpert ? '/expert-dashboard' : '/company-dashboard')}
-            />
+            <div className="cursor-pointer" onClick={() => window.location.reload()}><Logo variant="dark" className="h-8" /></div>
           </motion.div>
           <motion.button
             animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}
@@ -182,7 +178,7 @@ const Meetings = () => {
                   width: isSidebarOpen ? 'auto' : 0 
                 }}
                 transition={{ duration: 0.2 }}
-                className="overflow-hidden whitespace-nowrap text-sm text-left"
+                className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
               >
                 {item.label || item.name}
               </motion.span>
@@ -202,7 +198,7 @@ const Meetings = () => {
             <motion.span
               animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
               transition={{ duration: 0.2 }}
-              className="overflow-hidden whitespace-nowrap text-sm text-left"
+              className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
             >
               Settings
             </motion.span>

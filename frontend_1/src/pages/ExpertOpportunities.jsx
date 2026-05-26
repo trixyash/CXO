@@ -1,3 +1,5 @@
+import Logo from '../components/Logo';
+import FormalCardBorder from '../components/FormalCardBorder';
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -581,26 +583,14 @@ const ExpertOpportunities = () => {
         className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed left-0 top-0 h-screen"
       >
         {/* Logo area */}
-        <div className="flex items-center border-b border-gray-50 px-3 py-4">
-          <div
-            style={{ background: 'linear-gradient(135deg, #134e40 0%, #0eb59a 100%)' }}
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+        <div className="flex items-center border-b border-gray-50 px-3 py-4 gap-3">
+          <motion.div
+            animate={{ width: isSidebarOpen ? 'auto' : 0, opacity: isSidebarOpen ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden shrink-0 flex items-center"
           >
-            <span className="text-white font-black text-xs tracking-tight">CX</span>
-          </div>
-
-          {isSidebarOpen && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.2 }}
-              className="ml-3 overflow-hidden whitespace-nowrap flex-1"
-            >
-              <p className="text-[#134e40] font-black text-sm leading-none">CXO Connect</p>
-              <p className="text-gray-400 text-[10px] mt-0.5">Expert Portal</p>
-            </motion.div>
-          )}
-
+            <div className="cursor-pointer" onClick={() => window.location.reload()}><Logo variant="dark" className="h-8" /></div>
+          </motion.div>
           <motion.button
             whileHover={{ scale: 1.1, backgroundColor: '#f0fdf4' }}
             whileTap={{ scale: 0.9 }}
@@ -1043,6 +1033,7 @@ const ExpertOpportunities = () => {
               className="relative overflow-hidden border border-teal-100/60 rounded-3xl mb-6 shrink-0"
               style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #e8f5f1 50%, #f8fafc 100%)' }}
             >
+              <FormalCardBorder />
               <div
                 className="absolute inset-0 opacity-[0.3]"
                 style={{
@@ -1269,6 +1260,7 @@ const ExpertOpportunities = () => {
                               : '0 8px 30px rgba(0,0,0,0.04)'
                           }}
                         >
+                          <FormalCardBorder />
                           <div className="p-5 flex-grow flex flex-col justify-between">
                             <div className="space-y-4">
                               {/* Top badges */}
@@ -1472,6 +1464,7 @@ const ExpertOpportunities = () => {
                           borderColor: `${getMatchBorderColor(opp.match)}33` // 20% opacity
                         }}
                       >
+                        <FormalCardBorder />
                         {/* Logo */}
                         <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${opp.logoColor} flex items-center justify-center shadow-md shrink-0 group-hover:rotate-2 transition-transform duration-300`}>
                           <span className="text-white font-black text-base">{opp.logo}</span>

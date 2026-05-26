@@ -1,3 +1,4 @@
+import Logo from '../components/Logo';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
@@ -553,12 +554,7 @@ const ExpertDashboard = () => {
             transition={{ duration: 0.2 }}
             className="overflow-hidden shrink-0 flex items-center"
           >
-            <img 
-              src="/LOGO_FINAL.png" 
-              alt="CXO Connect" 
-              className="w-[160px] h-auto object-contain shrink-0 cursor-pointer" 
-              onClick={() => window.location.reload()}
-            />
+            <div className="cursor-pointer" onClick={() => window.location.reload()}><Logo variant="dark" className="h-8" /></div>
           </motion.div>
           <motion.button
             whileHover={{ scale: 1.1, backgroundColor: '#f0fdf4' }}

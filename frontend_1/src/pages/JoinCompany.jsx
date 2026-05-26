@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import OTPModal from "../components/OTPModal";
 import StatusModal from "../components/StatusModal";
 import SuccessModal from "../components/SuccessModal";
+import Logo from "../components/Logo";
 
 const JOIN_STEPS = ["Basic Details", "Company Info", "Online Presence", "Account Setup"];
 
@@ -258,7 +259,7 @@ const JoinCompany = () => {
 				<div className="relative z-10 flex flex-col h-full p-10">
 					{/* Logo */}
 					<Link to="/" className="flex items-center gap-3 shrink-0 group">
-						<img src="/assets/images/LOGO_WHITE.png" alt="CXO Connect" className="h-10 w-auto object-contain" />
+						<Logo variant="dark" className="h-10" />
 					</Link>
 
 					{/* Main content */}

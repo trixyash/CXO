@@ -95,7 +95,7 @@ const Home = () => {
                     muted
                     playsInline
                     disablePictureInPicture
-                    className="w-full h-full object-cover opacity-80"
+                    className="w-full h-full object-cover opacity-80 blur-[2px] scale-105"
                     onEnded={(e) => { e.target.play(); }}
                 >
                     <source src="/assets/videos/hero-background.mp4" type="video/mp4" />
