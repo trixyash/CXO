@@ -172,6 +172,8 @@ const ExpertOpportunities = () => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [gridOpen, setGridOpen] = useState(false);
   const gridRef = useRef(null);
+  const [profile, setProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   // Floating hover preview panel state
   const [hoveredCardId, setHoveredCardId] = useState(null);
@@ -391,15 +393,51 @@ const ExpertOpportunities = () => {
   ];
 
   // ── EFFECTS ──
-  // Auth check
+  // Auth check and profile fetch
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuthAndFetch = async () => {
+      const isDemo = localStorage.getItem('demo_expert') === 'true';
+      if (isDemo) {
+        setProfile({ full_name: 'David Chen' });
+        setLoadingProfile(false);
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) navigate('/signin?role=expert');
+      if (!session) {
+        navigate('/signin?role=expert');
+        return;
+      }
+
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const response = await fetch(`${baseUrl}/api/expert/profile`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setProfile(data);
+        } else {
+          console.warn("No expert profile found, using defaults");
+        }
+      } catch (err) {
+        console.error("Error fetching expert profile:", err);
+      } finally {
+        setLoadingProfile(false);
+      }
     };
-    checkAuth();
+
+    checkAuthAndFetch();
+
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_, session) => { if (!session) navigate('/signin?role=expert'); }
+      (_, session) => {
+        if (!session && localStorage.getItem('demo_expert') !== 'true') {
+          navigate('/signin?role=expert');
+        }
+      }
     );
     return () => listener?.subscription?.unsubscribe();
   }, [navigate]);
@@ -929,11 +967,15 @@ const ExpertOpportunities = () => {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/expert-settings')}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white font-black text-xs cursor-pointer shadow-md"
+                onClick={() => navigate('/expert-profile')}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white font-black text-xs cursor-pointer shadow-md overflow-hidden"
                 style={{ background: 'linear-gradient(135deg, #134e40, #0eb59a)' }}
               >
-                EX
+                {profile?.profile_url ? (
+                  <img src={profile.profile_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  profile?.full_name ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'EX'
+                )}
               </motion.div>
               <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white" />
             </div>

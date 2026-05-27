@@ -267,6 +267,22 @@ const ExpertProfileBuilder = () => {
           if (data.key_skills) {
             setSkills(data.key_skills.split(',').map(s => s.trim()).filter(Boolean));
           }
+
+          if (data.experience_history) {
+            setExperiences(data.experience_history);
+          }
+          if (data.education_history) {
+            setEducation(data.education_history);
+          }
+          if (data.industries && Array.isArray(data.industries) && data.industries.length > 0) {
+            setIndustries(data.industries);
+          }
+          if (data.engagement_types && typeof data.engagement_types === 'object' && !Array.isArray(data.engagement_types) && Object.keys(data.engagement_types).length > 0) {
+            setEngagementTypes(prev => ({
+              ...prev,
+              ...data.engagement_types
+            }));
+          }
         }
       } catch (err) {
         console.error("Error fetching expert profile:", err);
@@ -276,7 +292,7 @@ const ExpertProfileBuilder = () => {
     fetchProfile();
   }, []);
 
-  const handleSave = async () => {
+  const handleSave = async (overrideExperiences, overrideEducation, overrideIndustries, overrideEngagementTypes, overrideSkills) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       alert("Please sign in first");
@@ -292,7 +308,7 @@ const ExpertProfileBuilder = () => {
         years_experience: profile.yearsExperience,
         current_role: profile.currentRole,
         current_company: '',
-        key_skills: skills.join(', '),
+        key_skills: Array.isArray(overrideSkills) ? overrideSkills.join(', ') : skills.join(', '),
         services_offered: profile.bio,
         hourly_rate: '200000', // default rate
         email: profile.email,
@@ -301,7 +317,13 @@ const ExpertProfileBuilder = () => {
         portfolio_website: profile.website,
         github: '',
         work_samples: '',
-        profile_url: profile.profileUrl || ''
+        profile_url: profile.profileUrl || '',
+        experience_history: Array.isArray(overrideExperiences) ? overrideExperiences : experiences,
+        education_history: Array.isArray(overrideEducation) ? overrideEducation : education,
+        industries: Array.isArray(overrideIndustries) ? overrideIndustries : industries,
+        engagement_types: (overrideEngagementTypes && typeof overrideEngagementTypes === 'object' && !Array.isArray(overrideEngagementTypes)) 
+          ? overrideEngagementTypes 
+          : engagementTypes
       };
 
       const response = await fetch(`${baseUrl}/api/expert/profile`, {
@@ -369,19 +391,46 @@ const ExpertProfileBuilder = () => {
 
   const addSkill = () => {
     if (newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills(prev => [...prev, newSkill.trim()]);
+      const updated = [...skills, newSkill.trim()];
+      setSkills(updated);
       setNewSkill('');
+      handleSave(undefined, undefined, undefined, undefined, updated);
     }
   };
 
   const removeSkill = (skill) => {
-    setSkills(prev => prev.filter(s => s !== skill));
+    const updated = skills.filter(s => s !== skill);
+    setSkills(updated);
+    handleSave(undefined, undefined, undefined, undefined, updated);
   };
 
   const toggleIndustry = (ind) => {
-    setIndustries(prev =>
-      prev.includes(ind) ? prev.filter(i => i !== ind) : [...prev, ind]
-    );
+    const updated = industries.includes(ind)
+      ? industries.filter(i => i !== ind)
+      : [...industries, ind];
+    setIndustries(updated);
+    handleSave(undefined, undefined, updated, undefined, undefined);
+  };
+
+  const handleToggleEngagementType = (type) => {
+    const updated = {
+      ...engagementTypes,
+      [type]: !engagementTypes[type]
+    };
+    setEngagementTypes(updated);
+    handleSave(undefined, undefined, undefined, updated, undefined);
+  };
+
+  const handleDeleteExperience = (id) => {
+    const updated = experiences.filter(e => e.id !== id);
+    setExperiences(updated);
+    handleSave(updated, undefined);
+  };
+
+  const handleDeleteEducation = (id) => {
+    const updated = education.filter(e => e.id !== id);
+    setEducation(updated);
+    handleSave(undefined, updated);
   };
 
   const handleAddExperience = () => {
@@ -395,15 +444,18 @@ const ExpertProfileBuilder = () => {
             ? `${newExp.endMonth.slice(0, 3)} ${newExp.endYear}`
             : '');
 
-      setExperiences(prev => [...prev, {
+      const updatedExps = [...experiences, {
         ...newExp,
-        id: prev.length + 1,
+        id: experiences.length + 1,
         startDate,
         endDate,
         logo: newExp.company
           .charAt(0).toUpperCase(),
         logoColor: 'from-gray-500 to-gray-400',
-      }]);
+      }];
+
+      setExperiences(updatedExps);
+      handleSave(updatedExps, undefined);
       setShowAddExperienceModal(false);
       setNewExp({
         role: '',
@@ -423,7 +475,9 @@ const ExpertProfileBuilder = () => {
 
   const handleAddEducation = () => {
     if (newEdu.degree && newEdu.institution) {
-      setEducation(prev => [...prev, { ...newEdu, id: prev.length + 1 }]);
+      const updatedEdus = [...education, { ...newEdu, id: education.length + 1 }];
+      setEducation(updatedEdus);
+      handleSave(undefined, updatedEdus);
       setShowAddEducationModal(false);
       setNewEdu({ degree: '', institution: '', year: '', grade: '' });
     }
@@ -1206,7 +1260,7 @@ const ExpertProfileBuilder = () => {
                                   </motion.button>
                                   <motion.button
                                     whileHover={{ scale: 1.05 }}
-                                    onClick={() => setExperiences(prev => prev.filter(e => e.id !== exp.id))}
+                                    onClick={() => handleDeleteExperience(exp.id)}
                                     className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all border-0 bg-transparent cursor-pointer"
                                   >
                                     <Trash2 size={13} />
@@ -1239,6 +1293,15 @@ const ExpertProfileBuilder = () => {
                           </div>
                         </motion.div>
                       ))}
+
+                      <motion.button
+                        whileHover={{ scale: 1.02, boxShadow: '0 8px 30px rgba(20,78,64,0.25)' }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleSave()}
+                        className="w-full py-4 bg-gradient-to-r from-[#134e40] to-[#0eb59a] text-white font-black text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 border-0 cursor-pointer mt-4"
+                      >
+                        <Save size={16} /> Save Experience
+                      </motion.button>
                     </motion.div>
                   )}
 
@@ -1348,7 +1411,7 @@ const ExpertProfileBuilder = () => {
                               key={type}
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.97 }}
-                              onClick={() => setEngagementTypes(prev => ({ ...prev, [type]: !prev[type] }))}
+                              onClick={() => handleToggleEngagementType(type)}
                               className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                                 active
                                   ? 'border-[#0eb59a] bg-teal-50'
@@ -1438,7 +1501,7 @@ const ExpertProfileBuilder = () => {
                                 </motion.button>
                                 <motion.button
                                   whileHover={{ scale: 1.05 }}
-                                  onClick={() => setEducation(prev => prev.filter(e => e.id !== edu.id))}
+                                  onClick={() => handleDeleteEducation(edu.id)}
                                   className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 border-0 bg-transparent cursor-pointer"
                                 >
                                   <Trash2 size={13} />
@@ -1448,6 +1511,15 @@ const ExpertProfileBuilder = () => {
                           </div>
                         </motion.div>
                       ))}
+
+                      <motion.button
+                        whileHover={{ scale: 1.02, boxShadow: '0 8px 30px rgba(20,78,64,0.25)' }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleSave()}
+                        className="w-full py-4 bg-gradient-to-r from-[#134e40] to-[#0eb59a] text-white font-black text-sm rounded-2xl shadow-lg flex items-center justify-center gap-2 border-0 cursor-pointer mt-4"
+                      >
+                        <Save size={16} /> Save Education
+                      </motion.button>
                     </motion.div>
                   )}
 

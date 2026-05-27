@@ -152,10 +152,20 @@ export const mapDbExpert = (expert, idx = 0) => {
     budgetNum: parseInt(expert.hourly_rate) || 200000,
     rate: rate,
     experience: expert.years_experience ? `${expert.years_experience} years` : "10+ years",
-    industries: ["SaaS", "Fintech", "Consumer Tech"], // fallback
+    industries: Array.isArray(expert.industries) && expert.industries.length > 0
+      ? expert.industries
+      : ["SaaS", "Fintech", "Consumer Tech"],
     skills: expert.key_skills ? expert.key_skills.split(",").map(s => s.trim()) : [],
+    experiences: expert.experience_history || [],
+    education: expert.education_history || [],
     roles: [expert.current_role || "CXO Advisor"],
-    engagementTypes: ["Fractional", "Advisory"],
+    engagementTypes: (() => {
+      if (expert.engagement_types && typeof expert.engagement_types === 'object') {
+        const active = Object.keys(expert.engagement_types).filter(k => expert.engagement_types[k]);
+        if (active.length > 0) return active;
+      }
+      return ["Fractional", "Advisory"];
+    })(),
     verified: true,
     topExpert: idx % 3 === 0,
     responseTime: "< 2 hours",

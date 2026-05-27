@@ -273,6 +273,55 @@ const ExpertProfile = () => {
       </div>
     );
   }
+
+  const mockExperiences = [
+    {
+      id: 1,
+      role: 'Head of Finance / CFO',
+      company: 'Meesho',
+      type: 'Full-time',
+      startDate: 'Jan 2019',
+      endDate: 'Dec 2022',
+      current: false,
+      description: 'Scaled finance department from 2 to 45 members. Led Series D ($150M) and Series E ($570M) rounds. Managed 30% MoM revenue growth.',
+    },
+    {
+      id: 2,
+      role: 'Finance Director',
+      company: 'OYO',
+      type: 'Full-time',
+      startDate: 'Mar 2016',
+      endDate: 'Dec 2018',
+      current: false,
+      description: 'Managed global finance operations across 20 countries. Led Series E ($1B) fundraising. Implemented zero-based budgeting saving $40M annually.',
+    }
+  ];
+
+  const mockEducation = [
+    {
+      id: 1,
+      degree: 'MBA — Finance & Strategy',
+      institution: 'IIM Ahmedabad',
+      year: '2006',
+      grade: 'Gold Medalist',
+    },
+    {
+      id: 2,
+      degree: 'Chartered Accountant (CA)',
+      institution: 'Institute of Chartered Accountants of India',
+      year: '2005',
+      grade: 'All India Rank 12',
+    }
+  ];
+
+  const displayExperiences = expert?.experiences && expert.experiences.length > 0
+    ? expert.experiences
+    : (expert?.name === 'David Chen' || expertId === '2' ? mockExperiences : []);
+
+  const displayEducation = expert?.education && expert.education.length > 0
+    ? expert.education
+    : (expert?.name === 'David Chen' || expertId === '2' ? mockEducation : []);
+
   const caseStudies = [
     {
       id: 1,
@@ -1115,6 +1164,66 @@ Bio: ${expert.bio}
                       </motion.span>
                     </motion.a>
                   </div>
+
+                  {/* Experience Timeline */}
+                  {displayExperiences.length > 0 && (
+                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] p-6 text-left">
+                      <h3 className="font-black text-[#1C3627] text-[15px] mb-6 flex items-center gap-2 tracking-tight">
+                        <Briefcase size={16} className="text-[#0eb59a]" /> Professional Experience
+                      </h3>
+                      <div className="relative pl-6 border-l border-gray-100 space-y-8 ml-3">
+                        {displayExperiences.map((exp, idx) => (
+                          <div key={idx} className="relative">
+                            {/* Timeline dot */}
+                            <div className="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-[#0eb59a] border-2 border-white ring-4 ring-teal-50" />
+                            <div>
+                              <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                                <h4 className="font-black text-gray-900 text-sm">{exp.role}</h4>
+                                <span className="text-[10px] font-black text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded">
+                                  {exp.startDate} — {exp.current ? 'Present' : exp.endDate}
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#0eb59a] font-bold mb-2">{exp.company} {exp.type ? `· ${exp.type}` : ''}</p>
+                              {exp.description && (
+                                <p className="text-sm text-gray-500 leading-relaxed">{exp.description}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Education list */}
+                  {displayEducation.length > 0 && (
+                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] p-6 text-left">
+                      <h3 className="font-black text-[#1C3627] text-[15px] mb-6 flex items-center gap-2 tracking-tight">
+                        <Award size={16} className="text-[#0eb59a]" /> Education & Credentials
+                      </h3>
+                      <div className="relative pl-6 border-l border-gray-100 space-y-8 ml-3">
+                        {displayEducation.map((edu, idx) => (
+                          <div key={idx} className="relative">
+                            {/* Timeline dot */}
+                            <div className="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-blue-500 border-2 border-white ring-4 ring-blue-50" />
+                            <div>
+                              <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                                <h4 className="font-black text-gray-900 text-sm">{edu.degree}</h4>
+                                <span className="text-[10px] font-black text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded">
+                                  {edu.year}
+                                </span>
+                              </div>
+                              <p className="text-xs text-blue-500 font-bold mb-1">{edu.institution}</p>
+                              {edu.grade && (
+                                <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-100 inline-flex items-center gap-1">
+                                  <Star size={10} fill="currentColor" /> {edu.grade}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               )}
 

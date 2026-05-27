@@ -56,7 +56,11 @@ export const updateExpertProfile = async (req, res) => {
       phone,
       portfolio_website,
       previous_experience,
-      tools_technologies
+      tools_technologies,
+      experience_history,
+      education_history,
+      industries,
+      engagement_types
     } = req.body;
 
     // Check if expert profile exists
@@ -89,6 +93,10 @@ export const updateExpertProfile = async (req, res) => {
       portfolio_website,
       previous_experience,
       tools_technologies,
+      experience_history,
+      education_history,
+      industries,
+      engagement_types,
       user_id: req.user.id
     };
 

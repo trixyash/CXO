@@ -118,6 +118,7 @@ const Requirements = () => {
         const { data, error } = await supabase
           .from('company_requirements')
           .select('*')
+          .eq('company_email', session.user.email)
           .order('created_at', { ascending: false });
         
         if (!error && data) {
@@ -187,13 +188,18 @@ const Requirements = () => {
     }
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('company_requirements')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select();
 
       if (error) {
         console.error("Error deleting requirement:", error);
+        alert(`Failed to delete requirement: ${error.message}`);
+      } else if (!data || data.length === 0) {
+        console.warn("Delete completed but no rows were affected. This is likely due to a Row-Level Security (RLS) policy violation.");
+        alert("Failed to delete requirement: You do not have permission to delete this record (RLS policy violation).");
       } else {
         setRequirements(prev => prev.filter(req => req.id !== id));
         if (selectedRequirement?.id === id) {
@@ -202,6 +208,7 @@ const Requirements = () => {
       }
     } catch (err) {
       console.error("Error executing delete:", err);
+      alert("An unexpected error occurred while deleting the requirement.");
     } finally {
       setShowDeleteModal(null);
     }
