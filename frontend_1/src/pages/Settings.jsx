@@ -93,7 +93,7 @@ const Settings = () => {
       }
       
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/profile`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/profile`, {
           headers: {
             'Authorization': `Bearer ${session.access_token}`
           }
@@ -115,10 +115,16 @@ const Settings = () => {
             adminPhone: data.contact_number || prev.adminPhone,
             logoUrl: data.logo_url || prev.logoUrl,
           }));
+        } else {
+          console.warn("Failed to fetch company profile from backend. Using dummy profile data.");
         }
+      } catch (error) {
+        console.warn("Could not connect to backend to fetch company profile. Using dummy profile data.");
+      }
 
+      try {
         // Fetch team members
-        const teamResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/team`, {
+        const teamResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/team`, {
           headers: {
             'Authorization': `Bearer ${session.access_token}`
           }
@@ -127,9 +133,19 @@ const Settings = () => {
         if (teamResponse.ok) {
           const teamData = await teamResponse.json();
           setTeamMembers(teamData);
+        } else {
+          console.warn("Failed to fetch team members from backend. Using dummy team data.");
+          setTeamMembers([
+            { id: 1, name: 'John Doe', email: 'john@acmecorp.com', role: 'Founder', avatar: 'https://i.pravatar.cc/150?u=john', status: 'Active', lastActive: '2 mins ago', isOwner: true },
+            { id: 2, name: 'Jane Smith', email: 'jane@acmecorp.com', role: 'HR', avatar: 'https://i.pravatar.cc/150?u=jane', status: 'Active', lastActive: '1 day ago', isOwner: false }
+          ]);
         }
       } catch (error) {
-        console.error("Error fetching company profile/team:", error);
+        console.warn("Could not connect to backend to fetch team members. Using dummy team data.");
+        setTeamMembers([
+          { id: 1, name: 'John Doe', email: 'john@acmecorp.com', role: 'Founder', avatar: 'https://i.pravatar.cc/150?u=john', status: 'Active', lastActive: '2 mins ago', isOwner: true },
+          { id: 2, name: 'Jane Smith', email: 'jane@acmecorp.com', role: 'HR', avatar: 'https://i.pravatar.cc/150?u=jane', status: 'Active', lastActive: '1 day ago', isOwner: false }
+        ]);
       } finally {
         setLoadingProfile(false);
       }
