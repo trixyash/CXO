@@ -26,6 +26,7 @@ import ExpertEngagements from './pages/ExpertEngagements';
 import ExpertEarnings from './pages/ExpertEarnings';
 import ExpertProfileBuilder from './pages/ExpertProfileBuilder';
 import ExpertSettings from './pages/ExpertSettings';
+import ExpertContracts from './pages/ExpertContracts';
 
 
 
@@ -119,6 +120,8 @@ const AppContent = () => {
             <Route path="/expert-earnings" element={<ExpertEarnings />} />
             <Route path="/expert-profile" element={<ExpertProfileBuilder />} />
             <Route path="/expert-settings" element={<ExpertSettings />} />
+            <Route path="/expert-contracts" element={<ExpertContracts />} />
+            <Route path="/expert-contracts/:contractId" element={<ExpertContracts />} />
             <Route path="/privacy-policy" element={<PrivacyDoc />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
           </Routes>

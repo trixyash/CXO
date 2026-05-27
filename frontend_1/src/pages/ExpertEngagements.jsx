@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight, Clock, CheckCircle, Upload,
-  Download, Send, Paperclip, DollarSign,
+  Download, Send, Paperclip, IndianRupee, DollarSign,
   Shield, AlertCircle, Calendar, FileText,
   MessageSquare, BarChart2, CreditCard,
   Check, X, Star, Users, Briefcase, ArrowLeft,
@@ -14,7 +14,7 @@ import {
   ChevronDown, Plus, ArrowUpRight, Award,
   Search, Bell, Settings, LayoutDashboard,
   UserCircle, ChevronLeft, Menu, Grid,
-  MoreVertical, RefreshCw
+  MoreVertical, RefreshCw, LogOut
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -231,14 +231,22 @@ const ExpertEngagements = () => {
 
   // ── DATA ARRAYS (ExpertOpportunities) ──
   const sidebarMenu = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/expert-dashboard' },
-    { name: 'Opportunities', icon: Briefcase, path: '/expert-opportunities', badge: '3' },
-    { name: 'My Engagements', icon: Activity, path: '/expert-engagements' },
-    { name: 'Contracts', icon: FileText, path: '/expert-contracts' },
-    { name: 'Earnings', icon: DollarSign, path: '/expert-earnings' },
-    { name: 'Profile', icon: UserCircle, path: '/expert-profile' },
-    { name: 'Analytics', icon: BarChart2, path: '/expert-analytics' },
-    { name: 'Settings', icon: Settings, path: '/expert-settings' },
+    { name: 'Dashboard',      icon: LayoutDashboard,
+      path: '/expert-dashboard'      },
+    { name: 'Opportunities',  icon: Briefcase,
+      path: '/expert-opportunities', badge: '3' },
+    { name: 'My Engagements', icon: Activity,
+      path: '/expert-engagements'    },
+    { name: 'Contracts',      icon: FileText,
+      path: '/expert-contracts'      },
+    { name: 'Earnings',       icon: IndianRupee,
+      path: '/expert-earnings'       },
+    { name: 'Profile',        icon: UserCircle,
+      path: '/expert-profile'        },
+    { name: 'Messages',       icon: MessageSquare,
+      path: '/messages'              },
+    { name: 'Meetings',       icon: Calendar,
+      path: '/meetings'              },
   ];
 
   const notifications = [
@@ -450,6 +458,55 @@ const ExpertEngagements = () => {
             );
           })}
         </nav>
+
+        <div className="p-3 border-t border-gray-50 space-y-1">
+          <motion.button
+            whileHover={{ x: 2, transition: { duration: 0.15 }}}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate('/expert-settings')}
+            className="w-full flex items-center gap-3 px-3 
+              py-2 rounded-xl text-gray-500 hover:bg-gray-50 
+              hover:text-[#134e40] transition-all"
+          >
+            <Settings size={17} className="shrink-0" />
+            <motion.span
+              animate={{ 
+                opacity: isSidebarOpen ? 1 : 0, 
+                width: isSidebarOpen ? 'auto' : 0 
+              }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden whitespace-nowrap 
+                text-sm font-bold text-left"
+            >
+              Settings
+            </motion.span>
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={async () => {
+              localStorage.removeItem('demo_expert');
+              await supabase.auth.signOut();
+              navigate('/signin?role=expert');
+            }}
+            className="w-full flex items-center gap-3 px-3 
+              py-2 rounded-xl text-red-500 hover:bg-red-50 
+              hover:text-red-600 transition-all font-bold"
+          >
+            <LogOut size={17} className="shrink-0" />
+            <motion.span
+              animate={{ 
+                opacity: isSidebarOpen ? 1 : 0, 
+                width: isSidebarOpen ? 'auto' : 0 
+              }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden whitespace-nowrap 
+                text-sm font-bold text-left"
+            >
+              Sign Out
+            </motion.span>
+          </motion.button>
+        </div>
       </motion.aside>
 
       {/* ══ MAIN CONTENT WRAPPER ══ */}
@@ -672,7 +729,7 @@ const ExpertEngagements = () => {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/expert-profile')}
+                onClick={() => navigate('/expert-settings')}
                 className="w-9 h-9 rounded-full flex items-center justify-center text-white font-black text-xs cursor-pointer shadow-md"
                 style={{ background: 'linear-gradient(135deg, #134e40, #0eb59a)' }}
               >

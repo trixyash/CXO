@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import {
   Search, LayoutDashboard, Bell, Settings, Activity,
-  FileText, Star, DollarSign, ArrowUpRight, AlertCircle,
+  FileText, Star, DollarSign, IndianRupee, ArrowUpRight, AlertCircle,
   ChevronRight, ChevronLeft, Clock, Briefcase, Eye, Zap,
   Award, MessageSquare, User, Check, TrendingUp, Shield,
-  BarChart2, CreditCard, Users, Target, Grid, Plus,
+  CreditCard, Users, Target, Grid, Plus,
   UserCircle, LogOut, X, Menu, MapPin, CheckCircle, Calendar
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
@@ -159,15 +159,22 @@ const ExpertDashboard = () => {
   }, []);
 
   const sidebarMenu = [
-    { name: 'Dashboard',      icon: LayoutDashboard, path: '/expert-dashboard'    },
-    { name: 'Opportunities',  icon: Briefcase,       path: '/expert-opportunities', badge: '3' },
-    { name: 'My Engagements', icon: Activity,        path: '/expert-engagements'  },
-    { name: 'Contracts',      icon: FileText,        path: '/contracts'    },
-    { name: 'Earnings',       icon: DollarSign,      path: '/expert-earnings'     },
-    { name: 'Profile',        icon: UserCircle,      path: '/expert-profile'      },
-    { name: 'Analytics',      icon: BarChart2,       path: '/expert-analytics'    },
-    { name: 'Messages',       icon: MessageSquare,   path: '/messages'            },
-    { name: 'Meetings',       icon: Calendar,        path: '/meetings'            },
+    { name: 'Dashboard',      icon: LayoutDashboard,
+      path: '/expert-dashboard'      },
+    { name: 'Opportunities',  icon: Briefcase,
+      path: '/expert-opportunities', badge: '3' },
+    { name: 'My Engagements', icon: Activity,
+      path: '/expert-engagements'    },
+    { name: 'Contracts',      icon: FileText,
+      path: '/expert-contracts'      },
+    { name: 'Earnings',       icon: IndianRupee,
+      path: '/expert-earnings'       },
+    { name: 'Profile',        icon: UserCircle,
+      path: '/expert-profile'        },
+    { name: 'Messages',       icon: MessageSquare,
+      path: '/messages'              },
+    { name: 'Meetings',       icon: Calendar,
+      path: '/meetings'              },
   ];
 
   const kpis = [

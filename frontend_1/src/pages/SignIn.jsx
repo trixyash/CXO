@@ -13,7 +13,7 @@ const SignIn = () => {
 	useEffect(() => {
 		const isExpertMock = localStorage.getItem("sb-mock-auth") === "true";
 		const isCompanyDemo = localStorage.getItem("demo_company") === "true";
-		
+
 		if (isExpertMock || isCompanyDemo) {
 			localStorage.removeItem("sb-mock-auth");
 			localStorage.removeItem("demo_company");
@@ -28,7 +28,7 @@ const SignIn = () => {
 		const urlError = queryParams.get("error");
 		if (urlError) {
 			setError(decodeURIComponent(urlError));
-			
+
 			// Clean up the URL search params so the error message doesn't persist on page reloads
 			const newParams = new URLSearchParams(location.search);
 			newParams.delete("error");
@@ -63,6 +63,10 @@ const SignIn = () => {
 
 				if (cleanEmail === "demo@cxo.com") {
 					localStorage.setItem('demo_company', 'true');
+					localStorage.setItem('user_role', 'company');
+					localStorage.removeItem('demo_expert');
+					localStorage.removeItem('sb-mock-auth');
+					localStorage.removeItem('mock-role');
 					navigate("/company-dashboard");
 					return;
 				}
@@ -99,7 +103,7 @@ const SignIn = () => {
 					}
 
 					console.warn("Backend fetch failed, trying direct Supabase check:", fetchErr);
-					
+
 					// Fallback to querying Supabase directly
 					try {
 						const { data: sbData, error: sbError } = await supabase
@@ -130,7 +134,7 @@ const SignIn = () => {
 				}
 
 				setResolvedEmail(targetEmail);
-				
+
 				localStorage.removeItem('demo_company');
 				const { error: authError } = await supabase.auth.signInWithOtp({
 					email: targetEmail,
@@ -140,6 +144,10 @@ const SignIn = () => {
 				});
 				if (authError) throw authError;
 
+				localStorage.setItem('user_role', 'company');
+				localStorage.removeItem('demo_expert');
+				localStorage.removeItem('sb-mock-auth');
+				localStorage.removeItem('mock-role');
 				setMessage(`OTP sent to ${targetEmail}`);
 				setShowOtp(true);
 			} else {
@@ -148,6 +156,8 @@ const SignIn = () => {
 				if (cleanIdentifier === "demo@cxo.com") {
 					localStorage.setItem("sb-mock-auth", "true");
 					localStorage.setItem("mock-role", "expert");
+					localStorage.setItem('user_role', 'expert');
+					localStorage.removeItem('demo_company');
 					window.location.href = "/expert-dashboard";
 					return;
 				}
@@ -161,6 +171,8 @@ const SignIn = () => {
 
 					if (error) throw error;
 
+					localStorage.setItem('user_role', 'expert');
+					localStorage.removeItem('demo_company');
 					setMessage(`OTP sent to ${cleanIdentifier}`);
 					setShowOtp(true);
 				} else {
@@ -168,7 +180,7 @@ const SignIn = () => {
 					const response = await fetch(`${baseUrl}/api/auth/send-magic-link`, {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ 
+						body: JSON.stringify({
 							email: cleanIdentifier,
 							redirectTo: window.location.origin + "/expert-dashboard"
 						}),
@@ -177,6 +189,8 @@ const SignIn = () => {
 					const data = await response.json();
 					if (!response.ok) throw new Error(data.error || "Failed to send magic link");
 
+					localStorage.setItem('user_role', 'expert');
+					localStorage.removeItem('demo_company');
 					setMessage(`Magic link sent to ${cleanIdentifier}`);
 				}
 			}

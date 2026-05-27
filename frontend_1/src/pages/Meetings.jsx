@@ -7,7 +7,7 @@ import {
   LayoutDashboard, FileText, Users, CreditCard, BarChart2,
   ShieldCheck, MessageSquare, Calendar, ChevronRight, ChevronLeft,
   Bell, LogOut, Video, Clock, AlignLeft, Shield, AlertCircle, Trash2,
-  CheckCircle2, HelpCircle, History, Sparkles, Settings, UserCircle, Briefcase, Activity, DollarSign
+  CheckCircle2, HelpCircle, History, Sparkles, Settings, UserCircle, Briefcase, Activity, IndianRupee
 } from 'lucide-react';
 import FormalCardBorder from '../components/FormalCardBorder';
 
@@ -18,7 +18,13 @@ const Meetings = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
 
   // Smart Role Detection
-  const isExpert = localStorage.getItem('demo_expert') === 'true';
+  const activeRole = localStorage.getItem('user_role');
+  const isExpert =
+    activeRole === 'expert' ||
+    (activeRole !== 'company' && (
+      localStorage.getItem('demo_expert') === 'true' ||
+      localStorage.getItem('sb-mock-auth') === 'true'
+    ));
   const isDemo = isExpert || localStorage.getItem('demo_company') === 'true';
 
   // Meetings State
@@ -85,17 +91,39 @@ const Meetings = () => {
     { icon: Calendar, label: 'Scheduled Meetings', path: '/meetings', active: true },
   ];
 
-  // Expert Side
   const expertNavItems = [
-    { label: 'Dashboard',      icon: LayoutDashboard, path: '/expert-dashboard'    },
-    { label: 'Opportunities',  icon: Briefcase,       path: '/expert-opportunities' },
-    { label: 'My Engagements', icon: Activity,        path: '/expert-engagements'  },
-    { label: 'Contracts',      icon: FileText,        path: '/expert-contracts'    },
-    { label: 'Earnings',       icon: DollarSign,      path: '/expert-earnings'     },
-    { label: 'Profile',        icon: UserCircle,      path: '/expert-profile'      },
-    { label: 'Analytics',      icon: BarChart2,       path: '/expert-analytics'    },
-    { label: 'Messages',       icon: MessageSquare,   path: '/messages'            },
-    { label: 'Meetings',       icon: Calendar,        path: '/meetings', active: true },
+    {
+      label: 'Dashboard', icon: LayoutDashboard,
+      path: '/expert-dashboard'
+    },
+    {
+      label: 'Opportunities', icon: Briefcase,
+      path: '/expert-opportunities'
+    },
+    {
+      label: 'My Engagements', icon: Activity,
+      path: '/expert-engagements'
+    },
+    {
+      label: 'Contracts', icon: FileText,
+      path: '/expert-contracts'
+    },
+    {
+      label: 'Earnings', icon: IndianRupee,
+      path: '/expert-earnings'
+    },
+    {
+      label: 'Profile', icon: UserCircle,
+      path: '/expert-profile'
+    },
+    {
+      label: 'Messages', icon: MessageSquare,
+      path: '/messages'
+    },
+    {
+      label: 'Meetings', icon: Calendar,
+      path: '/meetings', active: true
+    },
   ];
 
   const activeNavItems = isExpert ? expertNavItems : companyNavItems;
@@ -109,7 +137,7 @@ const Meetings = () => {
   const handleDeleteMeeting = (id) => {
     const updated = meetings.filter(m => m.id !== id);
     setMeetings(updated);
-    
+
     // Remove from localStorage if saved there
     const saved = JSON.parse(localStorage.getItem('CXO_SCHEDULED_MEETINGS') || '[]');
     const filteredSaved = saved.filter(m => m.id !== id);
@@ -123,7 +151,7 @@ const Meetings = () => {
 
   return (
     <div className="min-h-screen bg-[#f4f7f5] text-slate-900 font-sans flex overflow-hidden">
-      
+
       {/* ── SIDEBAR ── */}
       <motion.aside
         initial={{ width: 260 }}
@@ -159,11 +187,10 @@ const Meetings = () => {
               whileHover={{ x: 2, transition: { duration: 0.15 } }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${
-                item.active
-                  ? 'bg-[#134e40] text-white shadow-md font-bold'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
-              }`}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${item.active
+                ? 'bg-[#134e40] text-white shadow-md font-bold'
+                : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
+                }`}
             >
               {item.active && (
                 <motion.div
@@ -173,9 +200,9 @@ const Meetings = () => {
               )}
               <item.icon size={17} className="shrink-0" />
               <motion.span
-                animate={{ 
-                  opacity: isSidebarOpen ? 1 : 0, 
-                  width: isSidebarOpen ? 'auto' : 0 
+                animate={{
+                  opacity: isSidebarOpen ? 1 : 0,
+                  width: isSidebarOpen ? 'auto' : 0
                 }}
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
@@ -212,7 +239,7 @@ const Meetings = () => {
               } else {
                 localStorage.removeItem('demo_company');
               }
-              navigate('/');
+              navigate(isExpert ? '/signin?role=expert' : '/signin?role=company');
             }}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-all font-semibold"
           >
@@ -229,15 +256,15 @@ const Meetings = () => {
       </motion.aside>
 
       {/* ── MAIN CONTENT ── */}
-      <div 
+      <div
         className="transition-all duration-300 flex-1 flex flex-col min-h-screen"
         style={{ paddingLeft: isSidebarOpen ? '260px' : '68px' }}
       >
-        
+
         {/* Top Header */}
         <header className="h-16 border-b border-gray-150 bg-white flex items-center justify-between px-6 sticky top-0 z-30 shadow-sm shrink-0">
           <h1 className="font-black text-[#1C3627] text-lg">Scheduled Meetings ({isExpert ? 'Expert Portal' : 'Client Portal'})</h1>
-          
+
           <div className="flex items-center gap-3">
             {/* Notification Bell */}
             <div className="relative">
@@ -280,15 +307,14 @@ const Meetings = () => {
 
         {/* Content Body */}
         <main className="p-6 flex-1 max-w-5xl mx-auto w-full space-y-6 text-left">
-          
+
           {/* Dashboard Tab Selector */}
           <div className="flex items-center justify-between border-b border-gray-200 pb-1">
             <div className="flex gap-4">
               <button
                 onClick={() => setActiveTab('upcoming')}
-                className={`pb-3 text-xs font-black uppercase tracking-wider relative border-0 bg-transparent transition-colors cursor-pointer ${
-                  activeTab === 'upcoming' ? 'text-[#134e40]' : 'text-gray-400 hover:text-gray-600'
-                }`}
+                className={`pb-3 text-xs font-black uppercase tracking-wider relative border-0 bg-transparent transition-colors cursor-pointer ${activeTab === 'upcoming' ? 'text-[#134e40]' : 'text-gray-400 hover:text-gray-600'
+                  }`}
               >
                 Upcoming Syncs
                 {activeTab === 'upcoming' && (
@@ -300,9 +326,8 @@ const Meetings = () => {
               </button>
               <button
                 onClick={() => setActiveTab('past')}
-                className={`pb-3 text-xs font-black uppercase tracking-wider relative border-0 bg-transparent transition-colors cursor-pointer ${
-                  activeTab === 'past' ? 'text-[#134e40]' : 'text-gray-400 hover:text-gray-600'
-                }`}
+                className={`pb-3 text-xs font-black uppercase tracking-wider relative border-0 bg-transparent transition-colors cursor-pointer ${activeTab === 'past' ? 'text-[#134e40]' : 'text-gray-400 hover:text-gray-600'
+                  }`}
               >
                 Past Sessions
                 {activeTab === 'past' && (
@@ -335,10 +360,10 @@ const Meetings = () => {
                 className="bg-white rounded-3xl p-5 border border-gray-150 flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
               >
                 <FormalCardBorder />
-                
+
                 {/* Meeting details */}
                 <div className="flex-1 space-y-4">
-                  
+
                   {/* Topic and Duration */}
                   <div className="space-y-1">
                     <h3 className="text-base font-black text-slate-800 flex items-center gap-2">
@@ -368,7 +393,7 @@ const Meetings = () => {
 
                 {/* Participant Info & Actions */}
                 <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-stretch gap-4 shrink-0 border-t border-gray-50 pt-4 md:border-t-0 md:pt-0 md:pl-5 md:border-l md:border-gray-100 min-w-[220px]">
-                  
+
                   {/* Participant Card */}
                   <div className="flex items-center gap-3 text-left">
                     <div className={`w-10 h-10 rounded-full ${meet.avatarColor} flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-inner bg-gradient-to-tr`}>
@@ -394,7 +419,7 @@ const Meetings = () => {
                           <Video size={13} />
                           Join Meet
                         </motion.button>
-                        
+
                         {/* Cancellation button enabled for both roles */}
                         <button
                           onClick={() => handleDeleteMeeting(meet.id)}

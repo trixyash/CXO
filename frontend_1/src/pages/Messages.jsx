@@ -8,7 +8,7 @@ import {
   ShieldCheck, MessageSquare, Calendar, ChevronRight, ChevronLeft,
   Bell, LogOut, Search, Send, Video, Clock, Smile, Paperclip,
   CheckCheck, Shield, ChevronDown, Award, Sparkles, X, File, Download,
-  CheckCircle, ShieldAlert, ArrowLeft, Settings, UserCircle, Briefcase, Activity, DollarSign, Phone, Info
+  CheckCircle, ShieldAlert, ArrowLeft, Settings, UserCircle, Briefcase, Activity, IndianRupee, Phone, Info
 } from 'lucide-react';
 import FormalCardBorder from '../components/FormalCardBorder';
 
@@ -18,7 +18,13 @@ const Messages = () => {
   const [showNotifications, setShowNotifications] = useState(false);
 
   // Smart Role Detection
-  const isExpert = localStorage.getItem('demo_expert') === 'true';
+  const activeRole = localStorage.getItem('user_role');
+  const isExpert =
+    activeRole === 'expert' ||
+    (activeRole !== 'company' && (
+      localStorage.getItem('demo_expert') === 'true' ||
+      localStorage.getItem('sb-mock-auth') === 'true'
+    ));
   const isDemo = isExpert || localStorage.getItem('demo_company') === 'true';
 
   // State Management
@@ -75,17 +81,39 @@ const Messages = () => {
     { icon: Calendar, label: 'Scheduled Meetings', path: '/meetings' },
   ];
 
-  // Expert Side
   const expertNavItems = [
-    { label: 'Dashboard',      icon: LayoutDashboard, path: '/expert-dashboard'    },
-    { label: 'Opportunities',  icon: Briefcase,       path: '/expert-opportunities' },
-    { label: 'My Engagements', icon: Activity,        path: '/expert-engagements'  },
-    { label: 'Contracts',      icon: FileText,        path: '/expert-contracts'    },
-    { label: 'Earnings',       icon: DollarSign,      path: '/expert-earnings'     },
-    { label: 'Profile',        icon: UserCircle,      path: '/expert-profile'      },
-    { label: 'Analytics',      icon: BarChart2,       path: '/expert-analytics'    },
-    { label: 'Messages',       icon: MessageSquare,   path: '/messages', active: true },
-    { label: 'Meetings',       icon: Calendar,        path: '/meetings'            },
+    {
+      label: 'Dashboard', icon: LayoutDashboard,
+      path: '/expert-dashboard'
+    },
+    {
+      label: 'Opportunities', icon: Briefcase,
+      path: '/expert-opportunities'
+    },
+    {
+      label: 'My Engagements', icon: Activity,
+      path: '/expert-engagements'
+    },
+    {
+      label: 'Contracts', icon: FileText,
+      path: '/expert-contracts'
+    },
+    {
+      label: 'Earnings', icon: IndianRupee,
+      path: '/expert-earnings'
+    },
+    {
+      label: 'Profile', icon: UserCircle,
+      path: '/expert-profile'
+    },
+    {
+      label: 'Messages', icon: MessageSquare,
+      path: '/messages', active: true
+    },
+    {
+      label: 'Meetings', icon: Calendar,
+      path: '/meetings'
+    },
   ];
 
   const activeNavItems = isExpert ? expertNavItems : companyNavItems;
@@ -215,7 +243,7 @@ const Messages = () => {
         `Checked. I have compiled the compliance updates. Let's align.`
       ];
       const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      
+
       const replyMessage = {
         sender: isExpert ? 'company' : 'expert',
         text: randomResponse,
@@ -316,11 +344,10 @@ const Messages = () => {
               whileHover={{ x: 2, transition: { duration: 0.15 } }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${
-                item.active
-                  ? 'bg-[#134e40] text-white shadow-md font-bold'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
-              }`}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${item.active
+                ? 'bg-[#134e40] text-white shadow-md font-bold'
+                : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
+                }`}
             >
               {item.active && (
                 <motion.div
@@ -330,9 +357,9 @@ const Messages = () => {
               )}
               <item.icon size={17} className="shrink-0" />
               <motion.span
-                animate={{ 
-                  opacity: isSidebarOpen ? 1 : 0, 
-                  width: isSidebarOpen ? 'auto' : 0 
+                animate={{
+                  opacity: isSidebarOpen ? 1 : 0,
+                  width: isSidebarOpen ? 'auto' : 0
                 }}
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
@@ -369,7 +396,7 @@ const Messages = () => {
               } else {
                 localStorage.removeItem('demo_company');
               }
-              navigate('/');
+              navigate(isExpert ? '/signin?role=expert' : '/signin?role=company');
             }}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-all font-semibold"
           >
@@ -386,11 +413,11 @@ const Messages = () => {
       </motion.aside>
 
       {/* ── ALIGNED LIGHT MODE MESSAGING WORKSPACE ── */}
-      <div 
+      <div
         className="transition-all duration-300 flex-1 flex h-screen"
         style={{ paddingLeft: isSidebarOpen ? '260px' : '68px' }}
       >
-        
+
         {/* Left Column: Thread Lists (Aesthetics aligned to light theme) */}
         <div className="w-80 border-r border-gray-150 bg-white flex flex-col shrink-0 h-full">
           {/* Aligned Search Input */}
@@ -420,11 +447,10 @@ const Messages = () => {
                 <button
                   key={thr.id}
                   onClick={() => setActiveThreadId(thr.id)}
-                  className={`w-full p-3 rounded-2xl flex items-start gap-3 transition-all border-0 relative cursor-pointer text-left ${
-                    isSelected 
-                      ? 'bg-[#134e40] text-white shadow-md' 
-                      : 'text-gray-600 hover:bg-slate-50'
-                  }`}
+                  className={`w-full p-3 rounded-2xl flex items-start gap-3 transition-all border-0 relative cursor-pointer text-left ${isSelected
+                    ? 'bg-[#134e40] text-white shadow-md'
+                    : 'text-gray-600 hover:bg-slate-50'
+                    }`}
                 >
                   {/* Status Indicator Avatar */}
                   <div className="relative shrink-0">
@@ -464,16 +490,16 @@ const Messages = () => {
         </div>
 
         {/* Right Column: Active Conversation (Aesthetics aligned to warmth layout) */}
-        <div 
+        <div
           className="flex-1 flex flex-col h-full relative overflow-hidden"
-          style={{ 
-            backgroundColor: '#eef3ef', 
-            backgroundImage: 'radial-gradient(rgba(19,78,64,0.04) 0.8px, transparent 0.8px), radial-gradient(rgba(19,78,64,0.04) 0.8px, #eef3ef 0.8px)', 
-            backgroundSize: '24px 24px', 
-            backgroundPosition: '0 0, 12px 12px' 
+          style={{
+            backgroundColor: '#eef3ef',
+            backgroundImage: 'radial-gradient(rgba(19,78,64,0.04) 0.8px, transparent 0.8px), radial-gradient(rgba(19,78,64,0.04) 0.8px, #eef3ef 0.8px)',
+            backgroundSize: '24px 24px',
+            backgroundPosition: '0 0, 12px 12px'
           }}
         >
-          
+
           {/* Header */}
           <div className="h-16 bg-white border-b border-gray-150 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
             <div className="flex items-center gap-3">
@@ -497,15 +523,15 @@ const Messages = () => {
               <button type="button" className="p-2 text-gray-400 hover:text-[#134e40] hover:bg-slate-50 rounded-xl transition-colors bg-transparent border-0 cursor-pointer" title="Start Video Call">
                 <Video size={15} />
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setShowInfoPanel(!showInfoPanel)}
-                className={`p-2 rounded-xl transition-colors bg-transparent border-0 cursor-pointer ${showInfoPanel ? 'text-[#134e40] bg-teal-50' : 'text-gray-400 hover:text-[#134e40] hover:bg-slate-50'}`} 
+                className={`p-2 rounded-xl transition-colors bg-transparent border-0 cursor-pointer ${showInfoPanel ? 'text-[#134e40] bg-teal-50' : 'text-gray-400 hover:text-[#134e40] hover:bg-slate-50'}`}
                 title="Toggle Contact Details"
               >
                 <Info size={15} />
               </button>
-              
+
               <div className="w-px h-6 bg-gray-150 mx-1" />
 
               <motion.button
@@ -547,17 +573,15 @@ const Messages = () => {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`max-w-md p-3.5 rounded-2xl text-left text-xs leading-relaxed font-semibold relative flex flex-col gap-2 shadow-sm ${
-                      isMe 
-                        ? 'bg-[#134e40] text-white rounded-tr-none' 
-                        : 'bg-white text-slate-800 rounded-tl-none border border-gray-150'
-                    }`}
+                    className={`max-w-md p-3.5 rounded-2xl text-left text-xs leading-relaxed font-semibold relative flex flex-col gap-2 shadow-sm ${isMe
+                      ? 'bg-[#134e40] text-white rounded-tr-none'
+                      : 'bg-white text-slate-800 rounded-tl-none border border-gray-150'
+                      }`}
                   >
                     {/* Render File Attachment Bubble if exists */}
                     {msg.file && (
-                      <div className={`p-2.5 rounded-xl flex items-center gap-3 border ${
-                        isMe ? 'bg-white/10 border-white/20 text-white' : 'bg-slate-50 border-gray-150 text-slate-700'
-                      }`}>
+                      <div className={`p-2.5 rounded-xl flex items-center gap-3 border ${isMe ? 'bg-white/10 border-white/20 text-white' : 'bg-slate-50 border-gray-150 text-slate-700'
+                        }`}>
                         <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isMe ? 'bg-white/15' : 'bg-teal-50'}`}>
                           <File size={16} className={isMe ? 'text-white' : 'text-[#0eb59a]'} />
                         </div>
@@ -572,7 +596,7 @@ const Messages = () => {
                     )}
 
                     {msg.text && <p>{msg.text}</p>}
-                    
+
                     <span className={`text-[9px] self-end mt-0.5 font-bold flex items-center gap-1.5 ${isMe ? 'text-teal-200' : 'text-gray-400'}`}>
                       {msg.time}
                       {isMe && <CheckCheck size={11} className="text-teal-300" />}
@@ -597,7 +621,7 @@ const Messages = () => {
 
           {/* Interactive Chat Input Area */}
           <div className="p-4 bg-white border-t border-gray-150 shrink-0 shadow-lg">
-            
+
             {/* Attachment preview pill */}
             <AnimatePresence>
               {attachedFile && (
@@ -612,7 +636,7 @@ const Messages = () => {
                     <span className="truncate max-w-[200px]">{attachedFile.name}</span>
                     <span className="text-[10px] text-gray-400 font-semibold font-mono">({attachedFile.size})</span>
                   </div>
-                  <button 
+                  <button
                     onClick={handleRemoveFile}
                     className="w-5 h-5 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center border-0 text-gray-500 cursor-pointer"
                   >
@@ -624,7 +648,7 @@ const Messages = () => {
 
             <form onSubmit={handleSendMessage} className="flex items-center gap-2">
               {/* Hidden file input */}
-              <input 
+              <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
@@ -632,8 +656,8 @@ const Messages = () => {
               />
 
               {/* Upload Attachment button */}
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={handleFileClick}
                 className="p-2 text-gray-400 hover:text-[#134e40] transition-colors bg-transparent border-0 cursor-pointer"
                 title="Send a File"
@@ -676,7 +700,7 @@ const Messages = () => {
             >
               <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Contact Details</h3>
-                <button 
+                <button
                   onClick={() => setShowInfoPanel(false)}
                   className="p-1 hover:bg-gray-100 rounded-lg text-gray-400 border-0 cursor-pointer bg-transparent"
                 >
@@ -748,7 +772,7 @@ const Messages = () => {
                 </div>
 
                 {/* Quick actions */}
-                <button 
+                <button
                   onClick={() => navigate(isExpert ? '/expert-profile' : `/experts/${activeThread.id}`)}
                   className="w-full py-2 bg-teal-50 hover:bg-teal-150 border border-teal-150 text-[#134e40] font-black rounded-xl text-xs transition-colors cursor-pointer"
                 >
@@ -772,9 +796,9 @@ const Messages = () => {
               className="bg-white rounded-3xl p-6 w-full max-w-md relative overflow-hidden shadow-2xl text-left"
             >
               <FormalCardBorder />
-              
+
               {/* Close Button */}
-              <button 
+              <button
                 onClick={() => {
                   setShowScheduleModal(false);
                   setMeetingStep(1);
@@ -797,7 +821,7 @@ const Messages = () => {
               {/* STEP 1: Date, Time & platform */}
               {meetingStep === 1 && (
                 <div className="space-y-4">
-                  
+
                   {/* Google Meet Integrations notice */}
                   <div className="p-3 bg-teal-50/70 border border-teal-100 rounded-2xl text-left flex items-start gap-2.5">
                     <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm shrink-0 mt-0.5">
@@ -831,7 +855,7 @@ const Messages = () => {
                           onChange={(e) => setMeetingHour(e.target.value)}
                           className="px-2 py-2 bg-[#f4f7f5] border border-gray-100 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#0eb59a]"
                         >
-                          {['01','02','03','04','05','06','07','08','09','10','11','12'].map(h => (
+                          {['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'].map(h => (
                             <option key={h} value={h}>{h}</option>
                           ))}
                         </select>
@@ -840,7 +864,7 @@ const Messages = () => {
                           onChange={(e) => setMeetingMinute(e.target.value)}
                           className="px-2 py-2 bg-[#f4f7f5] border border-gray-100 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#0eb59a]"
                         >
-                          {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => (
+                          {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
                             <option key={m} value={m}>{m}</option>
                           ))}
                         </select>
@@ -850,11 +874,10 @@ const Messages = () => {
                               key={p}
                               type="button"
                               onClick={() => setMeetingPeriod(p)}
-                              className={`flex-1 py-1 rounded-lg text-[9px] font-black transition-all border-0 cursor-pointer ${
-                                meetingPeriod === p
-                                  ? 'bg-[#134e40] text-white shadow-sm'
-                                  : 'text-gray-400 bg-transparent'
-                              }`}
+                              className={`flex-1 py-1 rounded-lg text-[9px] font-black transition-all border-0 cursor-pointer ${meetingPeriod === p
+                                ? 'bg-[#134e40] text-white shadow-sm'
+                                : 'text-gray-400 bg-transparent'
+                                }`}
                             >
                               {p}
                             </button>
@@ -873,11 +896,10 @@ const Messages = () => {
                           key={dur}
                           type="button"
                           onClick={() => setMeetingDuration(dur)}
-                          className={`py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
-                            meetingDuration === dur
-                              ? 'bg-[#134e40] border-[#134e40] text-white shadow-sm'
-                              : 'bg-[#f4f7f5] border-gray-100 text-gray-500 hover:border-[#134e40]/30'
-                          }`}
+                          className={`py-1.5 rounded-lg text-[10px] font-bold border transition-all ${meetingDuration === dur
+                            ? 'bg-[#134e40] border-[#134e40] text-white shadow-sm'
+                            : 'bg-[#f4f7f5] border-gray-100 text-gray-500 hover:border-[#134e40]/30'
+                            }`}
                         >
                           {dur}
                         </button>
@@ -892,11 +914,10 @@ const Messages = () => {
                       <button
                         type="button"
                         onClick={() => setMeetingPlatform('Google Meet')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold border transition-colors ${
-                          meetingPlatform === 'Google Meet'
-                            ? 'bg-teal-50 border-[#0eb59a] text-[#134e40]'
-                            : 'bg-white border-gray-200 text-gray-400'
-                        }`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold border transition-colors ${meetingPlatform === 'Google Meet'
+                          ? 'bg-teal-50 border-[#0eb59a] text-[#134e40]'
+                          : 'bg-white border-gray-200 text-gray-400'
+                          }`}
                       >
                         <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full shrink-0" />
                         Google Meet (Default)
@@ -922,7 +943,7 @@ const Messages = () => {
               {/* STEP 2: Meeting Context & Review */}
               {meetingStep === 2 && (
                 <form onSubmit={handleConfirmSchedule} className="space-y-4">
-                  
+
                   {/* Meeting Title */}
                   <div>
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Meeting Title</label>
