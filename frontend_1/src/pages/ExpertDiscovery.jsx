@@ -441,7 +441,7 @@ const ExpertDiscovery = () => {
         className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed left-0 top-0 h-screen"
       >
         {/* Brand */}
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-50">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
           <motion.div
             animate={{ width: isSidebarOpen ? 'auto' : 0, opacity: isSidebarOpen ? 1 : 0 }}
             transition={{ duration: 0.2 }}

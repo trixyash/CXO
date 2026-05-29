@@ -52,6 +52,7 @@ const SignIn2 = ({
                   : 'bg-gray-50/50 border-gray-200'
               }`}
               onChange={(e) => !showOtp && setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !showOtp && handleSignIn(e)}
             />
           </div>
           {showOtp && (

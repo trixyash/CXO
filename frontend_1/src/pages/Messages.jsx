@@ -336,7 +336,7 @@ const Messages = () => {
 
         <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
           {isSidebarOpen && (
-            <p className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2">Main Menu</p>
+            <p className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2">Main Menu</p>
           )}
           {activeNavItems.map((item) => (
             <motion.button

@@ -539,13 +539,9 @@ const Payments = () => {
       }}
     >
 
-      {/* ── TOP HEADER ── */}
       <header className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm px-6 py-3 flex items-center gap-4">
-        <div className="flex items-center gap-1.5 text-xs text-gray-400 flex-1">
-          <button onClick={() => navigate('/company-dashboard')} className="hover:text-[#134e40] font-semibold transition-colors">Dashboard</button>
-          <ChevronRight size={12} className="text-gray-300" />
-          <span className="text-[#134e40] font-bold">Payments & Escrow</span>
-        </div>
+        <div className="flex-1" />
+
 
         <div className="flex items-center gap-3">
           {/* Export */}
