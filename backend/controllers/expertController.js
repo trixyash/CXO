@@ -1,4 +1,10 @@
 import { supabaseAdmin } from "../utils/supabaseAdmin.js";
+import { 
+  syncExpertEmbedding, 
+  syncRequirementEmbedding, 
+  computeKeywordMatchScore, 
+  cosineSimilarity 
+} from "../utils/matchmaker.js";
 
 // ================= GET EXPERT PROFILE =================
 export const getExpertProfile = async (req, res) => {
@@ -148,7 +154,7 @@ const getRelativeTimeString = (date) => {
   }
 };
 
-const mapDbOpportunity = (req, company, idx) => {
+const mapDbOpportunity = (req, company, idx, matchScore) => {
   // Budget formatting: e.g. "₹2L - ₹3L/mo"
   let budgetStr = "Negotiable";
   if (req.budget_min && req.budget_max) {
@@ -187,7 +193,7 @@ const mapDbOpportunity = (req, company, idx) => {
   const budgetNum = req.budget_min || 0;
 
   // Match score (mock or basic match)
-  const match = 80 + (idx % 19); // 80% to 98%
+  const match = matchScore !== undefined ? matchScore : (80 + (idx % 19)); // 80% to 98%
 
   // Posted date formatting
   const postedDate = req.created_at
@@ -222,6 +228,28 @@ const mapDbOpportunity = (req, company, idx) => {
 
 export const getOpportunities = async (req, res) => {
   try {
+    const email = req.user.email; // Extracted from Supabase JWT by requireAuth middleware
+    if (!email) {
+      return res.status(400).json({ error: "Email not found in token" });
+    }
+
+    // 0. Fetch logged in expert profile
+    const { data: expert, error: expertError } = await supabaseAdmin
+      .from("expert_applications")
+      .select("*")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (expertError) {
+      console.error("Error fetching expert profile for matchmaking:", expertError);
+    }
+
+    let expertEmbedding = expert?.embedding;
+    if (expert && !expertEmbedding) {
+      // Dynamically generate and sync the expert's embedding if missing
+      expertEmbedding = await syncExpertEmbedding(expert.id, expert);
+    }
+
     // 1. Fetch requirements with status = 'Active' (or non-draft)
     const { data: requirements, error: reqError } = await supabaseAdmin
       .from("company_requirements")
@@ -261,9 +289,10 @@ export const getOpportunities = async (req, res) => {
       }
     });
 
-    // 5. Combine and filter
+    // 5. Combine, score and filter
     const opportunities = [];
-    requirements.forEach((reqItem, idx) => {
+    for (let idx = 0; idx < requirements.length; idx++) {
+      const reqItem = requirements[idx];
       const companyEmail = reqItem.company_email ? reqItem.company_email.toLowerCase().trim() : "";
       const company = companyMap.get(companyEmail);
 
@@ -271,9 +300,29 @@ export const getOpportunities = async (req, res) => {
       // - Company exists in company_applications
       // - The company's admin email is in auth.users (signed up and authenticated)
       if (company && authenticatedEmails.has(companyEmail)) {
-        opportunities.push(mapDbOpportunity(reqItem, company, idx));
+        let matchScore;
+        
+        if (expert) {
+          let reqEmbedding = reqItem.embedding;
+          if (!reqEmbedding) {
+            reqEmbedding = await syncRequirementEmbedding(reqItem.id, reqItem);
+          }
+
+          if (expertEmbedding && reqEmbedding) {
+            const similarity = cosineSimilarity(expertEmbedding, reqEmbedding);
+            // Map cosine similarity [0.4, 0.85] to [60, 98] range
+            matchScore = Math.round(60 + Math.max(0, Math.min(1, (similarity - 0.4) / 0.45)) * 38);
+          } else {
+            // Fallback keyword matching
+            matchScore = computeKeywordMatchScore(expert, reqItem);
+          }
+        } else {
+          matchScore = 80 + (idx % 19);
+        }
+
+        opportunities.push(mapDbOpportunity(reqItem, company, idx, matchScore));
       }
-    });
+    }
 
     res.json(opportunities);
   } catch (err) {

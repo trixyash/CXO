@@ -69,6 +69,7 @@ const ExpertDashboard = () => {
 
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [recommendedOpportunities, setRecommendedOpportunities] = useState([]);
 
   useEffect(() => {
     const checkAuthAndFetch = async () => {
@@ -78,8 +79,9 @@ const ExpertDashboard = () => {
         return;
       }
 
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
         const response = await fetch(`${baseUrl}/api/expert/profile`, {
           headers: {
             'Authorization': `Bearer ${session.access_token}`
@@ -96,6 +98,29 @@ const ExpertDashboard = () => {
         console.error("Error fetching expert profile:", err);
       } finally {
         setLoadingProfile(false);
+      }
+
+      // Fetch opportunities
+      try {
+        const response = await fetch(`${baseUrl}/api/expert/opportunities`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.length > 0) {
+            setRecommendedOpportunities(data);
+          } else {
+            setRecommendedOpportunities(MOCK_RECOMMENDED_OPPORTUNITIES);
+          }
+        } else {
+          setRecommendedOpportunities(MOCK_RECOMMENDED_OPPORTUNITIES);
+        }
+      } catch (err) {
+        console.error("Error fetching opportunities:", err);
+        setRecommendedOpportunities(MOCK_RECOMMENDED_OPPORTUNITIES);
       }
     };
 
@@ -204,7 +229,7 @@ const ExpertDashboard = () => {
     },
   ];
 
-  const recommendedOpportunities = [
+  const MOCK_RECOMMENDED_OPPORTUNITIES = [
     {
       id: 1,
       title: 'Fractional CFO',
@@ -1330,11 +1355,15 @@ const ExpertDashboard = () => {
                               <div className="flex flex-col items-center gap-2 mb-3">
                                 <motion.div
                                   whileHover={{ rotate: 5 }}
-                                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${opp.logoColor} flex items-center justify-center shadow-md shrink-0`}
+                                  className={`w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br ${opp.logoColor} flex items-center justify-center shadow-md shrink-0`}
                                 >
-                                  <span className="text-white font-black text-lg">
-                                    {opp.logo}
-                                  </span>
+                                  {opp.logoUrl ? (
+                                    <img src={opp.logoUrl} alt={opp.company} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <span className="text-white font-black text-lg">
+                                      {opp.logo}
+                                    </span>
+                                  )}
                                 </motion.div>
                                 <div className="flex flex-col items-center gap-1 mt-1">
                                   <span
@@ -1394,7 +1423,7 @@ const ExpertDashboard = () => {
 
                               {/* Centered social proof */}
                               <p className="text-[11px] text-gray-400 font-medium mb-4 text-center">
-                                {opp.applicants} applied · Posted {opp.postedDays}d ago
+                                {opp.applicants} applied · {opp.postedDate ? `Posted ${opp.postedDate}` : `Posted ${opp.postedDays}d ago`}
                               </p>
 
                               {/* Centered CTAs */}

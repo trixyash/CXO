@@ -1,4 +1,10 @@
 import { supabaseAdmin } from "../utils/supabaseAdmin.js";
+import { 
+  syncExpertEmbedding, 
+  syncRequirementEmbedding, 
+  computeKeywordMatchScore, 
+  cosineSimilarity 
+} from "../utils/matchmaker.js";
 
 // ================= GET COMPANY PROFILE =================
 export const getCompanyProfile = async (req, res) => {
@@ -76,7 +82,7 @@ export const getTeamMembers = async (req, res) => {
 };
 
 // Helper function to map DB expert record to frontend component format
-export const mapDbExpert = (expert, idx = 0) => {
+export const mapDbExpert = (expert, idx = 0, matchScore) => {
   const initials = expert.full_name
     ? expert.full_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
     : "EX";
@@ -144,7 +150,7 @@ export const mapDbExpert = (expert, idx = 0) => {
     coverGradient,
     rating: 4.9, // fallback placeholder
     reviews: 12 + (idx % 10), // fallback placeholder
-    match: 90 + (idx % 9), // fallback placeholder
+    match: matchScore !== undefined ? matchScore : (90 + (idx % 9)), // fallback placeholder
     availability: expert.years_experience ? `${expert.years_experience} years exp` : "Part-time",
     availabilityType: "Part-time",
     location: "Remote",
@@ -184,6 +190,34 @@ export const mapDbExpert = (expert, idx = 0) => {
 // ================= GET REGISTERED EXPERTS =================
 export const getRegisteredExperts = async (req, res) => {
   try {
+    const companyEmail = req.user.email;
+    let selectedReq = null;
+
+    // Check if query param requirementId is provided, or get the latest active requirement
+    const requirementId = req.query.requirementId;
+    if (requirementId) {
+      const { data } = await supabaseAdmin
+        .from("company_requirements")
+        .select("*")
+        .eq("id", requirementId)
+        .maybeSingle();
+      selectedReq = data;
+    } else if (companyEmail) {
+      const { data } = await supabaseAdmin
+        .from("company_requirements")
+        .select("*")
+        .eq("company_email", companyEmail)
+        .eq("status", "Active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      selectedReq = data;
+    }
+
+    if (selectedReq && !selectedReq.embedding) {
+      selectedReq.embedding = await syncRequirementEmbedding(selectedReq.id, selectedReq);
+    }
+
     const { data: rawExperts, error } = await supabaseAdmin
       .from("expert_applications")
       .select("*")
@@ -194,8 +228,28 @@ export const getRegisteredExperts = async (req, res) => {
       return res.status(500).json({ error: "Failed to fetch experts" });
     }
 
-    // Map DB fields to the format expected by frontend components
-    const mappedExperts = rawExperts.map((expert, idx) => mapDbExpert(expert, idx));
+    // Map DB fields and calculate match score
+    const mappedExperts = [];
+    for (let idx = 0; idx < rawExperts.length; idx++) {
+      const expert = rawExperts[idx];
+      let matchScore;
+
+      if (selectedReq) {
+        let expertEmbedding = expert.embedding;
+        if (!expertEmbedding) {
+          expertEmbedding = await syncExpertEmbedding(expert.id, expert);
+        }
+
+        if (expertEmbedding && selectedReq.embedding) {
+          const similarity = cosineSimilarity(expertEmbedding, selectedReq.embedding);
+          matchScore = Math.round(60 + Math.max(0, Math.min(1, (similarity - 0.4) / 0.45)) * 38);
+        } else {
+          matchScore = computeKeywordMatchScore(expert, selectedReq);
+        }
+      }
+
+      mappedExperts.push(mapDbExpert(expert, idx, matchScore));
+    }
 
     res.json(mappedExperts);
   } catch (err) {
@@ -208,6 +262,7 @@ export const getRegisteredExperts = async (req, res) => {
 export const getRegisteredExpertById = async (req, res) => {
   try {
     const { expertId } = req.params;
+    const companyEmail = req.user.email;
 
     if (!expertId) {
       return res.status(400).json({ error: "Expert ID is required" });
@@ -228,7 +283,46 @@ export const getRegisteredExpertById = async (req, res) => {
       return res.status(404).json({ error: "Expert not found" });
     }
 
-    const mapped = mapDbExpert(expert, 0);
+    let selectedReq = null;
+    const requirementId = req.query.requirementId;
+    if (requirementId) {
+      const { data } = await supabaseAdmin
+        .from("company_requirements")
+        .select("*")
+        .eq("id", requirementId)
+        .maybeSingle();
+      selectedReq = data;
+    } else if (companyEmail) {
+      const { data } = await supabaseAdmin
+        .from("company_requirements")
+        .select("*")
+        .eq("company_email", companyEmail)
+        .eq("status", "Active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      selectedReq = data;
+    }
+
+    let matchScore;
+    if (selectedReq) {
+      if (!selectedReq.embedding) {
+        selectedReq.embedding = await syncRequirementEmbedding(selectedReq.id, selectedReq);
+      }
+      let expertEmbedding = expert.embedding;
+      if (!expertEmbedding) {
+        expertEmbedding = await syncExpertEmbedding(expert.id, expert);
+      }
+
+      if (expertEmbedding && selectedReq.embedding) {
+        const similarity = cosineSimilarity(expertEmbedding, selectedReq.embedding);
+        matchScore = Math.round(60 + Math.max(0, Math.min(1, (similarity - 0.4) / 0.45)) * 38);
+      } else {
+        matchScore = computeKeywordMatchScore(expert, selectedReq);
+      }
+    }
+
+    const mapped = mapDbExpert(expert, 0, matchScore);
     res.json(mapped);
   } catch (err) {
     console.error("getRegisteredExpertById error:", err);
