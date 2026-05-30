@@ -278,10 +278,17 @@ const ExpertProfileBuilder = () => {
             setIndustries(data.industries);
           }
           if (data.engagement_types && typeof data.engagement_types === 'object' && !Array.isArray(data.engagement_types) && Object.keys(data.engagement_types).length > 0) {
+            const { availability: dbAvailability, rateCard: dbRateCard, ...dbEngagementTypes } = data.engagement_types;
             setEngagementTypes(prev => ({
               ...prev,
-              ...data.engagement_types
+              ...dbEngagementTypes
             }));
+            if (dbAvailability) {
+              setAvailability(dbAvailability);
+            }
+            if (dbRateCard) {
+              setRateCard(dbRateCard);
+            }
           }
         }
       } catch (err) {
@@ -301,6 +308,11 @@ const ExpertProfileBuilder = () => {
 
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const baseEngagementTypes = (overrideEngagementTypes && typeof overrideEngagementTypes === 'object' && !Array.isArray(overrideEngagementTypes))
+        ? overrideEngagementTypes
+        : engagementTypes;
+      const { availability: _, rateCard: __, ...cleanedEngagementTypes } = baseEngagementTypes;
+
       const updatedProfile = {
         full_name: `${profile.firstName} ${profile.lastName}`.trim(),
         headline: profile.headline,
@@ -310,7 +322,7 @@ const ExpertProfileBuilder = () => {
         current_company: '',
         key_skills: Array.isArray(overrideSkills) ? overrideSkills.join(', ') : skills.join(', '),
         services_offered: profile.bio,
-        hourly_rate: '200000', // default rate
+        hourly_rate: rateCard.fractional ? rateCard.fractional.replace(/[^0-9]/g, '') : '200000',
         email: profile.email,
         phone: profile.phone,
         linkedin: profile.linkedin,
@@ -321,9 +333,11 @@ const ExpertProfileBuilder = () => {
         experience_history: Array.isArray(overrideExperiences) ? overrideExperiences : experiences,
         education_history: Array.isArray(overrideEducation) ? overrideEducation : education,
         industries: Array.isArray(overrideIndustries) ? overrideIndustries : industries,
-        engagement_types: (overrideEngagementTypes && typeof overrideEngagementTypes === 'object' && !Array.isArray(overrideEngagementTypes)) 
-          ? overrideEngagementTypes 
-          : engagementTypes
+        engagement_types: {
+          ...cleanedEngagementTypes,
+          availability: availability,
+          rateCard: rateCard
+        }
       };
 
       const response = await fetch(`${baseUrl}/api/expert/profile`, {

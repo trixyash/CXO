@@ -91,6 +91,9 @@ const ExpertDashboard = () => {
         if (response.ok) {
           const data = await response.json();
           setProfile(data);
+          if (data.engagement_types?.availability?.status) {
+            setIsAvailable(data.engagement_types.availability.status === 'Available');
+          }
         } else {
           console.warn("No expert profile found, using defaults");
         }
@@ -182,6 +185,55 @@ const ExpertDashboard = () => {
     const t = setTimeout(() => setMounted(true), 200);
     return () => clearTimeout(t);
   }, []);
+
+  const handleToggleAvailability = async () => {
+    const nextAvailable = !isAvailable;
+    setIsAvailable(nextAvailable);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      const currentEngagementTypes = profile?.engagement_types || {};
+      const currentAvailability = currentEngagementTypes.availability || {
+        status: 'Available',
+        hoursPerWeek: '20',
+        startDate: 'Immediate',
+        timezone: 'IST (UTC+5:30)',
+        preferredMode: 'Remote'
+      };
+
+      const updatedEngagementTypes = {
+        ...currentEngagementTypes,
+        availability: {
+          ...currentAvailability,
+          status: nextAvailable ? 'Available' : 'Not available'
+        }
+      };
+
+      const updatedProfile = {
+        ...profile,
+        engagement_types: updatedEngagementTypes
+      };
+
+      const response = await fetch(`${baseUrl}/api/expert/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(updatedProfile)
+      });
+
+      if (response.ok) {
+        setProfile(updatedProfile);
+      }
+    } catch (err) {
+      console.error("Error updating availability status:", err);
+    }
+  };
 
   const sidebarMenu = [
     { name: 'Dashboard',      icon: LayoutDashboard,
@@ -1018,7 +1070,7 @@ const ExpertDashboard = () => {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => setIsAvailable(a => !a)}
+                    onClick={handleToggleAvailability}
                     className={`flex items-center justify-center gap-2 px-4 py-2 rounded-full border-2 text-xs font-black transition-all duration-300 cursor-pointer text-center ${
                       isAvailable
                         ? 'bg-[#f0fdf4] border-[#0eb59a] text-[#134e40]'

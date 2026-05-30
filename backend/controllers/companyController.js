@@ -99,9 +99,18 @@ export const mapDbExpert = (expert, idx = 0, matchScore) => {
   ];
   const coverGradient = gradients[idx % gradients.length];
 
+  const engagementTypesObj = (expert.engagement_types && typeof expert.engagement_types === 'object') ? expert.engagement_types : {};
+  const availabilityInfo = engagementTypesObj.availability || {};
+  const rateCardInfo = engagementTypesObj.rateCard || {};
+
   // Format budget: e.g. "₹2L - ₹3L/mo" based on expected monthly hourly_rate
   let rate = "₹2.0L/mo";
-  if (expert.hourly_rate) {
+  if (rateCardInfo.fractional) {
+    rate = rateCardInfo.fractional;
+    if (!rate.includes('/mo')) {
+      rate = `${rate}/mo`;
+    }
+  } else if (expert.hourly_rate) {
     const rateNum = parseInt(expert.hourly_rate);
     if (!isNaN(rateNum)) {
       if (rateNum >= 100000) {
@@ -110,6 +119,23 @@ export const mapDbExpert = (expert, idx = 0, matchScore) => {
         rate = `₹${rateNum.toLocaleString('en-IN')}/mo`;
       }
     }
+  }
+
+  // Construct availability string
+  let availabilityStr = expert.years_experience ? `${expert.years_experience} years exp` : "Part-time";
+  if (availabilityInfo.hoursPerWeek) {
+    availabilityStr = `${availabilityInfo.hoursPerWeek} hrs/week`;
+  } else if (availabilityInfo.status) {
+    availabilityStr = availabilityInfo.status;
+  }
+
+  let availabilityType = "Part-time";
+  if (engagementTypesObj["Full-time"] || engagementTypesObj["Interim"]) {
+    availabilityType = "Full-time";
+  } else if (engagementTypesObj["Advisory"]) {
+    availabilityType = "Advisory";
+  } else if (engagementTypesObj["Fractional"] || engagementTypesObj["Part-time"]) {
+    availabilityType = "Part-time";
   }
 
   // Generate dynamic highlights
@@ -151,12 +177,13 @@ export const mapDbExpert = (expert, idx = 0, matchScore) => {
     rating: 4.9, // fallback placeholder
     reviews: 12 + (idx % 10), // fallback placeholder
     match: matchScore !== undefined ? matchScore : (90 + (idx % 9)), // fallback placeholder
-    availability: expert.years_experience ? `${expert.years_experience} years exp` : "Part-time",
-    availabilityType: "Part-time",
-    location: "Remote",
+    availability: availabilityStr,
+    availabilityType: availabilityType,
+    location: availabilityInfo.preferredMode || "Remote",
     budget: rate,
     budgetNum: parseInt(expert.hourly_rate) || 200000,
     rate: rate,
+    rateCard: rateCardInfo,
     experience: expert.years_experience ? `${expert.years_experience} years` : "10+ years",
     industries: Array.isArray(expert.industries) && expert.industries.length > 0
       ? expert.industries
@@ -166,10 +193,8 @@ export const mapDbExpert = (expert, idx = 0, matchScore) => {
     education: expert.education_history || [],
     roles: [expert.current_role || "CXO Advisor"],
     engagementTypes: (() => {
-      if (expert.engagement_types && typeof expert.engagement_types === 'object') {
-        const active = Object.keys(expert.engagement_types).filter(k => expert.engagement_types[k]);
-        if (active.length > 0) return active;
-      }
+      const active = Object.keys(engagementTypesObj).filter(k => k !== 'availability' && k !== 'rateCard' && engagementTypesObj[k]);
+      if (active.length > 0) return active;
       return ["Fractional", "Advisory"];
     })(),
     verified: true,
@@ -180,7 +205,7 @@ export const mapDbExpert = (expert, idx = 0, matchScore) => {
     linkedIn: expert.linkedin || "https://linkedin.com",
     github: expert.github || "",
     languages: ["English", "Hindi"],
-    timezone: "IST (UTC+5:30)",
+    timezone: availabilityInfo.timezone || "IST (UTC+5:30)",
     highlights,
     email: expert.email,
     user_id: expert.user_id
