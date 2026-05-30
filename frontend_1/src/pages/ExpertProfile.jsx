@@ -420,7 +420,9 @@ const ExpertProfile = () => {
       id: 'advisory',
       label: 'Advisory',
       hours: '8 hrs/mo',
-      price: expert.budget.split(' - ')[0] + '/mo',
+      price: (expert.rateCard && expert.rateCard.advisory)
+        ? (expert.rateCard.advisory.startsWith('₹') ? expert.rateCard.advisory : '₹' + expert.rateCard.advisory) + '/mo'
+        : expert.budget.split(' - ')[0] + '/mo',
       priceNote: 'Billed monthly',
       features: [
         '2 strategy sessions/month',
@@ -437,7 +439,9 @@ const ExpertProfile = () => {
       id: 'fractional',
       label: 'Fractional',
       hours: '15-20 hrs/wk',
-      price: expert.budget,
+      price: (expert.rateCard && expert.rateCard.fractional)
+        ? (expert.rateCard.fractional.startsWith('₹') ? expert.rateCard.fractional : '₹' + expert.rateCard.fractional)
+        : expert.budget,
       priceNote: 'Billed monthly via escrow',
       features: [
         'Weekly strategy & execution sessions',
@@ -456,7 +460,9 @@ const ExpertProfile = () => {
       id: 'interim',
       label: 'Interim / Full-time',
       hours: '40 hrs/wk',
-      price: 'Custom',
+      price: (expert.rateCard && expert.rateCard.interim)
+        ? (expert.rateCard.interim.startsWith('₹') ? expert.rateCard.interim : '₹' + expert.rateCard.interim)
+        : 'Custom',
       priceNote: 'Negotiated based on scope',
       features: [
         'Full-time dedicated engagement',
