@@ -172,7 +172,13 @@ const CompanyDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(3);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [notifications, setNotifications] = useState([
+    { id: '1', title: 'New Expert Match', desc: 'Sarah Jenkins matches your Interim CFO requirement at 98%', time: '5 min ago', unread: true, color: 'bg-teal-500' },
+    { id: '2', title: 'Milestone Approved', desc: 'Phase 1 of Marketing Strategy has been completed', time: '1 hour ago', unread: true, color: 'bg-blue-500' },
+    { id: '3', title: 'Contract Ready', desc: 'Tech Advisory contract is ready for your signature', time: '3 hours ago', unread: true, color: 'bg-purple-500' },
+    { id: '4', title: 'Payment Released', desc: '₹85,000 released to David Chen for milestone completion', time: '1 day ago', unread: false, color: 'bg-emerald-500' },
+  ]);
   const [mounted, setMounted] = useState(false);
   const [companyProfile, setCompanyProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -307,12 +313,161 @@ const CompanyDashboard = () => {
     { icon: Calendar, label: 'Scheduled Meetings', path: '/meetings' },
   ];
 
-  const notifications = [
-    { title: 'New Expert Match', desc: 'Sarah Jenkins matches your Interim CFO requirement at 98%', time: '5 min ago', unread: true, color: 'bg-teal-500' },
-    { title: 'Milestone Approved', desc: 'Phase 1 of Marketing Strategy has been completed', time: '1 hour ago', unread: true, color: 'bg-blue-500' },
-    { title: 'Contract Ready', desc: 'Tech Advisory contract is ready for your signature', time: '3 hours ago', unread: true, color: 'bg-purple-500' },
-    { title: 'Payment Released', desc: '₹85,000 released to David Chen for milestone completion', time: '1 day ago', unread: false, color: 'bg-emerald-500' },
-  ];
+  const getNotificationColor = (type) => {
+    switch (type) {
+      case 'match': return 'bg-teal-500';
+      case 'milestone': return 'bg-blue-500';
+      case 'contract': return 'bg-purple-500';
+      case 'payment': return 'bg-emerald-500';
+      default: return 'bg-slate-400';
+    }
+  };
+
+  const formatNotificationTime = (timeStr) => {
+    if (!timeStr) return '';
+    if (timeStr.includes('ago') || timeStr.includes('day')) return timeStr;
+    try {
+      const date = new Date(timeStr);
+      const diffMs = Date.now() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins} min ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } catch (e) {
+      return timeStr;
+    }
+  };
+
+  const handleMarkAsRead = async (notifId) => {
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    
+    setNotifications(prev =>
+      prev.map(n => n.id === notifId ? { ...n, is_read: true, unread: false } : n)
+    );
+    setNotificationCount(prev => Math.max(0, prev - 1));
+
+    if (isDemo || typeof notifId === 'number' || notifId.length < 10) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      await fetch(`${baseUrl}/api/notifications/${notifId}/read`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (err) {
+      console.error("Failed to sync read status with backend:", err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    
+    setNotifications(prev =>
+      prev.map(n => ({ ...n, is_read: true, unread: false }))
+    );
+    setNotificationCount(0);
+
+    if (isDemo) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      await fetch(`${baseUrl}/api/notifications/mark-all-read`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (err) {
+      console.error("Failed to sync mark all read with backend:", err);
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    let channel;
+
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    if (isDemo) {
+      setNotificationCount(notifications.filter(n => n.unread).length);
+      return;
+    }
+
+    const fetchNotifications = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !isMounted) return;
+
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const response = await fetch(`${baseUrl}/api/notifications`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (response.ok && isMounted) {
+          const data = await response.json();
+          setNotifications(data);
+          setNotificationCount(data.filter(n => !n.is_read).length);
+        }
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
+      }
+    };
+
+    fetchNotifications();
+
+    const setupSubscription = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.user || !isMounted) return;
+
+      // Use a unique channel name per mount to prevent caching conflicts in Strict Mode
+      const channelName = `company-notifications-${session.user.id}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
+      channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${session.user.id}`
+          },
+          (payload) => {
+            if (isMounted) {
+              setNotifications(prev => [payload.new, ...prev]);
+              setNotificationCount(count => count + 1);
+            }
+          }
+        );
+
+      channel.subscribe((status) => {
+        console.log(`Notification channel status:`, status);
+      });
+    };
+
+    setupSubscription();
+
+    return () => {
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, []);
 
   const MOCK_EXPERTS = [
     { id: 1, name: "Sarah Jenkins", role: "Ex-CMO at TechCorp", initials: "SJ", color: "bg-purple-500", match: 98, rating: 4.9, rate: "₹1.5L - ₹2.5L/mo", availability: "20 hrs/week", location: "Remote" },
@@ -793,26 +948,37 @@ const CompanyDashboard = () => {
                     >
                       <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between bg-gradient-to-r from-teal-50/50 to-white">
                         <h3 className="font-black text-gray-900 text-sm text-left">Notifications</h3>
-                        <button onClick={() => setNotificationCount(0)} className="text-xs font-bold text-[#0eb59a] hover:text-[#134e40] transition-colors text-left">
+                        <button onClick={handleMarkAllRead} className="text-xs font-bold text-[#0eb59a] hover:text-[#134e40] transition-colors text-left">
                           Mark all read
                         </button>
                       </div>
                       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
-                        {notifications.map((notif, idx) => (
-                          <motion.div key={idx}
-                            initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.05 }}
-                            className={`px-5 py-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer flex gap-3 transition-colors ${notif.unread ? 'bg-teal-50/20' : ''}`}
-                          >
-                            <div className={`w-2 h-2 rounded-full ${notif.color} mt-1.5 shrink-0`} />
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className="text-sm font-bold text-gray-900 leading-tight text-left">{notif.title}</p>
-                              <p className="text-xs text-gray-400 mt-0.5 leading-relaxed text-left">{notif.desc}</p>
-                              <p className="text-[10px] text-gray-300 font-semibold mt-1 text-left">{notif.time}</p>
-                            </div>
-                            {notif.unread && <div className="w-1.5 h-1.5 rounded-full bg-[#0eb59a] mt-1.5 shrink-0" />}
-                          </motion.div>
-                        ))}
+                        {notifications.length === 0 ? (
+                          <div className="text-center py-8 text-gray-400 text-xs font-medium">No notifications yet</div>
+                        ) : (
+                          notifications.map((notif, idx) => {
+                            const isUnread = notif.unread ?? !notif.is_read;
+                            const descText = notif.desc || notif.description;
+                            const timeText = formatNotificationTime(notif.time || notif.created_at);
+                            const dotColor = notif.color || getNotificationColor(notif.type);
+                            return (
+                              <motion.div key={notif.id || idx}
+                                initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                onClick={() => handleMarkAsRead(notif.id)}
+                                className={`px-5 py-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer flex gap-3 transition-colors ${isUnread ? 'bg-teal-50/20' : ''}`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${dotColor} mt-1.5 shrink-0`} />
+                                <div className="flex-1 min-w-0 text-left">
+                                  <p className="text-sm font-bold text-gray-900 leading-tight text-left">{notif.title}</p>
+                                  <p className="text-xs text-gray-400 mt-0.5 leading-relaxed text-left">{descText}</p>
+                                  <p className="text-[10px] text-gray-300 font-semibold mt-1 text-left">{timeText}</p>
+                                </div>
+                                {isUnread && <div className="w-1.5 h-1.5 rounded-full bg-[#0eb59a] mt-1.5 shrink-0" />}
+                              </motion.div>
+                            );
+                          })
+                        )}
                       </div>
                       <div className="px-5 py-3 text-center border-t border-gray-50">
                         <button
