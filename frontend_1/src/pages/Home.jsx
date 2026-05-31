@@ -114,7 +114,7 @@ const Home = () => {
                 <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold tracking-tight mb-8 leading-[1.1] text-[#111827]">
                     Elite Expertise.<br /><span className="text-[#134e40]">Leadership on Demand.</span>
                 </h1>
-                <p className="text-lg md:text-2xl text-gray-600 font-light max-w-3xl mx-auto mb-12 leading-relaxed">
+                <p className="text-lg md:text-2xl font-semibold max-w-3xl mx-auto mb-12 leading-relaxed" style={{ color: 'rgba(255,255,255,0.95)', textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 1px 6px rgba(0,0,0,0.8)' }}>
                     Connect with vetted CXOs and senior advisors to solve your most critical business challenges on demand and managed by experts.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
