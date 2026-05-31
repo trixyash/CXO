@@ -142,6 +142,12 @@ const ExpertDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: '1', title: 'New Role Match', desc: 'Fractional CFO role at HealthTech — 96% match', time: '10 min ago', unread: true, color: 'bg-[#0eb59a]' },
+    { id: '2', title: 'Milestone Approved', desc: 'Acme Corp approved Financial Model Development', time: '2 hours ago', unread: true, color: 'bg-emerald-500' },
+    { id: '3', title: 'Payment Received', desc: '₹2,00,000 credited for milestone completion', time: '3 hours ago', unread: true, color: 'bg-teal-600' },
+    { id: '4', title: 'New Message', desc: 'Acme Corp sent you a message about the investor deck', time: '1 day ago', unread: false, color: 'bg-slate-400' },
+  ]);
   const [opportunityCarouselIndex, setOpportunityCarouselIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(2);
   const [isAvailable, setIsAvailable] = useState(true);
@@ -513,12 +519,154 @@ const ExpertDashboard = () => {
     { label: 'Reviews',         icon: Star,          bg: 'bg-amber-50',  iconColor: 'text-amber-500',  path: '/expert-profile'       },
   ];
 
-  const notifications = [
-    { title: 'New Role Match', desc: 'Fractional CFO role at HealthTech — 96% match', time: '10 min ago', unread: true, color: 'bg-[#0eb59a]' },
-    { title: 'Milestone Approved', desc: 'Acme Corp approved Financial Model Development', time: '2 hours ago', unread: true, color: 'bg-emerald-500' },
-    { title: 'Payment Received', desc: '₹2,00,000 credited for milestone completion', time: '3 hours ago', unread: true, color: 'bg-teal-600' },
-    { title: 'New Message', desc: 'Acme Corp sent you a message about the investor deck', time: '1 day ago', unread: false, color: 'bg-slate-400' },
-  ];
+  const getNotificationColor = (type) => {
+    switch (type) {
+      case 'match': return 'bg-teal-500';
+      case 'milestone': return 'bg-blue-500';
+      case 'contract': return 'bg-purple-500';
+      case 'payment': return 'bg-emerald-500';
+      default: return 'bg-slate-400';
+    }
+  };
+
+  const formatNotificationTime = (timeStr) => {
+    if (!timeStr) return '';
+    if (timeStr.includes('ago') || timeStr.includes('day')) return timeStr;
+    try {
+      const date = new Date(timeStr);
+      const diffMs = Date.now() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins} min ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } catch (e) {
+      return timeStr;
+    }
+  };
+
+  const handleMarkAsRead = async (notifId) => {
+    const isDemo = localStorage.getItem('demo_expert') === 'true';
+    
+    setNotifications(prev =>
+      prev.map(n => n.id === notifId ? { ...n, is_read: true, unread: false } : n)
+    );
+
+    if (isDemo || typeof notifId === 'number' || notifId.length < 10) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      await fetch(`${baseUrl}/api/notifications/${notifId}/read`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (err) {
+      console.error("Failed to sync read status with backend:", err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    const isDemo = localStorage.getItem('demo_expert') === 'true';
+    
+    setNotifications(prev =>
+      prev.map(n => ({ ...n, is_read: true, unread: false }))
+    );
+
+    if (isDemo) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      await fetch(`${baseUrl}/api/notifications/mark-all-read`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (err) {
+      console.error("Failed to sync mark all read with backend:", err);
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    let channel;
+
+    const isDemo = localStorage.getItem('demo_expert') === 'true';
+    if (isDemo) return;
+
+    const fetchNotifications = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !isMounted) return;
+
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const response = await fetch(`${baseUrl}/api/notifications`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (response.ok && isMounted) {
+          const data = await response.json();
+          setNotifications(data);
+        }
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
+      }
+    };
+
+    fetchNotifications();
+
+    const setupSubscription = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.user || !isMounted) return;
+
+      // Use a unique channel name per mount to prevent caching conflicts in Strict Mode
+      const channelName = `expert-notifications-${session.user.id}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
+      channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${session.user.id}`
+          },
+          (payload) => {
+            if (isMounted) {
+              setNotifications(prev => [payload.new, ...prev]);
+            }
+          }
+        );
+
+      channel.subscribe((status) => {
+        console.log(`Notification channel status:`, status);
+      });
+    };
+
+    setupSubscription();
+
+    return () => {
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, []);
 
   const profileStrength = profile ? Math.round((
     [
@@ -905,12 +1053,14 @@ const ExpertDashboard = () => {
                 }`}
               >
                 <Bell size={16} className={showNotifications ? 'text-[#134e40]' : 'text-gray-500'} />
-                <motion.span
-                  initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white px-0.5 animate-pulse text-center"
-                >
-                  {notifications.filter(n => n.unread).length}
-                </motion.span>
+                {notifications.filter(n => n.unread ?? !n.is_read).length > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white px-0.5 animate-pulse text-center"
+                  >
+                    {notifications.filter(n => n.unread ?? !n.is_read).length}
+                  </motion.span>
+                )}
               </motion.button>
 
               <AnimatePresence>
@@ -930,39 +1080,50 @@ const ExpertDashboard = () => {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => {}}
+                          onClick={handleMarkAllRead}
                           className="text-xs font-bold text-[#0eb59a] hover:text-[#134e40] transition-colors cursor-pointer text-center justify-center flex"
                         >
                           Mark all read
                         </motion.button>
                       </div>
                       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
-                        {notifications.map((notif, idx) => (
-                          <motion.div key={idx}
-                            initial={{ opacity: 0, x: 10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.05 }}
-                            className={`px-5 py-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer flex gap-3 transition-colors ${
-                              notif.unread ? 'bg-teal-50/20' : ''
-                            }`}
-                          >
-                            <div className={`w-2 h-2 rounded-full ${notif.color} mt-1.5 shrink-0`} />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-[#1C3627] leading-tight text-left">
-                                {notif.title}
-                              </p>
-                              <p className="text-xs text-gray-400 mt-0.5 leading-relaxed text-left">
-                                {notif.desc}
-                              </p>
-                              <p className="text-[10px] text-gray-300 font-semibold mt-1 text-left">
-                                {notif.time}
-                              </p>
-                            </div>
-                            {notif.unread && (
-                              <div className="w-1.5 h-1.5 rounded-full bg-[#0eb59a] mt-1.5 shrink-0" />
-                            )}
-                          </motion.div>
-                        ))}
+                        {notifications.length === 0 ? (
+                          <div className="text-center py-8 text-gray-400 text-xs font-medium">No notifications yet</div>
+                        ) : (
+                          notifications.map((notif, idx) => {
+                            const isUnread = notif.unread ?? !notif.is_read;
+                            const descText = notif.desc || notif.description;
+                            const timeText = formatNotificationTime(notif.time || notif.created_at);
+                            const dotColor = notif.color || getNotificationColor(notif.type);
+                            return (
+                              <motion.div key={notif.id || idx}
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                onClick={() => handleMarkAsRead(notif.id)}
+                                className={`px-5 py-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer flex gap-3 transition-colors ${
+                                  isUnread ? 'bg-teal-50/20' : ''
+                                }`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${dotColor} mt-1.5 shrink-0`} />
+                                <div className="flex-1 min-w-0 text-left">
+                                  <p className="text-sm font-bold text-[#1C3627] leading-tight text-left">
+                                    {notif.title}
+                                  </p>
+                                  <p className="text-xs text-gray-400 mt-0.5 leading-relaxed text-left">
+                                    {descText}
+                                  </p>
+                                  <p className="text-[10px] text-gray-300 font-semibold mt-1 text-left">
+                                    {timeText}
+                                  </p>
+                                </div>
+                                {isUnread && (
+                                  <div className="w-1.5 h-1.5 rounded-full bg-[#0eb59a] mt-1.5 shrink-0" />
+                                )}
+                              </motion.div>
+                            );
+                          })
+                        )}
                       </div>
                     </motion.div>
                   </>
