@@ -74,62 +74,69 @@ const SignIn = () => {
 				let targetEmail = cleanEmail;
 				let backendVerified = false;
 
-				// Try to verify company email with the backend if available
+				// Try to verify company email using Supabase directly first (much faster, no backend cold starts or localhost timeout)
 				try {
-					const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
-					const res = await fetch(`${baseUrl}/api/auth/check-company-email`, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ email: cleanEmail })
-					});
+					const { data: sbData, error: sbError } = await supabase
+						.from("company_applications")
+						.select("admin_email")
+						.eq("admin_email", cleanEmail)
+						.limit(1)
+						.maybeSingle();
 
-					if (res.ok) {
-						const data = await res.json();
-						if (data && data.email) {
-							targetEmail = data.email.trim();
-							backendVerified = true;
-						}
+					if (sbError) {
+						throw sbError;
+					}
+
+					if (sbData && sbData.admin_email) {
+						targetEmail = sbData.admin_email.trim();
+						backendVerified = true;
 					} else {
-						// If backend explicitly says company not found (404), respect it
-						if (res.status === 404) {
-							throw new Error("Company not found");
-						}
-						console.warn(`Backend responded with status ${res.status}. Falling back.`);
+						// If query succeeded but returned no data, it means company not found
+						throw new Error("Company not found");
 					}
-				} catch (fetchErr) {
-					// If it was a "Company not found" error, propagate it
-					if (fetchErr.message === "Company not found") {
-						throw fetchErr;
+				} catch (sbErr) {
+					if (sbErr.message === "Company not found") {
+						throw sbErr;
 					}
 
-					console.warn("Backend fetch failed, trying direct Supabase check:", fetchErr);
+					console.warn("Direct Supabase query failed, falling back to backend check:", sbErr);
 
-					// Fallback to querying Supabase directly
+					// Fallback: try to verify company email with the backend if available
 					try {
-						const { data: sbData, error: sbError } = await supabase
-							.from("company_applications")
-							.select("admin_email")
-							.eq("admin_email", cleanEmail)
-							.limit(1)
-							.maybeSingle();
+						const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+						
+						// Set up a 2-second timeout to avoid long hangs on hosted site
+						const controller = new AbortController();
+						const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-						if (!sbError && sbData) {
-							if (sbData.admin_email) {
-								targetEmail = sbData.admin_email.trim();
+						const res = await fetch(`${baseUrl}/api/auth/check-company-email`, {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ email: cleanEmail }),
+							signal: controller.signal
+						});
+						clearTimeout(timeoutId);
+
+						if (res.ok) {
+							const data = await res.json();
+							if (data && data.email) {
+								targetEmail = data.email.trim();
 								backendVerified = true;
 							}
-						} else if (sbError) {
-							console.error("Supabase query error:", sbError);
 						} else {
-							// If query succeeded but returned no data, it means company not found
-							throw new Error("Company not found");
+							// If backend explicitly says company not found (404), respect it
+							if (res.status === 404) {
+								throw new Error("Company not found");
+							}
+							console.warn(`Backend responded with status ${res.status}.`);
 						}
-					} catch (sbErr) {
-						if (sbErr.message === "Company not found") {
-							throw sbErr;
+					} catch (fetchErr) {
+						// If it was a "Company not found" error, propagate it
+						if (fetchErr.message === "Company not found") {
+							throw fetchErr;
 						}
-						console.error("Supabase fallback query failed:", sbErr);
-						// If Supabase RLS blocked it or failed, we just proceed with cleanEmail to avoid blocking valid users
+						console.error("Backend check fallback failed:", fetchErr);
+						// Proceed with cleanEmail as a last resort to avoid blocking users
 					}
 				}
 
