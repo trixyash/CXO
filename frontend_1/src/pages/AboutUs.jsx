@@ -75,8 +75,7 @@ const FounderCard = ({ member }) => {
             transition={{ duration: 0.6, ease: 'easeOut' }}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
-            className="relative group cursor-default"
-            style={{ width: '380px' }}
+            className="relative group cursor-default w-full sm:w-[340px]"
         >
             <motion.div
                 animate={{
@@ -207,8 +206,8 @@ const TeamCard = ({ member, delay = 0 }) => {
             transition={{ duration: 0.6, delay, ease: 'easeOut' }}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
-            className="relative cursor-default flex-1"
-            style={{ minWidth: '280px', maxWidth: '320px' }}
+            style={{ minWidth: '260px', maxWidth: '320px' }}
+            className="relative cursor-default flex-1 w-full sm:w-auto"
         >
             <motion.div
                 animate={{
@@ -330,7 +329,7 @@ const AboutUs = () => {
             <div className="absolute bottom-1/3 left-0 w-80 h-80 rounded-full blur-[100px] pointer-events-none" style={{ background: 'rgba(212,175,55,0.04)' }} />
 
             {/* ── HERO ── */}
-            <section className="relative z-10 pt-32 pb-20 text-center px-12">
+            <section className="relative z-10 pt-32 pb-20 text-center px-4 sm:px-8 lg:px-12">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -347,7 +346,7 @@ const AboutUs = () => {
 
                     {/* Main heading */}
                     <h1
-                        className="text-5xl sm:text-6xl font-black text-white mb-4 tracking-tight"
+                        className="text-3xl sm:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tight"
                         style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 60px rgba(14,181,154,0.15)' }}
                     >
                         Meet The Visionaries
@@ -383,13 +382,13 @@ const AboutUs = () => {
             </section>
 
             {/* ── FOUNDER QUOTE ── */}
-            <section className="relative z-10 px-12 pb-16 max-w-6xl mx-auto">
+            <section className="relative z-10 px-4 sm:px-8 lg:px-12 pb-16 max-w-6xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.7 }}
-                    className="relative rounded-3xl p-10 text-center"
+                    className="relative rounded-3xl p-6 sm:p-10 text-center"
                     style={{
                         background: 'linear-gradient(145deg, rgba(212,175,55,0.06), rgba(14,181,154,0.04))',
                         border: '1px solid rgba(212,175,55,0.15)',
@@ -405,8 +404,8 @@ const AboutUs = () => {
             </section>
 
             {/* ── HONEST STATS ── */}
-            <section className="relative z-10 px-12 pb-16">
-                <div className="max-w-5xl mx-auto grid grid-cols-3 gap-6">
+            <section className="relative z-10 px-4 sm:px-8 lg:px-12 pb-16">
+                <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                     {[
                         { value: '5', label: 'Founding Experts', sub: 'Hand-picked, verified CXOs' },
                         { value: '1', label: 'Big Mission', sub: 'Redefining fractional hiring' },
@@ -434,7 +433,7 @@ const AboutUs = () => {
             </section>
 
             {/* ── FOUNDERS ROW ── */}
-            <section className="relative z-10 px-12 pb-16">
+            <section className="relative z-10 px-4 sm:px-8 lg:px-12 pb-16">
                 <motion.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
@@ -446,7 +445,7 @@ const AboutUs = () => {
                     </span>
                 </motion.div>
 
-                <div className="flex justify-center gap-8 flex-wrap">
+                <div className="flex flex-col sm:flex-row justify-center gap-6 sm:gap-8 items-center">
                     {founders.map((founder) => (
                         <FounderCard key={founder.id} member={founder} />
                     ))}
@@ -463,8 +462,8 @@ const AboutUs = () => {
             </div>
 
             {/* ── TEAM ROW ── */}
-            <section className="relative z-10 px-12 pb-20">
-                <div className="flex justify-center gap-6 flex-wrap max-w-6xl mx-auto">
+            <section className="relative z-10 px-4 sm:px-8 lg:px-12 pb-20">
+                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 flex-wrap max-w-6xl mx-auto items-center">
                     {team.map((member, idx) => (
                         <TeamCard key={member.id} member={member} delay={idx * 0.1} />
                     ))}
@@ -472,13 +471,13 @@ const AboutUs = () => {
             </section>
 
             {/* ── VALUES ── */}
-            <section className="relative z-10 px-12 pb-8">
+            <section className="relative z-10 px-4 sm:px-8 lg:px-12 pb-8">
                 <div className="max-w-7xl mx-auto">
                     <motion.div
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
                         viewport={{ once: true }}
-                        className="text-center mb-10"
+                        className="text-center mb-6 sm:mb-10"
                     >
                         <div className="flex items-center justify-center gap-3 mb-3">
                             <div className="h-px w-12" style={{ background: 'linear-gradient(90deg, transparent, #D4AF37)' }} />
@@ -487,7 +486,7 @@ const AboutUs = () => {
                         </div>
                         <h2 className="text-3xl font-black text-white" style={{ fontFamily: 'Georgia, serif' }}>Our Values</h2>
                     </motion.div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                         {[
                             { icon: Zap, title: 'Speed with Trust', desc: 'Great companies can\'t wait months to find leadership. We move fast, but never at the cost of quality or integrity.' },
                             { icon: Target, title: 'Precision Matching', desc: 'We don\'t spray resumes. Every connection we make is intentional, deeply vetted, and built to last.' },
@@ -528,7 +527,7 @@ const AboutUs = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
-                    className="relative overflow-hidden py-8 px-6 text-center"
+                    className="relative overflow-hidden py-6 px-4 sm:py-8 sm:px-6 text-center"
                     style={{ background: 'linear-gradient(135deg, #B8860B 0%, #D4AF37 40%, #F4C430 60%, #D4AF37 100%)' }}
                 >
                     {/* Shimmer */}

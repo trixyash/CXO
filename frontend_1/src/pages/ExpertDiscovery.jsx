@@ -10,7 +10,8 @@ import {
   BarChart2, ChevronDown, ChevronUp, Zap, Shield,
   Grid, List, RefreshCw, Calendar, Award, TrendingUp,
   CheckCircle, LayoutDashboard, CreditCard, FileText,
-  LogOut, Settings, ShieldCheck, Bell, ChevronLeft
+  LogOut, Settings, ShieldCheck, Bell, ChevronLeft,
+  UserPlus, UserCheck, Send, Eye
 } from 'lucide-react';
 import FormalCardBorder from '../components/FormalCardBorder';
 
@@ -105,6 +106,12 @@ const ExpertDiscovery = () => {
   const [showFilters, setShowFilters] = useState(true);
   const [viewMode, setViewMode] = useState('grid');
   const [shortlisted, setShortlisted] = useState([]);
+  const [following, setFollowing] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cxo_following') || '[]');
+    } catch { return []; }
+  });
+  const [followBurst, setFollowBurst] = useState(null);
   const [compareTray, setCompareTray] = useState([]);
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(null);
@@ -348,6 +355,19 @@ const ExpertDiscovery = () => {
     setShortlisted(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
+  };
+
+  const toggleFollow = (id) => {
+    setFollowing(prev => {
+      const isFollowing = prev.includes(id);
+      const updated = isFollowing ? prev.filter(i => i !== id) : [...prev, id];
+      localStorage.setItem('cxo_following', JSON.stringify(updated));
+      if (!isFollowing) {
+        setFollowBurst(id);
+        setTimeout(() => setFollowBurst(null), 600);
+      }
+      return updated;
+    });
   };
 
   const toggleCompare = (id) => {
@@ -632,6 +652,18 @@ const ExpertDiscovery = () => {
                       <Heart size={11} className="text-rose-500" fill="currentColor" />
                       <span className="text-rose-600 text-xs font-bold">
                         {shortlisted.length} Shortlisted
+                      </span>
+                    </motion.div>
+                  )}
+                  {following.length > 0 && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex items-center gap-1.5 bg-teal-50 border border-teal-100 px-3 py-1.5 rounded-xl"
+                    >
+                      <UserCheck size={11} className="text-[#0eb59a]" />
+                      <span className="text-[#134e40] text-xs font-bold">
+                        {following.length} Following
                       </span>
                     </motion.div>
                   )}
@@ -1033,50 +1065,113 @@ const ExpertDiscovery = () => {
                                     </span>
                                   </div>
 
-                                  {/* Action bar */}
-                                  <div className="flex items-center gap-2">
-                                    <motion.button
-                                      whileHover={{ scale: 1.03 }}
-                                      whileTap={{ scale: 0.97 }}
-                                      onClick={(e) => { e.stopPropagation(); navigate(`/experts/${expert.id}`); }}
-                                      className="flex-1 py-2 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl transition-all"
-                                    >
-                                      View Profile
-                                    </motion.button>
-                                    <motion.button
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
-                                      onClick={(e) => { e.stopPropagation(); setShowInviteModal(expert); }}
-                                      className="px-3 py-2 bg-teal-50 text-[#134e40] text-xs font-black rounded-xl border border-teal-100 hover:bg-teal-100 transition-all"
-                                    >
-                                      Invite
-                                    </motion.button>
-                                    <motion.button
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
-                                      onClick={(e) => { e.stopPropagation(); toggleShortlist(expert.id); }}
-                                      className={`p-2 rounded-xl border transition-all ${
-                                        shortlisted.includes(expert.id)
-                                          ? 'bg-red-50 text-red-500 border-red-100'
-                                          : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-red-400'
-                                      }`}
-                                    >
-                                      <Heart size={13} fill={shortlisted.includes(expert.id) ? 'currentColor' : 'none'} />
-                                    </motion.button>
-                                    <motion.button
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
-                                      onClick={(e) => { e.stopPropagation(); toggleCompare(expert.id); }}
-                                      className={`p-2 rounded-xl border transition-all ${
-                                        compareTray.includes(expert.id)
-                                          ? 'bg-blue-50 text-blue-600 border-blue-100'
-                                          : compareTray.length >= 3
-                                          ? 'bg-gray-50 text-gray-200 border-gray-100 cursor-not-allowed'
-                                          : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-blue-50 hover:text-blue-500'
-                                      }`}
-                                    >
-                                      <BarChart2 size={13} />
-                                    </motion.button>
+                                  {/* Action bar — 2 rows */}
+                                  <div className="flex flex-col gap-2">
+
+                                    {/* Row 1 — Primary actions */}
+                                    <div className="flex items-center gap-2">
+                                      {/* View Profile */}
+                                      <motion.button
+                                        whileHover={{ scale: 1.03, boxShadow: '0 4px 15px rgba(19,78,64,0.3)' }}
+                                        whileTap={{ scale: 0.97 }}
+                                        onClick={(e) => { e.stopPropagation(); navigate(`/experts/${expert.id}`); }}
+                                        className="flex-1 py-2.5 bg-[#134e40] hover:bg-[#0d3f33] text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5"
+                                      >
+                                        <Eye size={12} />
+                                        View Profile
+                                      </motion.button>
+
+                                      {/* Follow Button */}
+                                      <motion.button
+                                        whileHover={{ scale: 1.03 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleFollow(expert.id);
+                                        }}
+                                        animate={followBurst === expert.id ? {
+                                          scale: [1, 1.3, 0.9, 1.1, 1],
+                                        } : { scale: 1 }}
+                                        transition={{ duration: 0.4, ease: 'easeOut' }}
+                                        className={`flex-1 py-2.5 rounded-xl border text-xs font-black transition-all duration-300 flex items-center justify-center gap-1.5 relative overflow-hidden ${
+                                          following.includes(expert.id)
+                                            ? 'bg-[#0eb59a] text-white border-[#0eb59a] shadow-md shadow-[#0eb59a]/20'
+                                            : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-teal-50 hover:text-[#134e40] hover:border-teal-300'
+                                        }`}
+                                      >
+                                        {/* Shimmer effect when following */}
+                                        {following.includes(expert.id) && (
+                                          <motion.div
+                                            initial={{ x: '-100%' }}
+                                            animate={{ x: '250%' }}
+                                            transition={{ duration: 0.7, ease: 'easeOut' }}
+                                            className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none"
+                                          />
+                                        )}
+                                        <motion.div
+                                          animate={{ rotate: following.includes(expert.id) ? 360 : 0 }}
+                                          transition={{ duration: 0.4 }}
+                                        >
+                                          {following.includes(expert.id)
+                                            ? <UserCheck size={12} />
+                                            : <UserPlus size={12} />
+                                          }
+                                        </motion.div>
+                                        <span>{following.includes(expert.id) ? 'Following' : 'Follow'}</span>
+                                      </motion.button>
+                                    </div>
+
+                                    {/* Row 2 — Secondary actions */}
+                                    <div className="flex items-center gap-2">
+                                      {/* Invite */}
+                                      <motion.button
+                                        whileHover={{ scale: 1.03, backgroundColor: '#ccfbf1' }}
+                                        whileTap={{ scale: 0.97 }}
+                                        onClick={(e) => { e.stopPropagation(); setShowInviteModal(expert); }}
+                                        className="flex-1 py-2 bg-teal-50 text-[#134e40] text-xs font-black rounded-xl border border-teal-100 transition-all flex items-center justify-center gap-1.5"
+                                      >
+                                        <Send size={11} />
+                                        Invite
+                                      </motion.button>
+
+                                      {/* Shortlist/Heart */}
+                                      <motion.button
+                                        whileHover={{ scale: 1.08 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={(e) => { e.stopPropagation(); toggleShortlist(expert.id); }}
+                                        className={`flex-1 py-2 rounded-xl border text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
+                                          shortlisted.includes(expert.id)
+                                            ? 'bg-rose-50 text-rose-500 border-rose-200'
+                                            : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-rose-50 hover:text-rose-400 hover:border-rose-200'
+                                        }`}
+                                      >
+                                        <motion.div
+                                          animate={{ scale: shortlisted.includes(expert.id) ? [1, 1.4, 1] : 1 }}
+                                          transition={{ duration: 0.3 }}
+                                        >
+                                          <Heart size={12} fill={shortlisted.includes(expert.id) ? 'currentColor' : 'none'} />
+                                        </motion.div>
+                                        {shortlisted.includes(expert.id) ? 'Saved' : 'Save'}
+                                      </motion.button>
+
+                                      {/* Compare */}
+                                      <motion.button
+                                        whileHover={{ scale: 1.08 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={(e) => { e.stopPropagation(); toggleCompare(expert.id); }}
+                                        className={`flex-1 py-2 rounded-xl border text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
+                                          compareTray.includes(expert.id)
+                                            ? 'bg-blue-50 text-blue-600 border-blue-200'
+                                            : compareTray.length >= 3
+                                            ? 'bg-gray-50 text-gray-200 border-gray-100 cursor-not-allowed'
+                                            : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-blue-50 hover:text-blue-500 hover:border-blue-200'
+                                        }`}
+                                      >
+                                        <BarChart2 size={12} />
+                                        Compare
+                                      </motion.button>
+                                    </div>
+
                                   </div>
 
                                 </div>
@@ -1084,7 +1179,7 @@ const ExpertDiscovery = () => {
 
                               {/* ── FLOATING HOVER OVERLAY PANEL ── */}
                               <AnimatePresence>
-                                {isHovered && (
+                                {isHovered && !showInviteModal && (
                                   <motion.div
                                     initial={{ opacity: 0, scale: 0.92, x: panelSide === 'right' ? -10 : 10 }}
                                     animate={{ opacity: 1, scale: 1, x: 0 }}
@@ -1156,8 +1251,8 @@ const ExpertDiscovery = () => {
                                     <div className="grid grid-cols-3 gap-2 mb-4">
                                       {[
                                         { label: 'Engagements', value: expert.completedEngagements, color: 'text-[#0eb59a]' },
+                                        { label: 'Followers', value: `${20 + expert.id * 13}`, color: 'text-teal-500' },
                                         { label: 'Experience', value: expert.experience, color: 'text-purple-500' },
-                                        { label: 'Response', value: expert.responseTime, color: 'text-blue-500' },
                                       ].map((s, si) => (
                                         <div key={si} className="bg-white rounded-xl p-2.5 border border-gray-100 text-center">
                                           <p className={`text-xs font-black ${s.color} leading-none`}>{s.value}</p>
@@ -1346,17 +1441,17 @@ const ExpertDiscovery = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
+            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/30 backdrop-blur-md p-0 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-5 sm:p-6 max-w-md w-full overflow-hidden"
             >
               {/* Expert mini-card */}
-              <div className="flex items-center gap-3 p-4 bg-teal-50 rounded-2xl border border-teal-100 mb-6">
+              <div className="flex items-center gap-3 p-4 bg-teal-50 rounded-2xl border border-teal-100 mb-3">
                 <img src={showInviteModal.avatar} className="w-12 h-12 rounded-xl object-cover" />
                 <div>
                   <h4 className="font-black text-gray-900 text-sm">{showInviteModal.name}</h4>
@@ -1371,22 +1466,22 @@ const ExpertDiscovery = () => {
                 </span>
               </div>
 
-              <h3 className="text-lg font-black text-gray-900 mb-1">
+              <h3 className="text-lg font-black text-gray-900 mt-1 mb-0.5">
                 Invite {showInviteModal.name.split(' ')[0]}
               </h3>
-              <p className="text-sm text-gray-400 mb-5">
+              <p className="text-sm text-gray-400 mb-3">
                 Select which requirement you'd like to invite this expert for.
               </p>
 
               {/* Requirement selector */}
-              <div className="space-y-2 mb-6">
+              <div className="space-y-1.5 mb-3">
                 {requirements.map((req) => (
                   <motion.button
                     key={req.id}
                     whileHover={{ x: 3 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedRequirement(req.id)}
-                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border-2 text-sm font-bold transition-all text-left ${
+                    className={`w-full flex items-center justify-between px-4 py-2.5 rounded-2xl border-2 text-sm font-bold transition-all text-left ${
                       selectedRequirement === req.id
                         ? 'border-[#0eb59a] bg-teal-50 text-[#134e40]'
                         : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200'
@@ -1408,19 +1503,19 @@ const ExpertDiscovery = () => {
               </div>
 
               {/* Message */}
-              <div className="mb-6">
+              <div className="mb-3">
                 <label className="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">
                   Personal Message <span className="text-gray-400 font-normal normal-case">(optional)</span>
                 </label>
                 <textarea
                   placeholder={`Hi ${showInviteModal.name.split(' ')[0]}, we'd love to discuss an opportunity with you...`}
-                  rows={3}
+                  rows={2}
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0eb59a]/20 focus:border-[#0eb59a]/40 transition-all resize-none"
                 />
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-3">
+              <div className="flex gap-3 mt-1">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}

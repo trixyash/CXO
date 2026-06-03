@@ -8,7 +8,8 @@ import {
   ChevronRight, ChevronLeft, Clock, Briefcase, Eye, Zap,
   Award, MessageSquare, User, Check, TrendingUp, Shield,
   CreditCard, Users, Target, Grid, Plus,
-  UserCircle, LogOut, X, Menu, MapPin, CheckCircle, Calendar
+  UserCircle, LogOut, X, Menu, MapPin, CheckCircle, Calendar,
+  UserPlus, UserCheck, UserX
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import FormalCardBorder from '../components/FormalCardBorder';
@@ -152,6 +153,29 @@ const ExpertDashboard = () => {
   const [itemsPerView, setItemsPerView] = useState(2);
   const [isAvailable, setIsAvailable] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [connectRequests, setConnectRequests] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cxo_connect_requests') || '[]')
+        .filter(r => r.status === 'pending');
+    } catch { return []; }
+  });
+
+  useEffect(() => {
+    if (connectRequests.length > 0) {
+      setNotifications(prev => {
+        const alreadyExists = prev.some(n => n.title === 'New Connection Request');
+        if (alreadyExists) return prev;
+        return [{
+          id: 'connect-req',
+          title: 'New Connection Request',
+          desc: `${connectRequests[0]?.companyName || 'A company'} wants to connect with you`,
+          time: 'Just now',
+          unread: true,
+          color: 'bg-blue-500',
+        }, ...prev];
+      });
+    }
+  }, [connectRequests]);
 
   // Auto-play Carousel State
   const [carouselDirection, setCarouselDirection] = useState(1);
@@ -597,6 +621,42 @@ const ExpertDashboard = () => {
     } catch (err) {
       console.error("Failed to sync mark all read with backend:", err);
     }
+  };
+
+  const handleAcceptConnect = (requestId, expertId) => {
+    try {
+      // Update connection status to connected
+      const connections = JSON.parse(localStorage.getItem('cxo_connections') || '{}');
+      connections[String(expertId)] = 'connected';
+      localStorage.setItem('cxo_connections', JSON.stringify(connections));
+
+      // Update request status
+      const requests = JSON.parse(localStorage.getItem('cxo_connect_requests') || '[]');
+      const updated = requests.map(r => r.id === requestId ? { ...r, status: 'accepted' } : r);
+      localStorage.setItem('cxo_connect_requests', JSON.stringify(updated));
+
+      // Remove from state
+      setConnectRequests(prev => prev.filter(r => r.id !== requestId));
+
+      // Add notification
+      setNotifications(prev => [{
+        id: String(Date.now()),
+        title: 'Connection Accepted',
+        desc: 'You are now connected with Acme Corp',
+        time: 'Just now',
+        unread: true,
+        color: 'bg-[#0eb59a]',
+      }, ...prev]);
+    } catch {}
+  };
+
+  const handleDeclineConnect = (requestId) => {
+    try {
+      const requests = JSON.parse(localStorage.getItem('cxo_connect_requests') || '[]');
+      const updated = requests.map(r => r.id === requestId ? { ...r, status: 'declined' } : r);
+      localStorage.setItem('cxo_connect_requests', JSON.stringify(updated));
+      setConnectRequests(prev => prev.filter(r => r.id !== requestId));
+    } catch {}
   };
 
   useEffect(() => {
@@ -2026,6 +2086,200 @@ const ExpertDashboard = () => {
 
               {/* RIGHT 2/5 (lg:col-span-2) — Stacked Profile Strength + Earnings stacked */}
               <div className="lg:col-span-2 flex flex-col gap-6">
+
+                {/* CONNECTION REQUESTS */}
+                {connectRequests.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.38 }}
+                    className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm relative overflow-hidden"
+                  >
+                    <FormalCardBorder />
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-base font-black text-gray-900 flex items-center gap-2">
+                        <motion.div
+                          animate={{ scale: [1, 1.15, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+                        >
+                          <UserPlus size={16} className="text-blue-500" />
+                        </motion.div>
+                        Connection Requests
+                      </h2>
+                      <motion.span
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                        className="bg-blue-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center"
+                      >
+                        {connectRequests.length}
+                      </motion.span>
+                    </div>
+
+                    {/* Request items */}
+                    <div className="space-y-3">
+                      {connectRequests.map((req, idx) => (
+                        <motion.div
+                          key={req.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 10 }}
+                          transition={{ delay: idx * 0.08 }}
+                          className="p-4 bg-blue-50/40 rounded-2xl border border-blue-100"
+                        >
+                          {/* Company info */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-[#134e40] to-[#0eb59a] rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0">
+                              {(req.companyName || 'A').charAt(0)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-black text-gray-900 text-sm truncate">{req.companyName}</p>
+                              <p className="text-[10px] text-gray-400 font-medium">Wants to connect with you</p>
+                            </div>
+                          </div>
+
+                          {/* Accept / Decline */}
+                          <div className="flex gap-2">
+                            <motion.button
+                              whileHover={{ scale: 1.04, boxShadow: '0 4px 15px rgba(19,78,64,0.25)' }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleAcceptConnect(req.id, req.expertId)}
+                              className="flex-1 py-2 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl flex items-center justify-center gap-1.5 transition-all duration-200"
+                            >
+                              <UserCheck size={12} /> Accept
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.04 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleDeclineConnect(req.id)}
+                              className="flex-1 py-2 bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-500 border border-gray-200 hover:border-red-200 text-xs font-black rounded-xl flex items-center justify-center gap-1.5 transition-all duration-200"
+                            >
+                              <UserX size={12} /> Decline
+                            </motion.button>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* YOUR NETWORK */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ boxShadow: '0 12px 40px rgba(14,181,154,0.12)', borderColor: 'rgba(14,181,154,0.3)' }}
+                  transition={{ delay: 0.40, duration: 0.3 }}
+                  className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm relative overflow-hidden"
+                >
+                  <FormalCardBorder />
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-5">
+                    <h2 className="text-base font-black text-gray-900 flex items-center gap-2">
+                      <Users size={16} className="text-[#0eb59a]" /> Your Network
+                    </h2>
+                    <motion.button
+                      whileHover={{ x: 4 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => navigate('/experts')}
+                      className="text-[10px] font-black text-[#0eb59a] hover:text-[#134e40] transition-colors flex items-center gap-1 group"
+                    >
+                      Browse
+                      <motion.span
+                        className="inline-block"
+                        initial={{ x: 0 }}
+                        whileHover={{ x: 3 }}
+                      >
+                        →
+                      </motion.span>
+                    </motion.button>
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {[
+                      {
+                        value: (() => { try { return JSON.parse(localStorage.getItem('cxo_following') || '[]').length + 33; } catch { return 33; } })(),
+                        label: 'Followers',
+                        bg: 'bg-teal-50',
+                        hoverBg: '#f0fdfa',
+                        border: 'border-teal-100',
+                        hoverBorder: 'rgba(14,181,154,0.4)',
+                        color: 'text-[#134e40]',
+                        hoverShadow: '0 8px 20px rgba(14,181,154,0.12)',
+                      },
+                      {
+                        value: (() => { try { return JSON.parse(localStorage.getItem('cxo_following') || '[]').length; } catch { return 0; } })(),
+                        label: 'Following',
+                        bg: 'bg-blue-50',
+                        hoverBg: '#eff6ff',
+                        border: 'border-blue-100',
+                        hoverBorder: 'rgba(59,130,246,0.4)',
+                        color: 'text-blue-600',
+                        hoverShadow: '0 8px 20px rgba(59,130,246,0.12)',
+                      },
+                      {
+                        value: (() => { try { return Object.values(JSON.parse(localStorage.getItem('cxo_connections') || '{}')).filter(v => v === 'connected').length; } catch { return 0; } })(),
+                        label: 'Connected',
+                        bg: 'bg-emerald-50',
+                        hoverBg: '#ecfdf5',
+                        border: 'border-emerald-100',
+                        hoverBorder: 'rgba(16,185,129,0.4)',
+                        color: 'text-emerald-600',
+                        hoverShadow: '0 8px 20px rgba(16,185,129,0.12)',
+                      },
+                    ].map((stat, idx) => (
+                      <motion.div
+                        key={idx}
+                        whileHover={{
+                          y: -5,
+                          boxShadow: stat.hoverShadow,
+                          borderColor: stat.hoverBorder,
+                          backgroundColor: stat.hoverBg,
+                        }}
+                        whileTap={{ scale: 0.96 }}
+                        transition={{ duration: 0.2 }}
+                        className={`${stat.bg} border ${stat.border} rounded-2xl p-3 text-center cursor-default transition-colors duration-200`}
+                      >
+                        <motion.p
+                          initial={{ opacity: 0, scale: 0.3, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          transition={{ delay: 0.5 + idx * 0.12, type: 'spring', stiffness: 300, damping: 15 }}
+                          whileHover={{ scale: 1.15 }}
+                          className={`text-2xl font-black ${stat.color}`}
+                        >
+                          {stat.value}
+                        </motion.p>
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.6 + idx * 0.12 }}
+                          className="text-[10px] font-bold text-gray-500 mt-0.5"
+                        >
+                          {stat.label}
+                        </motion.p>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Grow network CTA */}
+                  <motion.button
+                    whileHover={{ scale: 1.03, boxShadow: '0 8px 25px rgba(19,78,64,0.3)' }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate('/experts')}
+                    className="w-full py-2.5 bg-gradient-to-r from-[#134e40] to-[#0eb59a] text-white text-xs font-black rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm relative overflow-hidden group"
+                  >
+                    {/* Shimmer sweep */}
+                    <motion.div
+                      className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"
+                      initial={{ x: '-100%' }}
+                      whileHover={{ x: '350%' }}
+                      transition={{ duration: 0.6, ease: 'easeOut' }}
+                    />
+                    <UserPlus size={12} className="relative z-10" />
+                    <span className="relative z-10">Grow Your Network</span>
+                  </motion.button>
+                </motion.div>
 
                 {/* PROFILE STRENGTH */}
                 <motion.div
