@@ -64,26 +64,27 @@ const Navbar = () => {
         }
     };
 
+    // Dark frosted glass navbar — teal logo pops on this
+    const navBg = isOpen
+        ? 'bg-[#0d1a14] border-b border-white/10'
+        : scrolled
+            ? 'bg-[#0d1a14]/95 backdrop-blur-xl shadow-lg border-b border-white/5'
+            : 'bg-[#0d1a14]/75 backdrop-blur-md';
+
     return (
-        <nav className={`fixed top-0 left-0 z-50 w-full transition-all duration-300 ease-in-out px-6 md:px-12 ${isOpen
-                ? 'h-auto py-6 flex-col items-start bg-[#1c1c1c] border-b border-gray-800'
-                : 'h-20'
-            } flex justify-between items-center ${scrolled && !isOpen
-                ? 'bg-[#1c1c1c]/85 backdrop-blur-xl shadow-lg border-b border-white/5'
-                : !isOpen
-                    ? 'bg-[#1c1c1c]/40 backdrop-blur-sm'
-                    : ''
-            }`}>
+        <nav className={`fixed top-0 left-0 z-50 w-full transition-all duration-300 ease-in-out px-6 md:px-12 ${isOpen ? 'h-auto py-6 flex-col items-start' : 'h-20'
+            } flex justify-between items-center ${navBg}`}>
+
             <div className="flex justify-between items-center w-full md:w-auto shrink-0 h-full">
                 <Link
                     to="/"
                     className="flex items-center shrink-0 gap-3 md:ml-4"
                     onClick={() => setIsOpen(false)}
                 >
-                    {/* New animated ExigentCX logo mark — black paths, transparent bg */}
+                    {/* Dark navbar → teal logo mark */}
                     <Logo variant="dark" className="h-10 md:h-12 lg:h-14" />
-                    <span className="text-white font-bold text-xl md:text-2xl lg:text-3xl tracking-wide font-serif whitespace-nowrap">
-                        CXO CONNECT
+                    <span className="text-white font-black text-xl md:text-2xl lg:text-3xl tracking-[0.12em] font-serif whitespace-nowrap">
+                        ExigentCX
                     </span>
                 </Link>
                 <button
@@ -98,7 +99,7 @@ const Navbar = () => {
                 <Link
                     to="/"
                     onClick={() => setIsOpen(false)}
-                    className={`text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer group ${location.pathname === '/' ? 'text-[#0eb59a]' : 'text-gray-200 hover:text-white'
+                    className={`text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer group ${location.pathname === '/' ? 'text-[#0eb59a]' : 'text-gray-300 hover:text-white'
                         }`}
                 >
                     Home
@@ -109,7 +110,7 @@ const Navbar = () => {
                 <a
                     href="#about-platform"
                     onClick={(e) => handleScrollTarget(e, 'about-platform')}
-                    className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-200 hover:text-white group"
+                    className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-300 hover:text-white group"
                 >
                     About
                     <span className="absolute -bottom-1 left-0 h-0.5 bg-[#0eb59a] transition-all duration-300 w-0 group-hover:w-full"></span>
@@ -118,7 +119,7 @@ const Navbar = () => {
                 <a
                     href="#services"
                     onClick={(e) => handleScrollTarget(e, 'services')}
-                    className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-200 hover:text-white group"
+                    className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-300 hover:text-white group"
                 >
                     Services
                     <span className="absolute -bottom-1 left-0 h-0.5 bg-[#0eb59a] transition-all duration-300 w-0 group-hover:w-full"></span>
@@ -127,7 +128,7 @@ const Navbar = () => {
                 <a
                     href="#membership"
                     onClick={(e) => handleScrollTarget(e, 'membership')}
-                    className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-200 hover:text-white group"
+                    className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-300 hover:text-white group"
                 >
                     Membership
                     <span className="absolute -bottom-1 left-0 h-0.5 bg-[#0eb59a] transition-all duration-300 w-0 group-hover:w-full"></span>
@@ -136,7 +137,7 @@ const Navbar = () => {
                 <a
                     href="#contact-us"
                     onClick={(e) => handleScrollTarget(e, 'contact-us')}
-                    className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-200 hover:text-white group"
+                    className="text-[15px] font-medium tracking-wide transition-colors duration-300 relative cursor-pointer text-gray-300 hover:text-white group"
                 >
                     Contact
                     <span className="absolute -bottom-1 left-0 h-0.5 bg-[#0eb59a] transition-all duration-300 w-0 group-hover:w-full"></span>
