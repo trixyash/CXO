@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
+import { ArrowLeft } from "lucide-react";
 import OTPBox from "../components/OTPBox";
 import { SignIn2 } from "@/components/ui/clean-minimal-sign-in";
 
@@ -229,6 +230,15 @@ const SignIn = () => {
 
 	return (
 		<div className="relative min-h-screen bg-gray-50 flex items-center justify-center">
+			{/* Back Button */}
+			<button
+				onClick={() => navigate("/")}
+				className="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white hover:bg-teal-50 text-gray-600 hover:text-[#134e40] border border-gray-200 hover:border-teal-200 shadow-sm transition-all duration-300 hover:shadow-md group active:scale-95 min-h-[44px]"
+			>
+				<ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
+				<span className="text-xs font-bold tracking-wider uppercase">Back</span>
+			</button>
+
 			<SignIn2
 				email={identifier}
 				setEmail={setIdentifier}

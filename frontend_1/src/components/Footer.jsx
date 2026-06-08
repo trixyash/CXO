@@ -109,7 +109,7 @@ const Footer = () => {
                                     <ChevronRight size={14} className="text-[#0eb59a] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
                                     <span>Contact</span>
                                 </a>
-                                <a href="#" className="text-gray-400 text-lg font-light hover:text-white transition-colors flex items-center gap-2 group">
+                                <a href="https://medium.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 text-lg font-light hover:text-white transition-colors flex items-center gap-2 group">
                                     <ChevronRight size={14} className="text-[#0eb59a] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
                                     <span>Resources & Blog</span>
                                 </a>
