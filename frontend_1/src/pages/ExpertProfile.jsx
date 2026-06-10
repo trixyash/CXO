@@ -559,7 +559,7 @@ const ExpertProfile = () => {
       try {
         await navigator.share({
           title: `${expert.name} — ${expert.title}`,
-          text: `Check out ${expert.name}'s profile on CXO Connect`,
+          text: `Check out ${expert.name}'s profile on ExigentCX`,
           url: window.location.href,
         });
       } catch (err) {
@@ -574,7 +574,7 @@ const ExpertProfile = () => {
 
   const handleDownload = () => {
     const profileData = `
-CXO Connect — Expert Profile
+ExigentCX — Expert Profile
 ==============================
 Name: ${expert.name}
 Title: ${expert.title}
@@ -595,7 +595,7 @@ Bio: ${expert.bio}
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${expert.name.replace(' ', '_')}_CXOConnect_Profile.txt`;
+    a.download = `${expert.name.replace(' ', '_')}_ExigentCX_Profile.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -628,7 +628,7 @@ Bio: ${expert.bio}
             transition={{ duration: 0.2 }}
             className="overflow-hidden whitespace-nowrap flex flex-col"
           >
-            <p className="text-[#134e40] font-black text-sm leading-none">{companyProfile?.company_name || 'CXO Connect'}</p>
+            <p className="text-[#134e40] font-black text-sm leading-none">{companyProfile?.company_name || 'ExigentCX'}</p>
             <p className="text-gray-400 text-[10px] mt-0.5">Company Portal</p>
           </motion.div>
           <motion.button
@@ -1514,7 +1514,7 @@ Bio: ${expert.bio}
                   className="space-y-5"
                 >
                   <p className="text-sm text-gray-400 font-semibold">
-                    All engagements are governed by milestones, NDA, and escrow-backed payments through CXO Connect.
+                    All engagements are governed by milestones, NDA, and escrow-backed payments through ExigentCX.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

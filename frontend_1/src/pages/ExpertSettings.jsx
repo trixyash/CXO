@@ -858,7 +858,7 @@ const ExpertSettings = () => {
                     <div className="space-y-3">
                       {[
                         { label: 'Download My Data', desc: 'Export all your profile, engagement, and earnings data as a CSV', icon: Download, action: 'Download', danger: false },
-                        { label: 'View Data Usage Policy', desc: 'See how CXO Connect uses your personal information', icon: Eye, action: 'View', danger: false },
+                        { label: 'View Data Usage Policy', desc: 'See how ExigentCX uses your personal information', icon: Eye, action: 'View', danger: false },
                         { label: 'Request Data Deletion', desc: 'Submit a request to permanently delete all your data', icon: Trash2, action: 'Request', danger: true },
                       ].map((item, idx) => (
                         <motion.div

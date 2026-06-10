@@ -135,7 +135,7 @@ const ExpertContracts = () => {
       expiresAt: 'Feb 3, 2025',
       signedByExpert: false,
       signedByCompany: true,
-      generatedBy: 'CXO Connect Platform',
+      generatedBy: 'ExigentCX Platform',
       pages: 8,
       fileSize: '1.2 MB',
       urgency: 'high',
@@ -158,7 +158,7 @@ const ExpertContracts = () => {
       signedByExpert: true,
       signedByCompany: true,
       signedDate: 'Feb 1, 2025',
-      generatedBy: 'CXO Connect Platform',
+      generatedBy: 'ExigentCX Platform',
       pages: 4,
       fileSize: '0.6 MB',
       urgency: null,
@@ -181,7 +181,7 @@ const ExpertContracts = () => {
       signedByExpert: true,
       signedByCompany: true,
       signedDate: 'Feb 28, 2025',
-      generatedBy: 'CXO Connect Platform',
+      generatedBy: 'ExigentCX Platform',
       pages: 8,
       fileSize: '1.1 MB',
       urgency: null,
@@ -204,7 +204,7 @@ const ExpertContracts = () => {
       signedByExpert: true,
       signedByCompany: true,
       signedDate: 'Feb 28, 2025',
-      generatedBy: 'CXO Connect Platform',
+      generatedBy: 'ExigentCX Platform',
       pages: 4,
       fileSize: '0.6 MB',
       urgency: null,
@@ -226,7 +226,7 @@ const ExpertContracts = () => {
       expiresAt: 'Apr 30, 2025',
       signedByExpert: false,
       signedByCompany: false,
-      generatedBy: 'CXO Connect Platform',
+      generatedBy: 'ExigentCX Platform',
       pages: 8,
       fileSize: '1.0 MB',
       urgency: 'medium',
@@ -249,7 +249,7 @@ const ExpertContracts = () => {
       signedByExpert: true,
       signedByCompany: true,
       signedDate: 'Oct 30, 2024',
-      generatedBy: 'CXO Connect Platform',
+      generatedBy: 'ExigentCX Platform',
       pages: 6,
       fileSize: '0.9 MB',
       urgency: null,
@@ -277,7 +277,7 @@ AND
 
 EXPERT: David Chen, an independent professional ("Expert")
 
-FACILITATED BY: CXO Connect Platform ("Platform")
+FACILITATED BY: ExigentCX Platform ("Platform")
 
 1. SCOPE OF ENGAGEMENT
 The Expert agrees to provide Interim CFO services to the Company for the purposes of Series B Funding Strategy, including but not limited to:
@@ -668,7 +668,7 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
                   Your Contracts & NDAs
                 </h1>
                 <p className="text-sm text-gray-500 max-w-2xl leading-relaxed mb-4 pl-2">
-                  All agreements between you and your client companies, managed and secured by CXO Connect.
+                  All agreements between you and your client companies, managed and secured by ExigentCX.
                 </p>
 
                 {/* Context pills */}
@@ -1098,7 +1098,7 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
             >
               <FormalCardBorder />
               <h3 className="font-black text-[#1C3627] text-sm mb-4 flex items-center gap-2 text-left">
-                <Shield size={14} className="text-[#0eb59a]" /> How CXO Connect Manages Your Contracts
+                <Shield size={14} className="text-[#0eb59a]" /> How ExigentCX Manages Your Contracts
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
@@ -1187,7 +1187,7 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
                   {[
                     { label: 'You', signed: showViewModal.signedByExpert },
                     { label: showViewModal.company, signed: showViewModal.signedByCompany },
-                    { label: 'CXO Connect', signed: true },
+                    { label: 'ExigentCX', signed: true },
                   ].map((party, pIdx) => (
                     <div key={pIdx} className="flex items-center gap-1.5 text-xs font-bold">
                       <div className={`w-5 h-5 rounded-full flex items-center justify-center ${party.signed ? 'bg-emerald-500' : 'bg-amber-400'}`}>
@@ -1414,7 +1414,7 @@ IN WITNESS WHEREOF, the parties have executed this Agreement as of the date firs
                       transition={{ duration: 1, repeat: 2 }}
                       className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-teal-50 text-[#134e40] text-xs font-black rounded-xl border border-teal-100"
                     >
-                      <Shield size={12} /> Secured by CXO Connect
+                      <Shield size={12} /> Secured by ExigentCX
                     </motion.div>
                   </motion.div>
                 )}

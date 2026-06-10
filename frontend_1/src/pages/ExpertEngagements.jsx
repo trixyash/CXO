@@ -214,8 +214,8 @@ const ExpertEngagements = () => {
   ];
 
   const documents = [
-    { id: 1, name: 'Engagement Agreement.pdf', size: '1.2 MB', type: 'pdf', uploadedBy: 'CXO Connect', date: 'Feb 1, 2025', category: 'Legal' },
-    { id: 2, name: 'NDA — Acme Corp & David Chen.pdf', size: '0.6 MB', type: 'pdf', uploadedBy: 'CXO Connect', date: 'Feb 1, 2025', category: 'Legal' },
+    { id: 1, name: 'Engagement Agreement.pdf', size: '1.2 MB', type: 'pdf', uploadedBy: 'ExigentCX', date: 'Feb 1, 2025', category: 'Legal' },
+    { id: 2, name: 'NDA — Acme Corp & David Chen.pdf', size: '0.6 MB', type: 'pdf', uploadedBy: 'ExigentCX', date: 'Feb 1, 2025', category: 'Legal' },
     { id: 3, name: 'Financial Model v2.xlsx', size: '3.8 MB', type: 'excel', uploadedBy: 'You', date: 'Mar 28, 2025', category: 'Deliverable' },
     { id: 4, name: 'Business Assessment Report.pdf', size: '2.4 MB', type: 'pdf', uploadedBy: 'You', date: 'Feb 25, 2025', category: 'Deliverable' },
     { id: 5, name: 'Fundraising Narrative.pptx', size: '5.2 MB', type: 'ppt', uploadedBy: 'You', date: 'Mar 28, 2025', category: 'Deliverable' },
@@ -1391,7 +1391,7 @@ const ExpertEngagements = () => {
                                 <h3 className="font-black text-sm">PMO Support</h3>
                               </div>
                               <p className="text-xs text-white/60 mb-3 leading-relaxed">
-                                Your engagement is supported by our CXO Connect PMO team.
+                                Your engagement is supported by our ExigentCX PMO team.
                               </p>
                               {[
                                 { label: 'Your PMO', value: engagement.pmContact },
@@ -1839,7 +1839,7 @@ const ExpertEngagements = () => {
                           <div>
                             <p className="text-sm font-black text-[#134e40]">How you get paid</p>
                             <p className="text-xs text-teal-700 mt-0.5 leading-relaxed">
-                              Payments are held in escrow by CXO Connect. When you submit a milestone and the company approves it, the payment is automatically released to your account within 24 hours.
+                              Payments are held in escrow by ExigentCX. When you submit a milestone and the company approves it, the payment is automatically released to your account within 24 hours.
                             </p>
                           </div>
                         </div>

@@ -25,7 +25,7 @@ const slides = [
     },
     {
         title: "Our Solution",
-        content: "CXOConnect is a verified marketplace connecting companies with professionals quickly and securely via AI matching and robust governance.",
+        content: "ExigentCX is a verified marketplace connecting companies with professionals quickly and securely via AI matching and robust governance.",
         image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=2070&auto=format&fit=crop"
     }
 ];
@@ -173,7 +173,7 @@ const Home = () => {
                         </h2>
                         <div className="space-y-6 max-w-xl">
                             <p className="text-teal-50 text-xl font-light opacity-90">
-                                CXOConnect bridges the gap between:
+                                ExigentCX bridges the gap between:
                             </p>
 
                             <ul className="space-y-4">

@@ -647,7 +647,7 @@ const JoinCompany = () => {
 										/>
 										<div>
 											<label htmlFor="terms" className="text-xs text-gray-600 cursor-pointer leading-relaxed">
-												I confirm the information provided is accurate and I agree to the CXOConnect Terms of Service and Privacy Policy.
+												I confirm the information provided is accurate and I agree to the ExigentCX Terms of Service and Privacy Policy.
 											</label>
 											{errors.terms && <span className="text-red-500 text-xs font-medium mt-1 block">{errors.terms.message}</span>}
 										</div>

@@ -212,7 +212,7 @@ const ExpertEarnings = () => {
       type: 'platform_fee',
       description: 'Platform Service Fee (10%)',
       engagement: 'Series B Funding Strategy',
-      company: 'CXO Connect',
+      company: 'ExigentCX',
       amount: '-₹15,000',
       amountNum: -15000,
       date: 'Feb 25, 2025',
@@ -1010,7 +1010,7 @@ const ExpertEarnings = () => {
                         <div>
                           <p className="font-black text-gray-800 text-xs mb-1">Platform Fee</p>
                           <p className="text-[11px] text-gray-500 leading-relaxed">
-                            CXO Connect charges a <span className="font-black text-gray-700">10% platform fee</span> on each milestone payment. This covers PMO support, legal protection, and escrow management.
+                            ExigentCX charges a <span className="font-black text-gray-700">10% platform fee</span> on each milestone payment. This covers PMO support, legal protection, and escrow management.
                           </p>
                         </div>
                       </div>
@@ -1552,7 +1552,7 @@ const ExpertEarnings = () => {
                       transition={{ duration: 1, repeat: 2 }}
                       className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-teal-50 text-[#134e40] text-xs font-black rounded-xl border border-teal-100"
                     >
-                      <Shield size={12} /> Secured by CXO Connect
+                      <Shield size={12} /> Secured by ExigentCX
                     </motion.div>
                   </motion.div>
                 )}

@@ -436,14 +436,14 @@ const Analytics = () => {
 
   const handleExport = () => {
     const blob = new Blob([
-      `CXO CONNECT — FULL ANALYTICS REPORT\nGenerated: ${new Date().toLocaleDateString()}\n\n` +
+      `EXIGENTCX — FULL ANALYTICS REPORT\nGenerated: ${new Date().toLocaleDateString()}\n\n` +
       `OVERVIEW\nActive Engagements: 2\nExperts: 5\nTotal Spent: ₹11.5L\nMilestones: 4/8\n\n` +
       `ROI\nTotal Cost: ₹19L\nValue Delivered: ₹75L\nBlended ROI: 295%\n\n` +
       `RISK\nHigh: 2 | Medium: 3 | Budget Overruns: 1\n\nPMO SCORE: 87%`
     ], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'CXOConnect_FullAnalytics.txt';
+    a.download = 'ExigentCX_FullAnalytics.txt';
     a.click();
   };
 

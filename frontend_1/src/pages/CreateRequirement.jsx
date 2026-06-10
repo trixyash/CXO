@@ -921,7 +921,7 @@ const CreateRequirement = () => {
               <span className="text-white font-black text-base">♔</span>
             </div>
             <div>
-              <p className="text-white font-black text-sm tracking-wide whitespace-nowrap">CXO Connect</p>
+              <p className="text-white font-black text-sm tracking-wide whitespace-nowrap">ExigentCX</p>
               <p className="text-[#0eb59a] text-[10px] font-bold tracking-widest uppercase">Company Portal</p>
             </div>
           </div>

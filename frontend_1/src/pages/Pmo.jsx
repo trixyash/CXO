@@ -236,7 +236,7 @@ const Pmo = () => {
               </span>
               <h2 className="text-2xl font-black mb-2">Automated Compliance & Risk Safeguards</h2>
               <p className="text-xs text-teal-100/90 leading-relaxed font-medium">
-                CXO Connect provides active legal and operational oversight. Every milestone is bound by strict NDA, MSA, and pre-funded escrow protections to safeguard your organization's intellectual property and financial trust.
+                ExigentCX provides active legal and operational oversight. Every milestone is bound by strict NDA, MSA, and pre-funded escrow protections to safeguard your organization's intellectual property and financial trust.
               </p>
             </div>
             <div className="absolute right-6 bottom-0 top-0 w-1/3 opacity-10 flex items-center justify-center pointer-events-none">

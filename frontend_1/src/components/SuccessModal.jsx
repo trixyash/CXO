@@ -11,7 +11,7 @@ const SuccessModal = ({ isOpen, role }) => {
         ? "Application Submitted! 🎉" 
         : role === 'admin'
             ? "Admin Account Created! 🎉"
-            : "Welcome to CXOConnect! 🎉";
+            : "Welcome to ExigentCX! 🎉";
         
     const message = role === 'company'
         ? "Your company application has been successfully submitted. You can now sign in to access your dashboard."

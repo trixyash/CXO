@@ -16,7 +16,7 @@ const tocItems = [
     { id: 'definitions', label: '2. Definitions' },
     { id: 'eligibility', label: '3. Eligibility' },
     { id: 'account-reg', label: '4. Account Registration & Vetting' },
-    { id: 'role-cxoconnect', label: '5. Role of CXOConnect' },
+    { id: 'role-cxoconnect', label: '5. Role of ExigentCX' },
     { id: 'user-contracts', label: '6. User Contracts' },
     { id: 'requirement-posting', label: '7. Requirement Posting' },
     { id: 'fees', label: '8. Fees, Commissions & Payments' },
@@ -186,7 +186,7 @@ const sections = [
         content: (
             <>
                 <p className="text-gray-600 text-base leading-[1.75] text-left mb-4">
-                    CXOConnect provides a trusted, governance-driven marketplace for senior leadership engagement. The Platform is founded on the following key principles:
+                    ExigentCX provides a trusted, governance-driven marketplace for senior leadership engagement. The Platform is founded on the following key principles:
                 </p>
                 <StyledTable
                     headers={['Principle', 'Description']}
@@ -194,7 +194,7 @@ const sections = [
                         ['Vetted Network Only', 'Every Professional undergoes identity verification, credential review, and interview before approval on the Platform.'],
                         ['Escrow Protection', 'Milestone-based payments are held in escrow and released only upon mutual approval or PMO resolution, ensuring trust for both parties.'],
                         ['PMO Governance', 'Admin/PMO team monitors engagements, flags risks, and resolves disputes to maintain marketplace integrity.'],
-                        ['No Employment', 'CXOConnect is not an employer. All engagements are independent contractor relationships between Companies and Professionals.'],
+                        ['No Employment', 'ExigentCX is not an employer. All engagements are independent contractor relationships between Companies and Professionals.'],
                     ]}
                 />
             </>
@@ -210,11 +210,11 @@ const sections = [
                 headers={['Term', 'Definition']}
                 rows={[
                     ['"Company"', 'A startup, SME, or enterprise that posts requirements and engages Professionals through the Platform.'],
-                    ['"Professional"', 'A CXO, Director, Advisor, Consultant, or senior expert who offers services via the Platform and has been vetted by CXOConnect.'],
+                    ['"Professional"', 'A CXO, Director, Advisor, Consultant, or senior expert who offers services via the Platform and has been vetted by ExigentCX.'],
                     ['"PMO"', 'The internal Admin/Project Management Office team that governs vetting, milestone release, and dispute resolution.'],
                     ['"Engagement"', 'A specific role (fractional, interim, advisory, project) between a Company and a Professional.'],
                     ['"Milestone"', 'A defined deliverable or payment trigger within an Engagement.'],
-                    ['"Escrow"', "Funds held by CXOConnect's payment partner (Razorpay/Stripe) pending milestone completion."],
+                    ['"Escrow"', "Funds held by ExigentCX's payment partner (Razorpay/Stripe) pending milestone completion."],
                     ['"User Contract"', 'The binding agreement between Company and Professional formed on the Platform, incorporating these Terms.'],
                 ]}
             />
@@ -227,7 +227,7 @@ const sections = [
         title: 'Eligibility',
         content: (
             <>
-                <p className="text-gray-600 text-base leading-[1.75] text-left">You may not use CXOConnect if any of the following conditions apply:</p>
+                <p className="text-gray-600 text-base leading-[1.75] text-left">You may not use ExigentCX if any of the following conditions apply:</p>
                 <BulletList items={[
                     'You are under 18 years of age.',
                     'You are unable to form legally binding contracts.',
@@ -266,7 +266,7 @@ const sections = [
                 <BulletList items={[
                     'Every Professional application is reviewed by PMO.',
                     'May include interview, skill tagging, and reference checks.',
-                    'CXOConnect may reject any application without providing a reason.',
+                    'ExigentCX may reject any application without providing a reason.',
                 ]} />
                 <NoticeBox color="teal">
                     You must keep your account credentials confidential. You are responsible for all activities under your account.
@@ -278,17 +278,17 @@ const sections = [
         id: 'role-cxoconnect',
         number: '5',
         icon: Globe,
-        title: 'Role of CXOConnect – Marketplace Only',
+        title: 'Role of ExigentCX – Marketplace Only',
         content: (
             <>
                 <p className="text-gray-600 text-base leading-[1.75] text-left">
-                    CXOConnect is a technology platform and administrative intermediary, not a party to any engagement between Company and Professional.
+                    ExigentCX is a technology platform and administrative intermediary, not a party to any engagement between Company and Professional.
                 </p>
                 <BulletList items={[
                     'We facilitate matching, contracts, NDAs, escrow payments, and communication.',
                     'We do not supervise, control, or direct any Professional\'s work.',
                     'We are not an employer, joint employer, or labour-hire agency.',
-                    'No employment relationship exists between CXOConnect and any Professional, CXOConnect and any Company, or Company and Professional (unless explicitly contracted separately).',
+                    'No employment relationship exists between ExigentCX and any Professional, ExigentCX and any Company, or Company and Professional (unless explicitly contracted separately).',
                     'Professionals are independent contractors. Companies are responsible for compliance with local labour laws.',
                 ]} />
             </>
@@ -318,7 +318,7 @@ const sections = [
                     ]}
                 />
                 <NoticeBox color="amber">
-                    Both parties agree that CXOConnect is not liable for performance or non-performance of any User Contract.
+                    Both parties agree that ExigentCX is not liable for performance or non-performance of any User Contract.
                 </NoticeBox>
             </>
         ),
@@ -341,7 +341,7 @@ const sections = [
                     ]}
                 />
                 <p className="text-gray-600 text-base leading-[1.75] text-left mt-4">
-                    Each requirement must specify: functional area, duration, budget range, and urgency. CXOConnect reserves the right to remove any requirement that violates these Terms.
+                    Each requirement must specify: functional area, duration, budget range, and urgency. ExigentCX reserves the right to remove any requirement that violates these Terms.
                 </p>
             </>
         ),
@@ -371,7 +371,7 @@ const sections = [
                 <BulletList items={[
                     'All fees are in Indian Rupees (INR) or as specified in USD for global engagements.',
                     'Fees are non-refundable except as provided in the Dispute Resolution section.',
-                    'CXOConnect may change fees with 30 days\' notice.',
+                    'ExigentCX may change fees with 30 days\' notice.',
                 ]} />
             </>
         ),
@@ -416,7 +416,7 @@ const sections = [
                     'Failure of the Company to respond within the specified timeline.',
                 ]} />
                 <NoticeBox color="red">
-                    No Chargebacks: By using escrow, Company agrees not to initiate chargebacks with their bank or card issuer. All disputes must be resolved via CXOConnect's internal PMO process.
+                    No Chargebacks: By using escrow, Company agrees not to initiate chargebacks with their bank or card issuer. All disputes must be resolved via ExigentCX's internal PMO process.
                 </NoticeBox>
             </>
         ),
@@ -432,7 +432,7 @@ const sections = [
                     To protect the integrity of the marketplace, the following non-circumvention terms apply:
                 </p>
                 <BulletList items={[
-                    'For 24 months after first introduction or engagement on CXOConnect, you agree not to engage any Professional identified via the Platform outside the Platform.',
+                    'For 24 months after first introduction or engagement on ExigentCX, you agree not to engage any Professional identified via the Platform outside the Platform.',
                     'Conversion Fee: To move an engagement off-platform before 24 months, you must pay either 13% of projected annual compensation (hourly rate × 2,080 hrs/year) or ₹2,50,000, whichever is greater — unless otherwise agreed in writing.',
                     'After 24 months, off-platform engagement is permitted at no additional cost.',
                     'Enterprise clients with a separate MSA have tailored non-circumvention terms.',
@@ -451,7 +451,7 @@ const sections = [
         content: (
             <>
                 <p className="text-gray-600 text-base leading-[1.75] text-left">
-                    CXOConnect provides a managed dispute resolution process overseen by the internal PMO team:
+                    ExigentCX provides a managed dispute resolution process overseen by the internal PMO team:
                 </p>
                 <SubHeading>A. Milestone Disputes (Work Quality / Deliverables)</SubHeading>
                 <BulletList items={[
@@ -486,7 +486,7 @@ const sections = [
         content: (
             <>
                 <p className="text-gray-600 text-base leading-[1.75] text-left mb-2">
-                    The CXOConnect Admin/PMO team is responsible for the following platform governance functions:
+                    The ExigentCX Admin/PMO team is responsible for the following platform governance functions:
                 </p>
                 <StyledTable
                     headers={['Function', 'Description']}
@@ -512,7 +512,7 @@ const sections = [
             <BulletList items={[
                 'Both Companies and Professionals agree to keep each other\'s confidential information (business plans, financials, trade secrets) strictly confidential.',
                 'NDAs generated via the Platform are legally binding on both parties.',
-                'CXOConnect processes personal data as described in our Privacy Policy. We do not sell your data.',
+                'ExigentCX processes personal data as described in our Privacy Policy. We do not sell your data.',
                 'Professional Obligation: You must not disclose the Company\'s internal information even after the engagement ends.',
             ]} />
         ),
@@ -528,7 +528,7 @@ const sections = [
                 rows={[
                     ['Professional\'s IP', 'Any pre-existing tools, methodologies, or code remain the Professional\'s property and are not transferred by default.'],
                     ['Deliverables IP', 'Unless otherwise agreed in writing, all deliverables created specifically for the engagement become the Company\'s property upon full payment.'],
-                    ['Platform IP', 'CXOConnect\'s software, design, algorithms, and content are owned by CXOConnect. You may not copy, scrape, or reverse-engineer the Platform.'],
+                    ['Platform IP', 'ExigentCX\'s software, design, algorithms, and content are owned by ExigentCX. You may not copy, scrape, or reverse-engineer the Platform.'],
                 ]}
             />
         ),
@@ -547,13 +547,13 @@ const sections = [
                     'Post false, misleading, or deceptive requirement descriptions.',
                     'Share contact information (email, phone, WhatsApp) in public posts to bypass Platform messaging.',
                     'Solicit or accept payments outside the Platform\'s escrow system.',
-                    'Harass, threaten, or abuse any user or CXOConnect staff.',
+                    'Harass, threaten, or abuse any user or ExigentCX staff.',
                     'Use the Platform for any illegal purpose (including money laundering or fraud).',
                     'Upload malware or attempt to breach the Platform\'s security.',
                     'Create multiple accounts to circumvent vetting or account bans.',
                 ]} />
                 <NoticeBox color="red">
-                    Violation may result in immediate termination and forfeiture of escrowed funds where CXOConnect suffers a loss.
+                    Violation may result in immediate termination and forfeiture of escrowed funds where ExigentCX suffers a loss.
                 </NoticeBox>
             </>
         ),
@@ -571,7 +571,7 @@ const sections = [
                     'Closed accounts have no claim to refunds of fees already paid.',
                 ]} />
 
-                <SubHeading>B. By CXOConnect</SubHeading>
+                <SubHeading>B. By ExigentCX</SubHeading>
                 <p className="text-gray-600 text-base leading-[1.75] text-left mt-2">We may suspend or terminate your account without prior notice if:</p>
                 <BulletList items={[
                     'You breach these Terms.',
@@ -599,8 +599,8 @@ const sections = [
             <>
                 <p className="text-gray-600 text-base leading-[1.75] text-left">To the maximum extent permitted by applicable law:</p>
                 <BulletList items={[
-                    'CXOConnect shall not be liable for any indirect, incidental, special, or consequential damages (including lost profits, loss of reputation, or loss of data).',
-                    'Our total aggregate liability to you shall not exceed the total fees paid by you to CXOConnect in the 3 months preceding the claim.',
+                    'ExigentCX shall not be liable for any indirect, incidental, special, or consequential damages (including lost profits, loss of reputation, or loss of data).',
+                    'Our total aggregate liability to you shall not exceed the total fees paid by you to ExigentCX in the 3 months preceding the claim.',
                     'We are not responsible for acts or omissions of any Company or Professional.',
                     'We are not responsible for delays caused by payment gateways or third-party services.',
                     'We are not responsible for unauthorized access to your account due to your failure to secure credentials.',
@@ -616,7 +616,7 @@ const sections = [
         content: (
             <>
                 <p className="text-gray-600 text-base leading-[1.75] text-left">
-                    You agree to indemnify and hold harmless CXOConnect, its affiliates, officers, employees, and PMO team from any claims, damages, losses, or expenses (including legal fees) arising from:
+                    You agree to indemnify and hold harmless ExigentCX, its affiliates, officers, employees, and PMO team from any claims, damages, losses, or expenses (including legal fees) arising from:
                 </p>
                 <BulletList items={[
                     'Your breach of these Terms.',
@@ -635,7 +635,7 @@ const sections = [
         content: (
             <>
                 <p className="text-gray-600 text-base leading-[1.75] text-left">
-                    CXOConnect provides the Platform "AS IS" and "AS AVAILABLE" without warranties of any kind. We do not warrant that:
+                    ExigentCX provides the Platform "AS IS" and "AS AVAILABLE" without warranties of any kind. We do not warrant that:
                 </p>
                 <BulletList items={[
                     'The Platform will be uninterrupted, error-free, or secure at all times.',
@@ -673,7 +673,7 @@ const sections = [
         title: 'Notices',
         content: (
             <BulletList items={[
-                'Legal notices to CXOConnect must be sent to legal@cxoconnect.com and via registered post to our registered office.',
+                'Legal notices to ExigentCX must be sent to legal@cxoconnect.com and via registered post to our registered office.',
                 'Notices to you will be sent to your registered email address. Notice is deemed received 24 hours after sending.',
             ]} />
         ),
@@ -687,7 +687,7 @@ const sections = [
             <StyledTable
                 headers={['Provision', 'Details']}
                 rows={[
-                    ['Amendment', 'CXOConnect may update these Terms with 14 days\' notice (via email or Platform banner). Continued use constitutes acceptance.'],
+                    ['Amendment', 'ExigentCX may update these Terms with 14 days\' notice (via email or Platform banner). Continued use constitutes acceptance.'],
                     ['Assignment', 'You may not assign these Terms without our consent. We may assign them in a merger or acquisition.'],
                     ['Severability', 'If any provision is found unenforceable, the remainder of these Terms remains in full effect.'],
                     ['Waiver', 'Our failure to enforce any right does not constitute a waiver of that right.'],
@@ -827,7 +827,7 @@ const TermsOfService = () => {
                             Last Updated: May 2026 &nbsp;·&nbsp; Effective: May 2026
                         </p>
                         <p className="text-xs text-gray-500 mt-2 max-w-xl mx-auto leading-relaxed">
-                            These Terms govern your access to and use of the CXOConnect website, mobile applications, and related services. By using the Platform, you agree to be bound by these Terms.
+                            These Terms govern your access to and use of the ExigentCX website, mobile applications, and related services. By using the Platform, you agree to be bound by these Terms.
                         </p>
 
                         <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
@@ -905,7 +905,7 @@ const TermsOfService = () => {
                             className="bg-white rounded-2xl border border-gray-200 border-l-4 border-l-[#0eb59a] shadow-md p-7 mb-6"
                         >
                             <p className="text-gray-600 text-base leading-[1.75] text-left">
-                                Welcome to CXOConnect. These Terms of Service ("Terms") govern your access to and use of the CXOConnect website, mobile applications, and related services (collectively, the "Platform"). CXOConnect is a two-sided marketplace connecting Companies (startups, SMEs, enterprises) with Verified Senior Professionals (CXOs, Directors, Advisors, Consultants) for fractional leadership, interim roles, advisory projects, and managed transformation programs.
+                                Welcome to ExigentCX. These Terms of Service ("Terms") govern your access to and use of the ExigentCX website, mobile applications, and related services (collectively, the "Platform"). ExigentCX is a two-sided marketplace connecting Companies (startups, SMEs, enterprises) with Verified Senior Professionals (CXOs, Directors, Advisors, Consultants) for fractional leadership, interim roles, advisory projects, and managed transformation programs.
                             </p>
                         </motion.div>
 

@@ -136,7 +136,7 @@ const Footer = () => {
                 </div>
 
                 <motion.div variants={itemVariants} className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500 text-xs tracking-widest uppercase relative">
-                    <span>© {new Date().getFullYear()} CXOCONNECT. ALL RIGHTS RESERVED.</span>
+                    <span>© {new Date().getFullYear()} EXIGENTCX. ALL RIGHTS RESERVED.</span>
                     <span className="font-bold text-[#0eb59a] flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#0eb59a] animate-pulse"></span>
                         Designed for Precision.

@@ -294,7 +294,7 @@ const sections = [
         title: 'Children\'s Privacy',
         content: (
             <p className="text-gray-600 text-base leading-[1.75] text-left">
-                CXOConnect is strictly for senior professionals and business entities. No one under the age of 18 is permitted to use the Platform. We do not knowingly collect personal information from minors. If we discover such data, we will delete it immediately. Parents or guardians should contact us if they believe a minor has provided us with information.
+                ExigentCX is strictly for senior professionals and business entities. No one under the age of 18 is permitted to use the Platform. We do not knowingly collect personal information from minors. If we discover such data, we will delete it immediately. Parents or guardians should contact us if they believe a minor has provided us with information.
             </p>
         ),
     },
@@ -308,9 +308,9 @@ const sections = [
                 <p className="text-gray-600 text-base leading-[1.75] text-left">We share your data only in the following circumstances:</p>
                 <BulletList items={[
                     'Between Companies and Professionals: When you enter an engagement, both parties can see each other\'s profiles, contact details, and engagement workspace activity. Each party acts as a separate data controller.',
-                    'Service Providers: We share data with hosting providers (AWS/GCP), payment processors (Razorpay, Stripe), identity verification vendors, email/SMS infrastructure, and analytics tools. These providers are contractually bound to use data only for CXOConnect purposes.',
+                    'Service Providers: We share data with hosting providers (AWS/GCP), payment processors (Razorpay, Stripe), identity verification vendors, email/SMS infrastructure, and analytics tools. These providers are contractually bound to use data only for ExigentCX purposes.',
                     'Legal & Regulatory Authorities: We disclose data in response to a court order, subpoena, government request, or to enforce our Terms of Service, prevent fraud, or protect safety.',
-                    'Corporate Transactions: If CXOConnect is acquired, merged, or sells assets, user data will be transferred to the new entity, subject to the same privacy commitments.',
+                    'Corporate Transactions: If ExigentCX is acquired, merged, or sells assets, user data will be transferred to the new entity, subject to the same privacy commitments.',
                     'With Your Consent: For example, publishing a testimonial or participating in a case study.',
                 ]} />
                 <NoticeBox>
@@ -327,14 +327,14 @@ const sections = [
         content: (
             <>
                 <p className="text-gray-600 text-base leading-[1.75] text-left">
-                    CXOConnect operates globally. Your data may be stored or processed in India, the United States, or the European Economic Area (EEA) depending on our service providers.
+                    ExigentCX operates globally. Your data may be stored or processed in India, the United States, or the European Economic Area (EEA) depending on our service providers.
                 </p>
                 <BulletList items={[
                     'For users in the EU/EEA/UK, we ensure adequate safeguards (e.g., EU Standard Contractual Clauses) for data transfers.',
                     'For users in India, data may be transferred only in compliance with the Digital Personal Data Protection (DPDP) Act, 2023.',
                 ]} />
                 <p className="text-gray-600 text-base leading-[1.75] text-left mt-4">
-                    By using CXOConnect, you consent to such cross-border transfers.
+                    By using ExigentCX, you consent to such cross-border transfers.
                 </p>
             </>
         ),
@@ -526,7 +526,7 @@ const sections = [
         title: 'Changes to This Privacy Policy',
         content: (
             <p className="text-gray-600 text-base leading-[1.75] text-left">
-                We may update this Policy from time to time to reflect changes in law, our Platform, or industry standards. Material changes will be notified via email (to registered users) or via an in-platform banner at least 14 days before they take effect. The "Last Updated" date at the top of this Policy will be revised accordingly. Your continued use of CXOConnect after changes indicates your acceptance of the revised Policy.
+                We may update this Policy from time to time to reflect changes in law, our Platform, or industry standards. Material changes will be notified via email (to registered users) or via an in-platform banner at least 14 days before they take effect. The "Last Updated" date at the top of this Policy will be revised accordingly. Your continued use of ExigentCX after changes indicates your acceptance of the revised Policy.
             </p>
         ),
     },
@@ -607,7 +607,7 @@ const PrivacyPolicy = () => {
                             Last Updated: May 2026 &nbsp;·&nbsp; Effective: May 2026
                         </p>
                         <p className="text-xs text-gray-500 mt-2 max-w-xl mx-auto leading-relaxed">
-                            CXOConnect is committed to protecting the personal and professional
+                            ExigentCX is committed to protecting the personal and professional
                             information of its users. This Policy explains how we collect, use,
                             disclose, and safeguard your information.
                         </p>
@@ -703,7 +703,7 @@ const PrivacyPolicy = () => {
                             className="bg-white rounded-2xl border border-gray-200 shadow-md p-7 mb-6 border-l-4 border-l-[#0eb59a]"
                         >
                             <p className="text-gray-600 text-base leading-[1.75] text-left">
-                                By accessing or using CXOConnect including as a Company, Professional,
+                                By accessing or using ExigentCX including as a Company, Professional,
                                 or Admin/PMO user, you acknowledge that you have read, understood, and
                                 agree to be bound by this Policy. If you do not agree, please do not use
                                 our Platform.

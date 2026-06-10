@@ -293,8 +293,8 @@ const EngagementWorkspace = () => {
   // Static engagement data, milestones, and payments have been converted to dynamic React state.
 
   const documents = [
-    { id: 1, name: 'Engagement Agreement.pdf', size: '1.2 MB', type: 'pdf', uploadedBy: 'CXO Connect', date: 'Feb 1, 2025', category: 'Legal', signed: true },
-    { id: 2, name: 'NDA — Acme Corp & David Chen.pdf', size: '0.6 MB', type: 'pdf', uploadedBy: 'CXO Connect', date: 'Feb 1, 2025', category: 'Legal', signed: true },
+    { id: 1, name: 'Engagement Agreement.pdf', size: '1.2 MB', type: 'pdf', uploadedBy: 'ExigentCX', date: 'Feb 1, 2025', category: 'Legal', signed: true },
+    { id: 2, name: 'NDA — Acme Corp & David Chen.pdf', size: '0.6 MB', type: 'pdf', uploadedBy: 'ExigentCX', date: 'Feb 1, 2025', category: 'Legal', signed: true },
     { id: 3, name: 'Financial Model v2.xlsx', size: '3.8 MB', type: 'excel', uploadedBy: 'David Chen', date: 'Mar 28, 2025', category: 'Deliverable', signed: false },
     { id: 4, name: 'Investor Deck Final.pptx', size: '8.4 MB', type: 'ppt', uploadedBy: 'David Chen', date: 'Apr 25, 2025', category: 'Deliverable', signed: false },
     { id: 5, name: 'Data Room Index.pdf', size: '0.8 MB', type: 'pdf', uploadedBy: 'David Chen', date: 'Apr 25, 2025', category: 'Deliverable', signed: false },
@@ -954,7 +954,7 @@ const EngagementWorkspace = () => {
                         <h3 className="font-black text-sm text-left">PMO Governance</h3>
                       </div>
                       <p className="text-xs text-white/60 mb-3 leading-relaxed text-left">
-                        Your engagement is managed and monitored by our CXO Connect PMO team.
+                        Your engagement is managed and monitored by our ExigentCX PMO team.
                       </p>
                       <div className="space-y-2">
                         {[
@@ -1386,7 +1386,7 @@ const EngagementWorkspace = () => {
                   {[
                     { label: 'Total Engagement Value', value: engagement.totalValue, icon: TrendingUp, color: 'text-teal-500', bg: 'bg-teal-50', border: 'border-l-[#0eb59a]', desc: 'Full contract value' },
                     { label: 'Released to Expert', value: engagement.spent, icon: Unlock, color: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-l-emerald-400', desc: '2 milestones paid' },
-                    { label: 'In Escrow', value: engagement.escrowBalance, icon: Lock, color: 'text-amber-500', bg: 'bg-amber-50', border: 'border-l-amber-400', desc: 'Secured by CXO Connect' },
+                    { label: 'In Escrow', value: engagement.escrowBalance, icon: Lock, color: 'text-amber-500', bg: 'bg-amber-50', border: 'border-l-amber-400', desc: 'Secured by ExigentCX' },
                   ].map((kpi, idx) => (
                     <motion.div
                       key={idx}
@@ -1415,7 +1415,7 @@ const EngagementWorkspace = () => {
                   <div className="text-left">
                     <p className="text-sm font-black text-[#134e40] text-left">Escrow-backed payments</p>
                     <p className="text-xs text-teal-700 mt-0.5 leading-relaxed text-left">
-                      All payments are held in escrow by CXO Connect and released only after you approve each milestone.
+                      All payments are held in escrow by ExigentCX and released only after you approve each milestone.
                     </p>
                   </div>
                 </div>

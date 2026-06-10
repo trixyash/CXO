@@ -1877,7 +1877,7 @@ const ExpertOpportunities = () => {
                       Your proposal for <span className="font-bold text-gray-700">{showApplyModal.title}</span> at <span className="font-bold text-gray-700">{showApplyModal.company}</span> has been sent. Expect a response within 48 hours.
                     </p>
                     <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-teal-50 text-[#134e40] text-xs font-black rounded-xl border border-teal-100">
-                      <Shield size={12} /> Reviewed by CXO Connect PMO
+                      <Shield size={12} /> Reviewed by ExigentCX PMO
                     </div>
                   </motion.div>
                 )}

@@ -396,7 +396,7 @@ const AboutUs = () => {
                 >
                     <div className="text-6xl mb-4 leading-none" style={{ color: 'rgba(212,175,55,0.3)', fontFamily: 'Georgia, serif' }}>"</div>
                     <p className="text-xl sm:text-2xl font-light leading-relaxed mb-6 italic" style={{ color: 'rgba(255,255,255,0.85)', fontFamily: 'Georgia, serif' }}>
-                        India has thousands of world-class CXOs sitting on the sidelines. And thousands of companies that desperately need them, but can't afford full-time. We built CXO Connect to close that gap.
+                        India has thousands of world-class CXOs sitting on the sidelines. And thousands of companies that desperately need them, but can't afford full-time. We built ExigentCX to close that gap.
                     </p>
                     <div className="h-px w-16 mx-auto mb-4" style={{ background: 'linear-gradient(90deg, transparent, #D4AF37, transparent)' }} />
                     <p className="text-sm font-bold uppercase tracking-widest" style={{ color: '#D4AF37' }}>— The Founders</p>
