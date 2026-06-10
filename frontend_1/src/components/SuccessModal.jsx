@@ -9,11 +9,15 @@ const SuccessModal = ({ isOpen, role }) => {
 
     const title = role === 'company' 
         ? "Application Submitted! 🎉" 
-        : "Welcome to CXOConnect! 🎉";
+        : role === 'admin'
+            ? "Admin Account Created! 🎉"
+            : "Welcome to CXOConnect! 🎉";
         
     const message = role === 'company'
         ? "Your company application has been successfully submitted. You can now sign in to access your dashboard."
-        : "Your expert application has been successfully submitted. Sign in to start exploring opportunities.";
+        : role === 'admin'
+            ? "Your administrator account has been successfully created. You can now sign in to access the admin portal."
+            : "Your expert application has been successfully submitted. Sign in to start exploring opportunities.";
 
     const signinPath = `/signin?role=${role}`;
 
@@ -39,7 +43,7 @@ const SuccessModal = ({ isOpen, role }) => {
                             onClick={() => navigate(signinPath)}
                             className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-xl hover:-translate-y-1 active:translate-y-0 active:scale-95"
                         >
-                            Sign In as {role === 'company' ? 'Company' : 'Expert'}
+                            Sign In as {role === 'company' ? 'Company' : role === 'admin' ? 'Admin' : 'Expert'}
                             <ArrowRight size={18} />
                         </button>
                         

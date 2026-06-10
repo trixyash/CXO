@@ -28,6 +28,8 @@ import ExpertEarnings from './pages/ExpertEarnings';
 import ExpertProfileBuilder from './pages/ExpertProfileBuilder';
 import ExpertSettings from './pages/ExpertSettings';
 import ExpertContracts from './pages/ExpertContracts';
+import AdminSignUp from './pages/AdminSignUp';
+import AdminDashboard from './pages/AdminDashboard';
 
 
 
@@ -82,7 +84,7 @@ const AppContent = () => {
   }, [navigate]);
 
   const showNavbar = location.pathname === '/' || location.pathname === '/privacy-policy' || location.pathname === '/terms-of-service';
-  const isDashboard = location.pathname === '/company-dashboard' || location.pathname === '/expert-dashboard' || location.pathname === '/requirements' || location.pathname === '/requirements/create' || location.pathname === '/experts' || location.pathname.startsWith('/experts/') || location.pathname.startsWith('/engagements') || location.pathname === '/settings' || location.pathname.startsWith('/expert-opportunities') || location.pathname.startsWith('/expert-engagements') || location.pathname === '/expert-earnings' || location.pathname === '/expert-profile' || location.pathname === '/analytics' || location.pathname === '/pmo' || location.pathname === '/messages' || location.pathname === '/meetings';
+  const isDashboard = location.pathname === '/company-dashboard' || location.pathname === '/expert-dashboard' || location.pathname === '/requirements' || location.pathname === '/requirements/create' || location.pathname === '/experts' || location.pathname.startsWith('/experts/') || location.pathname.startsWith('/engagements') || location.pathname === '/settings' || location.pathname.startsWith('/expert-opportunities') || location.pathname.startsWith('/expert-engagements') || location.pathname === '/expert-earnings' || location.pathname === '/expert-profile' || location.pathname === '/analytics' || location.pathname === '/pmo' || location.pathname === '/messages' || location.pathname === '/meetings' || location.pathname === '/admin-dashboard';
 
 
   return (
@@ -126,6 +128,8 @@ const AppContent = () => {
             <Route path="/expert-contracts/:contractId" element={<ExpertContracts />} />
             <Route path="/privacy-policy" element={<PrivacyDoc />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/admin-signup" element={<AdminSignUp />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
           </Routes>
         </main>
       </div>

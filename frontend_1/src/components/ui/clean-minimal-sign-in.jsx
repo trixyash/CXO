@@ -166,10 +166,10 @@ const SignIn2 = ({
             <p className="mt-6 text-center text-xs text-gray-400">
               New here?{" "}
               <a
-                href={role === "company" ? "/join-company" : "/join-expert"}
+                href={role === "company" ? "/join-company" : role === "admin" ? "/admin-signup" : "/join-expert"}
                 className="text-[#0eb59a] hover:underline font-semibold"
               >
-                Join as {role === "company" ? "Company" : "Expert"}
+                Join as {role === "company" ? "Company" : role === "admin" ? "Admin" : "Expert"}
               </a>
             </p>
           </>

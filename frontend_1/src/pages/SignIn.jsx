@@ -43,6 +43,7 @@ const SignIn = () => {
 	}, [location.search, navigate]);
 
 	const [identifier, setIdentifier] = useState("");
+	const [password, setPassword] = useState("");
 	const [loginMethod, setLoginMethod] = useState("otp"); // for experts
 	const [loading, setLoading] = useState(false);
 	const [message, setMessage] = useState("");
@@ -59,7 +60,36 @@ const SignIn = () => {
 
 		try {
 			localStorage.setItem('logging_in_role', role);
-			if (role === "company") {
+			if (role === "admin") {
+				const cleanEmail = identifier.trim();
+				if (!cleanEmail || !password) {
+					setError("Please fill out both email and password.");
+					setLoading(false);
+					return;
+				}
+
+				if (cleanEmail === "admin@cxo.com" && password === "admin12345") {
+					localStorage.setItem('sb-mock-auth', 'true');
+					localStorage.setItem('user_role', 'admin');
+					localStorage.removeItem('demo_company');
+					localStorage.removeItem('demo_expert');
+					navigate("/admin-dashboard");
+					return;
+				}
+
+				const { data, error: sbError } = await supabase.auth.signInWithPassword({
+					email: cleanEmail,
+					password: password
+				});
+
+				if (sbError) throw sbError;
+
+				localStorage.setItem('user_role', 'admin');
+				localStorage.removeItem('demo_company');
+				localStorage.removeItem('demo_expert');
+				navigate("/admin-dashboard");
+				return;
+			} else if (role === "company") {
 				const cleanEmail = identifier.trim();
 				console.log("🔍 Searching for company admin email:", `"${cleanEmail}"`);
 
@@ -218,7 +248,7 @@ const SignIn = () => {
 			const { data, error } = await supabase.auth.signInWithOAuth({
 				provider: provider,
 				options: {
-					redirectTo: window.location.origin + (role === "company" ? "/company-dashboard" : "/expert-dashboard")
+					redirectTo: window.location.origin + (role === "company" ? "/company-dashboard" : role === "admin" ? "/admin-dashboard" : "/expert-dashboard")
 				}
 			});
 			if (error) throw error;
@@ -242,12 +272,14 @@ const SignIn = () => {
 			<SignIn2
 				email={identifier}
 				setEmail={setIdentifier}
+				password={password}
+				setPassword={setPassword}
 				handleSignIn={handleSendOTP}
 				error={error || message}
-				title={`Sign In as ${role === "company" ? "Company" : "Expert"}`}
-				description={role === "company" ? "Enter your Admin Email Address" : "Enter your registered email"}
-				buttonText={loading ? "SENDING..." : (loginMethod === "magiclink" ? "SEND MAGIC LINK" : "SEND OTP")}
-				showPassword={false}
+				title={`Sign In as ${role === "company" ? "Company" : role === "admin" ? "Admin" : "Expert"}`}
+				description={role === "company" ? "Enter your Admin Email Address" : role === "admin" ? "Enter your administrator credentials" : "Enter your registered email"}
+				buttonText={loading ? "SENDING..." : (role === "admin" ? "SIGN IN" : (loginMethod === "magiclink" ? "SEND MAGIC LINK" : "SEND OTP"))}
+				showPassword={role === "admin"}
 				role={role}
 				loginMethod={loginMethod}
 				setLoginMethod={setLoginMethod}

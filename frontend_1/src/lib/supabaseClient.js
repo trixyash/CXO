@@ -8,26 +8,40 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const createMockAuth = (originalAuth = {}) => ({
   ...originalAuth,
   signInWithOtp: async () => ({ user: { id: 'mock-user', email: 'demo@cxo.com' }, error: null }),
-  signInWithOAuth: async () => ({ data: { url: '#' }, error: null }),
-  getSession: async () => ({ 
-    data: { 
-      session: { 
-        user: { id: 'mock-user', email: 'demo@cxo.com', user_metadata: { role: 'company' } },
-        access_token: 'mock-token',
-        expires_at: Math.floor(Date.now() / 1000) + 3600
-      } 
-    }, 
-    error: null 
+  signInWithPassword: async ({ email, password }) => ({
+    data: { user: { id: 'mock-admin-id', email, user_metadata: { role: 'admin' } } },
+    error: null
   }),
+  signInWithOAuth: async () => ({ data: { url: '#' }, error: null }),
+  getSession: async () => {
+    const role = (typeof window !== 'undefined' && localStorage.getItem('user_role')) || 'company';
+    return { 
+      data: { 
+        session: { 
+          user: { id: 'mock-user', email: 'demo@cxo.com', user_metadata: { role } },
+          access_token: 'mock-token',
+          expires_at: Math.floor(Date.now() / 1000) + 3600
+        } 
+      }, 
+      error: null 
+    };
+  },
   onAuthStateChange: (callback) => {
+    const role = (typeof window !== 'undefined' && localStorage.getItem('user_role')) || 'company';
     // Immediately trigger callback with mock session
     callback('SIGNED_IN', { 
-      user: { id: 'mock-user', email: 'demo@cxo.com', user_metadata: { role: 'company' } },
+      user: { id: 'mock-user', email: 'demo@cxo.com', user_metadata: { role } },
       access_token: 'mock-token'
     });
     return { data: { subscription: { unsubscribe: () => {} } } };
   },
-  signOut: async () => ({ error: null }),
+  signOut: async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('sb-mock-auth');
+    }
+    return { error: null };
+  },
 });
 
 const createSupabaseClient = () => {
