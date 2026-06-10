@@ -255,10 +255,15 @@ const ExpertEngagements = () => {
     { title: 'New Message', desc: 'TechScale Ventures sent a message', time: '3 hours ago', unread: false, color: 'bg-slate-400' },
   ];
 
-  // ── EFFECTS ──
   // Profile fetch effect (keep exactly)
   useEffect(() => {
     const fetchProfile = async () => {
+      const isDemo = localStorage.getItem('demo_expert') === 'true' || localStorage.getItem('sb-mock-auth') === 'true';
+      if (isDemo) {
+        setProfile({ full_name: 'David Chen' });
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
@@ -393,17 +398,13 @@ const ExpertEngagements = () => {
             </div>
           </motion.div>
           <motion.button
+            animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}
             whileHover={{ scale: 1.1, backgroundColor: '#f0fdf4' }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsSidebarOpen(s => !s)}
-            className={`w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-[#134e40] hover:bg-[#f0fdf4] transition-all cursor-pointer shrink-0 border border-gray-200 hover:border-[#0eb59a] ${
-              isSidebarOpen ? 'ml-auto' : 'ml-2'
-            }`}
+            className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-[#134e40] hover:bg-[#f0fdf4] transition-all cursor-pointer shrink-0 border border-gray-200 hover:border-[#0eb59a]"
           >
-            {isSidebarOpen
-              ? <ChevronLeft size={16} className="text-[#134e40]" />
-              : <Menu size={18} className="text-[#134e40]" strokeWidth={2.5} />
-            }
+            {isSidebarOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
           </motion.button>
         </div>
 
@@ -729,13 +730,17 @@ const ExpertEngagements = () => {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/expert-settings')}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white font-black text-xs cursor-pointer shadow-md"
+                onClick={() => navigate('/expert-profile')}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white font-black text-xs cursor-pointer shadow-md overflow-hidden"
                 style={{ background: 'linear-gradient(135deg, #134e40, #0eb59a)' }}
               >
-                {profile?.full_name
-                  ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-                  : 'EX'}
+                {profile?.profile_url ? (
+                  <img src={profile.profile_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  profile?.full_name
+                    ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                    : 'EX'
+                )}
               </motion.div>
               <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white" />
             </div>

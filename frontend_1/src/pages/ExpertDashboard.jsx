@@ -8,7 +8,8 @@ import {
   ChevronRight, ChevronLeft, Clock, Briefcase, Eye, Zap,
   Award, MessageSquare, User, Check, TrendingUp, Shield,
   CreditCard, Users, Target, Grid, Plus,
-  UserCircle, LogOut, X, Menu, MapPin, CheckCircle, Calendar
+  UserCircle, LogOut, X, Menu, MapPin, CheckCircle, Calendar,
+  UserPlus, UserCheck, UserX
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import FormalCardBorder from '../components/FormalCardBorder';
@@ -69,17 +70,27 @@ const ExpertDashboard = () => {
 
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [recommendedOpportunities, setRecommendedOpportunities] = useState([]);
 
   useEffect(() => {
     const checkAuthAndFetch = async () => {
+      const isDemo = localStorage.getItem('demo_expert') === 'true' || localStorage.getItem('sb-mock-auth') === 'true';
+      if (isDemo) {
+        setProfile({ full_name: 'David Chen', key_skills: ['Financial Modeling', 'Investor Relations'] });
+        setRecommendedOpportunities(MOCK_RECOMMENDED_OPPORTUNITIES);
+        setLoadingProfile(false);
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/signin?role=expert');
         return;
       }
 
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
         const response = await fetch(`${baseUrl}/api/expert/profile`, {
           headers: {
             'Authorization': `Bearer ${session.access_token}`
@@ -89,6 +100,9 @@ const ExpertDashboard = () => {
         if (response.ok) {
           const data = await response.json();
           setProfile(data);
+          if (data.engagement_types?.availability?.status) {
+            setIsAvailable(data.engagement_types.availability.status === 'Available');
+          }
         } else {
           console.warn("No expert profile found, using defaults");
         }
@@ -96,6 +110,29 @@ const ExpertDashboard = () => {
         console.error("Error fetching expert profile:", err);
       } finally {
         setLoadingProfile(false);
+      }
+
+      // Fetch opportunities
+      try {
+        const response = await fetch(`${baseUrl}/api/expert/opportunities`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.length > 0) {
+            setRecommendedOpportunities(data);
+          } else {
+            setRecommendedOpportunities(MOCK_RECOMMENDED_OPPORTUNITIES);
+          }
+        } else {
+          setRecommendedOpportunities(MOCK_RECOMMENDED_OPPORTUNITIES);
+        }
+      } catch (err) {
+        console.error("Error fetching opportunities:", err);
+        setRecommendedOpportunities(MOCK_RECOMMENDED_OPPORTUNITIES);
       }
     };
 
@@ -114,10 +151,39 @@ const ExpertDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: '1', title: 'New Role Match', desc: 'Fractional CFO role at HealthTech — 96% match', time: '10 min ago', unread: true, color: 'bg-[#0eb59a]' },
+    { id: '2', title: 'Milestone Approved', desc: 'Acme Corp approved Financial Model Development', time: '2 hours ago', unread: true, color: 'bg-emerald-500' },
+    { id: '3', title: 'Payment Received', desc: '₹2,00,000 credited for milestone completion', time: '3 hours ago', unread: true, color: 'bg-teal-600' },
+    { id: '4', title: 'New Message', desc: 'Acme Corp sent you a message about the investor deck', time: '1 day ago', unread: false, color: 'bg-slate-400' },
+  ]);
   const [opportunityCarouselIndex, setOpportunityCarouselIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(2);
   const [isAvailable, setIsAvailable] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [connectRequests, setConnectRequests] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cxo_connect_requests') || '[]')
+        .filter(r => r.status === 'pending');
+    } catch { return []; }
+  });
+
+  useEffect(() => {
+    if (connectRequests.length > 0) {
+      setNotifications(prev => {
+        const alreadyExists = prev.some(n => n.title === 'New Connection Request');
+        if (alreadyExists) return prev;
+        return [{
+          id: 'connect-req',
+          title: 'New Connection Request',
+          desc: `${connectRequests[0]?.companyName || 'A company'} wants to connect with you`,
+          time: 'Just now',
+          unread: true,
+          color: 'bg-blue-500',
+        }, ...prev];
+      });
+    }
+  }, [connectRequests]);
 
   // Auto-play Carousel State
   const [carouselDirection, setCarouselDirection] = useState(1);
@@ -157,6 +223,72 @@ const ExpertDashboard = () => {
     const t = setTimeout(() => setMounted(true), 200);
     return () => clearTimeout(t);
   }, []);
+
+  const handleToggleAvailability = async () => {
+    const nextAvailable = !isAvailable;
+    setIsAvailable(nextAvailable);
+
+    const isDemo = localStorage.getItem('demo_expert') === 'true' || localStorage.getItem('sb-mock-auth') === 'true';
+    if (isDemo) {
+      if (profile) {
+        setProfile({
+          ...profile,
+          engagement_types: {
+            ...profile.engagement_types,
+            availability: {
+              ...profile.engagement_types?.availability,
+              status: nextAvailable ? 'Available' : 'Not available'
+            }
+          }
+        });
+      }
+      return;
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      const currentEngagementTypes = profile?.engagement_types || {};
+      const currentAvailability = currentEngagementTypes.availability || {
+        status: 'Available',
+        hoursPerWeek: '20',
+        startDate: 'Immediate',
+        timezone: 'IST (UTC+5:30)',
+        preferredMode: 'Remote'
+      };
+
+      const updatedEngagementTypes = {
+        ...currentEngagementTypes,
+        availability: {
+          ...currentAvailability,
+          status: nextAvailable ? 'Available' : 'Not available'
+        }
+      };
+
+      const updatedProfile = {
+        ...profile,
+        engagement_types: updatedEngagementTypes
+      };
+
+      const response = await fetch(`${baseUrl}/api/expert/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(updatedProfile)
+      });
+
+      if (response.ok) {
+        setProfile(updatedProfile);
+      }
+    } catch (err) {
+      console.error("Error updating availability status:", err);
+    }
+  };
 
   const sidebarMenu = [
     { name: 'Dashboard',      icon: LayoutDashboard,
@@ -204,7 +336,7 @@ const ExpertDashboard = () => {
     },
   ];
 
-  const recommendedOpportunities = [
+  const MOCK_RECOMMENDED_OPPORTUNITIES = [
     {
       id: 1,
       title: 'Fractional CFO',
@@ -436,12 +568,190 @@ const ExpertDashboard = () => {
     { label: 'Reviews',         icon: Star,          bg: 'bg-amber-50',  iconColor: 'text-amber-500',  path: '/expert-profile'       },
   ];
 
-  const notifications = [
-    { title: 'New Role Match', desc: 'Fractional CFO role at HealthTech — 96% match', time: '10 min ago', unread: true, color: 'bg-[#0eb59a]' },
-    { title: 'Milestone Approved', desc: 'Acme Corp approved Financial Model Development', time: '2 hours ago', unread: true, color: 'bg-emerald-500' },
-    { title: 'Payment Received', desc: '₹2,00,000 credited for milestone completion', time: '3 hours ago', unread: true, color: 'bg-teal-600' },
-    { title: 'New Message', desc: 'Acme Corp sent you a message about the investor deck', time: '1 day ago', unread: false, color: 'bg-slate-400' },
-  ];
+  const getNotificationColor = (type) => {
+    switch (type) {
+      case 'match': return 'bg-teal-500';
+      case 'milestone': return 'bg-blue-500';
+      case 'contract': return 'bg-purple-500';
+      case 'payment': return 'bg-emerald-500';
+      default: return 'bg-slate-400';
+    }
+  };
+
+  const formatNotificationTime = (timeStr) => {
+    if (!timeStr) return '';
+    if (timeStr.includes('ago') || timeStr.includes('day')) return timeStr;
+    try {
+      const date = new Date(timeStr);
+      const diffMs = Date.now() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins} min ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } catch (e) {
+      return timeStr;
+    }
+  };
+
+  const handleMarkAsRead = async (notifId) => {
+    const isDemo = localStorage.getItem('demo_expert') === 'true';
+    
+    setNotifications(prev =>
+      prev.map(n => n.id === notifId ? { ...n, is_read: true, unread: false } : n)
+    );
+
+    if (isDemo || typeof notifId === 'number' || notifId.length < 10) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      await fetch(`${baseUrl}/api/notifications/${notifId}/read`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (err) {
+      console.error("Failed to sync read status with backend:", err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    const isDemo = localStorage.getItem('demo_expert') === 'true';
+    
+    setNotifications(prev =>
+      prev.map(n => ({ ...n, is_read: true, unread: false }))
+    );
+
+    if (isDemo) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      await fetch(`${baseUrl}/api/notifications/mark-all-read`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (err) {
+      console.error("Failed to sync mark all read with backend:", err);
+    }
+  };
+
+  const handleAcceptConnect = (requestId, expertId) => {
+    try {
+      // Update connection status to connected
+      const connections = JSON.parse(localStorage.getItem('cxo_connections') || '{}');
+      connections[String(expertId)] = 'connected';
+      localStorage.setItem('cxo_connections', JSON.stringify(connections));
+
+      // Update request status
+      const requests = JSON.parse(localStorage.getItem('cxo_connect_requests') || '[]');
+      const updated = requests.map(r => r.id === requestId ? { ...r, status: 'accepted' } : r);
+      localStorage.setItem('cxo_connect_requests', JSON.stringify(updated));
+
+      // Remove from state
+      setConnectRequests(prev => prev.filter(r => r.id !== requestId));
+
+      // Add notification
+      setNotifications(prev => [{
+        id: String(Date.now()),
+        title: 'Connection Accepted',
+        desc: 'You are now connected with Acme Corp',
+        time: 'Just now',
+        unread: true,
+        color: 'bg-[#0eb59a]',
+      }, ...prev]);
+    } catch {}
+  };
+
+  const handleDeclineConnect = (requestId) => {
+    try {
+      const requests = JSON.parse(localStorage.getItem('cxo_connect_requests') || '[]');
+      const updated = requests.map(r => r.id === requestId ? { ...r, status: 'declined' } : r);
+      localStorage.setItem('cxo_connect_requests', JSON.stringify(updated));
+      setConnectRequests(prev => prev.filter(r => r.id !== requestId));
+    } catch {}
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    let channel;
+
+    const isDemo = localStorage.getItem('demo_expert') === 'true';
+    if (isDemo) return;
+
+    const fetchNotifications = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !isMounted) return;
+
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const response = await fetch(`${baseUrl}/api/notifications`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (response.ok && isMounted) {
+          const data = await response.json();
+          setNotifications(data);
+        }
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
+      }
+    };
+
+    fetchNotifications();
+
+    const setupSubscription = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.user || !isMounted) return;
+
+      // Use a unique channel name per mount to prevent caching conflicts in Strict Mode
+      const channelName = `expert-notifications-${session.user.id}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
+      channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${session.user.id}`
+          },
+          (payload) => {
+            if (isMounted) {
+              setNotifications(prev => [payload.new, ...prev]);
+            }
+          }
+        );
+
+      channel.subscribe((status) => {
+        console.log(`Notification channel status:`, status);
+      });
+    };
+
+    setupSubscription();
+
+    return () => {
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, []);
 
   const profileStrength = profile ? Math.round((
     [
@@ -564,16 +874,13 @@ const ExpertDashboard = () => {
             <div className="cursor-pointer" onClick={() => window.location.reload()}><Logo variant="dark" className="h-8" /></div>
           </motion.div>
           <motion.button
+            animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}
             whileHover={{ scale: 1.1, backgroundColor: '#f0fdf4' }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsSidebarOpen(s => !s)}
-            className={`w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-[#134e40] hover:bg-[#f0fdf4] transition-all cursor-pointer shrink-0 border border-gray-200 hover:border-[#0eb59a]
-            ${isSidebarOpen ? 'ml-auto' : 'ml-2'}`}
+            className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-[#134e40] hover:bg-[#f0fdf4] transition-all cursor-pointer shrink-0 border border-gray-200 hover:border-[#0eb59a]"
           >
-            {isSidebarOpen 
-              ? <ChevronLeft size={16} className="text-[#134e40]" />
-              : <Menu size={18} className="text-[#134e40]" strokeWidth={2.5} />
-            }
+            {isSidebarOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
           </motion.button>
 
         </div>
@@ -631,7 +938,7 @@ const ExpertDashboard = () => {
         </nav>
 
         {/* Separated Settings option pinned to the bottom */}
-        <div className="p-3 border-t border-gray-50">
+        <div className="p-3 border-t border-gray-50 space-y-1">
           <motion.button
             whileHover={{ x: 2, transition: { duration: 0.15 } }}
             whileTap={{ scale: 0.97 }}
@@ -661,6 +968,31 @@ const ExpertDashboard = () => {
               className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
             >
               Settings
+            </motion.span>
+          </motion.button>
+          
+          <motion.button
+            whileHover={{ x: 2, transition: { duration: 0.15 } }}
+            whileTap={{ scale: 0.97 }}
+            onClick={async () => {
+              const isDemo = localStorage.getItem('demo_expert') === 'true' || localStorage.getItem('sb-mock-auth') === 'true';
+              if (isDemo) {
+                localStorage.removeItem('demo_expert');
+                localStorage.removeItem('sb-mock-auth');
+              } else {
+                await supabase.auth.signOut();
+              }
+              navigate('/signin?role=expert');
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150 font-bold"
+          >
+            <LogOut size={17} className="shrink-0" />
+            <motion.span
+              animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
+            >
+              Sign Out
             </motion.span>
           </motion.button>
         </div>
@@ -806,12 +1138,14 @@ const ExpertDashboard = () => {
                 }`}
               >
                 <Bell size={16} className={showNotifications ? 'text-[#134e40]' : 'text-gray-500'} />
-                <motion.span
-                  initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white px-0.5 animate-pulse text-center"
-                >
-                  {notifications.filter(n => n.unread).length}
-                </motion.span>
+                {notifications.filter(n => n.unread ?? !n.is_read).length > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white px-0.5 animate-pulse text-center"
+                  >
+                    {notifications.filter(n => n.unread ?? !n.is_read).length}
+                  </motion.span>
+                )}
               </motion.button>
 
               <AnimatePresence>
@@ -831,39 +1165,50 @@ const ExpertDashboard = () => {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => {}}
+                          onClick={handleMarkAllRead}
                           className="text-xs font-bold text-[#0eb59a] hover:text-[#134e40] transition-colors cursor-pointer text-center justify-center flex"
                         >
                           Mark all read
                         </motion.button>
                       </div>
                       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
-                        {notifications.map((notif, idx) => (
-                          <motion.div key={idx}
-                            initial={{ opacity: 0, x: 10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.05 }}
-                            className={`px-5 py-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer flex gap-3 transition-colors ${
-                              notif.unread ? 'bg-teal-50/20' : ''
-                            }`}
-                          >
-                            <div className={`w-2 h-2 rounded-full ${notif.color} mt-1.5 shrink-0`} />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-[#1C3627] leading-tight text-left">
-                                {notif.title}
-                              </p>
-                              <p className="text-xs text-gray-400 mt-0.5 leading-relaxed text-left">
-                                {notif.desc}
-                              </p>
-                              <p className="text-[10px] text-gray-300 font-semibold mt-1 text-left">
-                                {notif.time}
-                              </p>
-                            </div>
-                            {notif.unread && (
-                              <div className="w-1.5 h-1.5 rounded-full bg-[#0eb59a] mt-1.5 shrink-0" />
-                            )}
-                          </motion.div>
-                        ))}
+                        {notifications.length === 0 ? (
+                          <div className="text-center py-8 text-gray-400 text-xs font-medium">No notifications yet</div>
+                        ) : (
+                          notifications.map((notif, idx) => {
+                            const isUnread = notif.unread ?? !notif.is_read;
+                            const descText = notif.desc || notif.description;
+                            const timeText = formatNotificationTime(notif.time || notif.created_at);
+                            const dotColor = notif.color || getNotificationColor(notif.type);
+                            return (
+                              <motion.div key={notif.id || idx}
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                onClick={() => handleMarkAsRead(notif.id)}
+                                className={`px-5 py-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer flex gap-3 transition-colors ${
+                                  isUnread ? 'bg-teal-50/20' : ''
+                                }`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${dotColor} mt-1.5 shrink-0`} />
+                                <div className="flex-1 min-w-0 text-left">
+                                  <p className="text-sm font-bold text-[#1C3627] leading-tight text-left">
+                                    {notif.title}
+                                  </p>
+                                  <p className="text-xs text-gray-400 mt-0.5 leading-relaxed text-left">
+                                    {descText}
+                                  </p>
+                                  <p className="text-[10px] text-gray-300 font-semibold mt-1 text-left">
+                                    {timeText}
+                                  </p>
+                                </div>
+                                {isUnread && (
+                                  <div className="w-1.5 h-1.5 rounded-full bg-[#0eb59a] mt-1.5 shrink-0" />
+                                )}
+                              </motion.div>
+                            );
+                          })
+                        )}
                       </div>
                     </motion.div>
                   </>
@@ -993,7 +1338,7 @@ const ExpertDashboard = () => {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => setIsAvailable(a => !a)}
+                    onClick={handleToggleAvailability}
                     className={`flex items-center justify-center gap-2 px-4 py-2 rounded-full border-2 text-xs font-black transition-all duration-300 cursor-pointer text-center ${
                       isAvailable
                         ? 'bg-[#f0fdf4] border-[#0eb59a] text-[#134e40]'
@@ -1330,11 +1675,15 @@ const ExpertDashboard = () => {
                               <div className="flex flex-col items-center gap-2 mb-3">
                                 <motion.div
                                   whileHover={{ rotate: 5 }}
-                                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${opp.logoColor} flex items-center justify-center shadow-md shrink-0`}
+                                  className={`w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br ${opp.logoColor} flex items-center justify-center shadow-md shrink-0`}
                                 >
-                                  <span className="text-white font-black text-lg">
-                                    {opp.logo}
-                                  </span>
+                                  {opp.logoUrl ? (
+                                    <img src={opp.logoUrl} alt={opp.company} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <span className="text-white font-black text-lg">
+                                      {opp.logo}
+                                    </span>
+                                  )}
                                 </motion.div>
                                 <div className="flex flex-col items-center gap-1 mt-1">
                                   <span
@@ -1394,7 +1743,7 @@ const ExpertDashboard = () => {
 
                               {/* Centered social proof */}
                               <p className="text-[11px] text-gray-400 font-medium mb-4 text-center">
-                                {opp.applicants} applied · Posted {opp.postedDays}d ago
+                                {opp.applicants} applied · {opp.postedDate ? `Posted ${opp.postedDate}` : `Posted ${opp.postedDays}d ago`}
                               </p>
 
                               {/* Centered CTAs */}
@@ -1762,6 +2111,200 @@ const ExpertDashboard = () => {
 
               {/* RIGHT 2/5 (lg:col-span-2) — Stacked Profile Strength + Earnings stacked */}
               <div className="lg:col-span-2 flex flex-col gap-6">
+
+                {/* CONNECTION REQUESTS */}
+                {connectRequests.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.38 }}
+                    className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm relative overflow-hidden"
+                  >
+                    <FormalCardBorder />
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-base font-black text-gray-900 flex items-center gap-2">
+                        <motion.div
+                          animate={{ scale: [1, 1.15, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+                        >
+                          <UserPlus size={16} className="text-blue-500" />
+                        </motion.div>
+                        Connection Requests
+                      </h2>
+                      <motion.span
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                        className="bg-blue-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center"
+                      >
+                        {connectRequests.length}
+                      </motion.span>
+                    </div>
+
+                    {/* Request items */}
+                    <div className="space-y-3">
+                      {connectRequests.map((req, idx) => (
+                        <motion.div
+                          key={req.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 10 }}
+                          transition={{ delay: idx * 0.08 }}
+                          className="p-4 bg-blue-50/40 rounded-2xl border border-blue-100"
+                        >
+                          {/* Company info */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-[#134e40] to-[#0eb59a] rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0">
+                              {(req.companyName || 'A').charAt(0)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-black text-gray-900 text-sm truncate">{req.companyName}</p>
+                              <p className="text-[10px] text-gray-400 font-medium">Wants to connect with you</p>
+                            </div>
+                          </div>
+
+                          {/* Accept / Decline */}
+                          <div className="flex gap-2">
+                            <motion.button
+                              whileHover={{ scale: 1.04, boxShadow: '0 4px 15px rgba(19,78,64,0.25)' }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleAcceptConnect(req.id, req.expertId)}
+                              className="flex-1 py-2 bg-[#134e40] hover:bg-[#0eb59a] text-white text-xs font-black rounded-xl flex items-center justify-center gap-1.5 transition-all duration-200"
+                            >
+                              <UserCheck size={12} /> Accept
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.04 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleDeclineConnect(req.id)}
+                              className="flex-1 py-2 bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-500 border border-gray-200 hover:border-red-200 text-xs font-black rounded-xl flex items-center justify-center gap-1.5 transition-all duration-200"
+                            >
+                              <UserX size={12} /> Decline
+                            </motion.button>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* YOUR NETWORK */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ boxShadow: '0 12px 40px rgba(14,181,154,0.12)', borderColor: 'rgba(14,181,154,0.3)' }}
+                  transition={{ delay: 0.40, duration: 0.3 }}
+                  className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm relative overflow-hidden"
+                >
+                  <FormalCardBorder />
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-5">
+                    <h2 className="text-base font-black text-gray-900 flex items-center gap-2">
+                      <Users size={16} className="text-[#0eb59a]" /> Your Network
+                    </h2>
+                    <motion.button
+                      whileHover={{ x: 4 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => navigate('/experts')}
+                      className="text-[10px] font-black text-[#0eb59a] hover:text-[#134e40] transition-colors flex items-center gap-1 group"
+                    >
+                      Browse
+                      <motion.span
+                        className="inline-block"
+                        initial={{ x: 0 }}
+                        whileHover={{ x: 3 }}
+                      >
+                        →
+                      </motion.span>
+                    </motion.button>
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {[
+                      {
+                        value: (() => { try { return JSON.parse(localStorage.getItem('cxo_following') || '[]').length + 33; } catch { return 33; } })(),
+                        label: 'Followers',
+                        bg: 'bg-teal-50',
+                        hoverBg: '#f0fdfa',
+                        border: 'border-teal-100',
+                        hoverBorder: 'rgba(14,181,154,0.4)',
+                        color: 'text-[#134e40]',
+                        hoverShadow: '0 8px 20px rgba(14,181,154,0.12)',
+                      },
+                      {
+                        value: (() => { try { return JSON.parse(localStorage.getItem('cxo_following') || '[]').length; } catch { return 0; } })(),
+                        label: 'Following',
+                        bg: 'bg-blue-50',
+                        hoverBg: '#eff6ff',
+                        border: 'border-blue-100',
+                        hoverBorder: 'rgba(59,130,246,0.4)',
+                        color: 'text-blue-600',
+                        hoverShadow: '0 8px 20px rgba(59,130,246,0.12)',
+                      },
+                      {
+                        value: (() => { try { return Object.values(JSON.parse(localStorage.getItem('cxo_connections') || '{}')).filter(v => v === 'connected').length; } catch { return 0; } })(),
+                        label: 'Connected',
+                        bg: 'bg-emerald-50',
+                        hoverBg: '#ecfdf5',
+                        border: 'border-emerald-100',
+                        hoverBorder: 'rgba(16,185,129,0.4)',
+                        color: 'text-emerald-600',
+                        hoverShadow: '0 8px 20px rgba(16,185,129,0.12)',
+                      },
+                    ].map((stat, idx) => (
+                      <motion.div
+                        key={idx}
+                        whileHover={{
+                          y: -5,
+                          boxShadow: stat.hoverShadow,
+                          borderColor: stat.hoverBorder,
+                          backgroundColor: stat.hoverBg,
+                        }}
+                        whileTap={{ scale: 0.96 }}
+                        transition={{ duration: 0.2 }}
+                        className={`${stat.bg} border ${stat.border} rounded-2xl p-3 text-center cursor-default transition-colors duration-200`}
+                      >
+                        <motion.p
+                          initial={{ opacity: 0, scale: 0.3, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          transition={{ delay: 0.5 + idx * 0.12, type: 'spring', stiffness: 300, damping: 15 }}
+                          whileHover={{ scale: 1.15 }}
+                          className={`text-2xl font-black ${stat.color}`}
+                        >
+                          {stat.value}
+                        </motion.p>
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.6 + idx * 0.12 }}
+                          className="text-[10px] font-bold text-gray-500 mt-0.5"
+                        >
+                          {stat.label}
+                        </motion.p>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Grow network CTA */}
+                  <motion.button
+                    whileHover={{ scale: 1.03, boxShadow: '0 8px 25px rgba(19,78,64,0.3)' }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate('/experts')}
+                    className="w-full py-2.5 bg-gradient-to-r from-[#134e40] to-[#0eb59a] text-white text-xs font-black rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm relative overflow-hidden group"
+                  >
+                    {/* Shimmer sweep */}
+                    <motion.div
+                      className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"
+                      initial={{ x: '-100%' }}
+                      whileHover={{ x: '350%' }}
+                      transition={{ duration: 0.6, ease: 'easeOut' }}
+                    />
+                    <UserPlus size={12} className="relative z-10" />
+                    <span className="relative z-10">Grow Your Network</span>
+                  </motion.button>
+                </motion.div>
 
                 {/* PROFILE STRENGTH */}
                 <motion.div

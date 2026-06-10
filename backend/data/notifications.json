@@ -1,0 +1,229 @@
+[
+  {
+    "id": "notif-1780913017936-911",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Escrow Release Approved",
+    "description": "Released ₹2,50,000 from escrow for milestone \"Term Sheet & Due Diligence Support\" to David Chen.",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-5"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T10:03:37.936Z"
+  },
+  {
+    "id": "notif-1780912994552-680",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Escrow Release Approved",
+    "description": "Released ₹3,00,000 from escrow for milestone \"Investor Outreach & Roadshow\" to David Chen.",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-4"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T10:03:14.552Z"
+  },
+  {
+    "id": "notif-1780912705968-155",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Escrow Release Approved",
+    "description": "Released ₹2,50,000 from escrow for milestone \"Investor Deck & Data Room\" to David Chen.",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-3"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:58:25.969Z"
+  },
+  {
+    "id": "notif-1780912652151-795",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Escrow Release Approved",
+    "description": "Released ₹3,50,000 from escrow for milestone \"Campaign Launch\" to Sarah Jenkins.",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "2",
+      "milestoneId": "m-7"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:57:32.152Z"
+  },
+  {
+    "id": "notif-1780912633528-23",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited ₹10,000 in escrow for milestone \"Investor Outreach & Roadshow\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-4"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:57:13.528Z"
+  },
+  {
+    "id": "notif-1780912256024-184",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Escrow Release Approved",
+    "description": "Released ₹3,00,000 from escrow for milestone \"Investor Outreach & Roadshow\" to David Chen.",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-4"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:50:56.024Z"
+  },
+  {
+    "id": "notif-1780912253566-716",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited general funds of ₹50,000 to the escrow wallet for engagement \"Series B Funding Strategy\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:50:53.566Z"
+  },
+  {
+    "id": "notif-1780912251803-606",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited ₹3,00,000 in escrow for milestone \"Investor Outreach & Roadshow\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-4"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:50:51.803Z"
+  },
+  {
+    "id": "notif-1780911952797-357",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited ₹50,000 in escrow for milestone \"Investor Outreach & Roadshow\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-4"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:45:52.797Z"
+  },
+  {
+    "id": "notif-1780911655333-503",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Escrow Release Approved",
+    "description": "Released ₹3,00,000 from escrow for milestone \"Investor Outreach & Roadshow\" to David Chen.",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-4"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:40:55.333Z"
+  },
+  {
+    "id": "notif-1780911652362-458",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited general funds of ₹50,000 to the escrow wallet for engagement \"Series B Funding Strategy\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:40:52.362Z"
+  },
+  {
+    "id": "notif-1780911650876-254",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited ₹3,00,000 in escrow for milestone \"Investor Outreach & Roadshow\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-4"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:40:50.876Z"
+  },
+  {
+    "id": "notif-1780911348739-454",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited ₹50,000 in escrow for milestone \"Investor Outreach & Roadshow\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-4"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:35:48.739Z"
+  },
+  {
+    "id": "notif-1780911080823-638",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Escrow Release Approved",
+    "description": "Released ₹3,00,000 from escrow for milestone \"Investor Outreach & Roadshow\" to David Chen.",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-4"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:31:20.823Z"
+  },
+  {
+    "id": "notif-1780911079454-346",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited general funds of ₹50,000 to the escrow wallet for engagement \"Series B Funding Strategy\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:31:19.454Z"
+  },
+  {
+    "id": "notif-1780911077947-951",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited ₹3,00,000 in escrow for milestone \"Investor Outreach & Roadshow\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-4"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:31:17.947Z"
+  },
+  {
+    "id": "notif-1780911052408-478",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Escrow Release Approved",
+    "description": "Released ₹3,00,000 from escrow for milestone \"Investor Outreach & Roadshow\" to David Chen.",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1",
+      "milestoneId": "m-4"
+    },
+    "is_read": false,
+    "created_at": "2026-06-08T09:30:52.408Z"
+  },
+  {
+    "id": "notif-1",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Welcome to CXO",
+    "description": "Your demo session is active. All payments and milestone features are fully functional.",
+    "type": "system",
+    "is_read": false,
+    "created_at": "2026-06-07T12:00:00.000Z"
+  }
+]

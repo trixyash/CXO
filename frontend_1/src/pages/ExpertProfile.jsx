@@ -11,7 +11,8 @@ import {
   CheckCircle, X, ExternalLink, Building, Target,
   LayoutDashboard, CreditCard, FileText,
   LogOut, Settings, ShieldCheck, Menu, Bell,
-  ChevronLeft, RefreshCw, Edit
+  ChevronLeft, RefreshCw, Edit,
+  UserPlus, UserCheck, Link2
 } from 'lucide-react';
 
 const ExpertProfile = () => {
@@ -77,6 +78,25 @@ const ExpertProfile = () => {
     { icon: Calendar, label: 'Scheduled Meetings', path: '/meetings' },
   ];
   const [isShortlisted, setIsShortlisted] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('cxo_following') || '[]');
+      return saved.includes(String(expertId));
+    } catch { return false; }
+  });
+  const [followBurst, setFollowBurst] = useState(false);
+  const [connectStatus, setConnectStatus] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('cxo_connections') || '{}');
+      return saved[String(expertId)] || 'none';
+    } catch { return 'none'; }
+  });
+  const [profileViews] = useState(() => {
+    const key = `cxo_profile_views_${expertId}`;
+    const current = parseInt(localStorage.getItem(key) || '0') + 1;
+    localStorage.setItem(key, String(current));
+    return current;
+  });
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [selectedRequirement, setSelectedRequirement] = useState('');
@@ -273,6 +293,55 @@ const ExpertProfile = () => {
       </div>
     );
   }
+
+  const mockExperiences = [
+    {
+      id: 1,
+      role: 'Head of Finance / CFO',
+      company: 'Meesho',
+      type: 'Full-time',
+      startDate: 'Jan 2019',
+      endDate: 'Dec 2022',
+      current: false,
+      description: 'Scaled finance department from 2 to 45 members. Led Series D ($150M) and Series E ($570M) rounds. Managed 30% MoM revenue growth.',
+    },
+    {
+      id: 2,
+      role: 'Finance Director',
+      company: 'OYO',
+      type: 'Full-time',
+      startDate: 'Mar 2016',
+      endDate: 'Dec 2018',
+      current: false,
+      description: 'Managed global finance operations across 20 countries. Led Series E ($1B) fundraising. Implemented zero-based budgeting saving $40M annually.',
+    }
+  ];
+
+  const mockEducation = [
+    {
+      id: 1,
+      degree: 'MBA — Finance & Strategy',
+      institution: 'IIM Ahmedabad',
+      year: '2006',
+      grade: 'Gold Medalist',
+    },
+    {
+      id: 2,
+      degree: 'Chartered Accountant (CA)',
+      institution: 'Institute of Chartered Accountants of India',
+      year: '2005',
+      grade: 'All India Rank 12',
+    }
+  ];
+
+  const displayExperiences = expert?.experiences && expert.experiences.length > 0
+    ? expert.experiences
+    : (expert?.name === 'David Chen' || expertId === '2' ? mockExperiences : []);
+
+  const displayEducation = expert?.education && expert.education.length > 0
+    ? expert.education
+    : (expert?.name === 'David Chen' || expertId === '2' ? mockEducation : []);
+
   const caseStudies = [
     {
       id: 1,
@@ -371,7 +440,9 @@ const ExpertProfile = () => {
       id: 'advisory',
       label: 'Advisory',
       hours: '8 hrs/mo',
-      price: expert.budget.split(' - ')[0] + '/mo',
+      price: (expert.rateCard && expert.rateCard.advisory)
+        ? (expert.rateCard.advisory.startsWith('₹') ? expert.rateCard.advisory : '₹' + expert.rateCard.advisory) + '/mo'
+        : expert.budget.split(' - ')[0] + '/mo',
       priceNote: 'Billed monthly',
       features: [
         '2 strategy sessions/month',
@@ -388,7 +459,9 @@ const ExpertProfile = () => {
       id: 'fractional',
       label: 'Fractional',
       hours: '15-20 hrs/wk',
-      price: expert.budget,
+      price: (expert.rateCard && expert.rateCard.fractional)
+        ? (expert.rateCard.fractional.startsWith('₹') ? expert.rateCard.fractional : '₹' + expert.rateCard.fractional)
+        : expert.budget,
       priceNote: 'Billed monthly via escrow',
       features: [
         'Weekly strategy & execution sessions',
@@ -407,7 +480,9 @@ const ExpertProfile = () => {
       id: 'interim',
       label: 'Interim / Full-time',
       hours: '40 hrs/wk',
-      price: 'Custom',
+      price: (expert.rateCard && expert.rateCard.interim)
+        ? (expert.rateCard.interim.startsWith('₹') ? expert.rateCard.interim : '₹' + expert.rateCard.interim)
+        : 'Custom',
       priceNote: 'Negotiated based on scope',
       features: [
         'Full-time dedicated engagement',
@@ -439,6 +514,44 @@ const ExpertProfile = () => {
       setSelectedRequirement('');
       setMessage('');
     }, 2000);
+  };
+
+  const handleFollow = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('cxo_following') || '[]');
+      const id = String(expertId);
+      const updated = isFollowing
+        ? saved.filter(i => i !== id)
+        : [...saved, id];
+      localStorage.setItem('cxo_following', JSON.stringify(updated));
+      setIsFollowing(!isFollowing);
+      if (!isFollowing) {
+        setFollowBurst(true);
+        setTimeout(() => setFollowBurst(false), 600);
+      }
+    } catch {}
+  };
+
+  const handleConnect = () => {
+    if (connectStatus !== 'none') return;
+    try {
+      const saved = JSON.parse(localStorage.getItem('cxo_connections') || '{}');
+      saved[String(expertId)] = 'pending';
+      localStorage.setItem('cxo_connections', JSON.stringify(saved));
+
+      // Also write a connection request for the expert to see
+      const requests = JSON.parse(localStorage.getItem('cxo_connect_requests') || '[]');
+      requests.push({
+        id: Date.now(),
+        expertId: String(expertId),
+        expertName: expert.name,
+        companyName: 'Acme Corp',
+        time: new Date().toISOString(),
+        status: 'pending',
+      });
+      localStorage.setItem('cxo_connect_requests', JSON.stringify(requests));
+      setConnectStatus('pending');
+    } catch {}
   };
 
   const handleShare = async () => {
@@ -569,7 +682,7 @@ Bio: ${expert.bio}
         </nav>
 
         {/* Separated Settings option pinned to the bottom */}
-        <div className="p-3 border-t border-gray-50">
+        <div className="p-3 border-t border-gray-50 space-y-1">
           <motion.button
             whileHover={{ x: 2, transition: { duration: 0.15 } }}
             whileTap={{ scale: 0.97 }}
@@ -596,6 +709,31 @@ Bio: ${expert.bio}
               className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
             >
               Settings
+            </motion.span>
+          </motion.button>
+          
+          <motion.button
+            whileHover={{ x: 2, transition: { duration: 0.15 } }}
+            whileTap={{ scale: 0.97 }}
+            onClick={async () => {
+              const isDemo = localStorage.getItem('demo_expert') === 'true' || localStorage.getItem('sb-mock-auth') === 'true';
+              if (isDemo) {
+                localStorage.removeItem('demo_expert');
+                localStorage.removeItem('sb-mock-auth');
+              } else {
+                await supabase.auth.signOut();
+              }
+              navigate('/signin?role=expert');
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150 font-bold"
+          >
+            <LogOut size={17} className="shrink-0" />
+            <motion.span
+              animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
+            >
+              Sign Out
             </motion.span>
           </motion.button>
         </div>
@@ -856,6 +994,7 @@ Bio: ${expert.bio}
                         { icon: MapPin, label: expert.location },
                         { icon: Zap, label: `${expert.experience} exp` },
                         { icon: CheckCircle, label: `${expert.completedEngagements} engagements` },
+                        { icon: Users, label: `${20 + (parseInt(expertId) || 1) * 13} followers` },
                       ].map((meta, i) => (
                         <motion.div
                           key={i}
@@ -1115,6 +1254,66 @@ Bio: ${expert.bio}
                       </motion.span>
                     </motion.a>
                   </div>
+
+                  {/* Experience Timeline */}
+                  {displayExperiences.length > 0 && (
+                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] p-6 text-left">
+                      <h3 className="font-black text-[#1C3627] text-[15px] mb-6 flex items-center gap-2 tracking-tight">
+                        <Briefcase size={16} className="text-[#0eb59a]" /> Professional Experience
+                      </h3>
+                      <div className="relative pl-6 border-l border-gray-100 space-y-8 ml-3">
+                        {displayExperiences.map((exp, idx) => (
+                          <div key={idx} className="relative">
+                            {/* Timeline dot */}
+                            <div className="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-[#0eb59a] border-2 border-white ring-4 ring-teal-50" />
+                            <div>
+                              <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                                <h4 className="font-black text-gray-900 text-sm">{exp.role}</h4>
+                                <span className="text-[10px] font-black text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded">
+                                  {exp.startDate} — {exp.current ? 'Present' : exp.endDate}
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#0eb59a] font-bold mb-2">{exp.company} {exp.type ? `· ${exp.type}` : ''}</p>
+                              {exp.description && (
+                                <p className="text-sm text-gray-500 leading-relaxed">{exp.description}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Education list */}
+                  {displayEducation.length > 0 && (
+                    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] p-6 text-left">
+                      <h3 className="font-black text-[#1C3627] text-[15px] mb-6 flex items-center gap-2 tracking-tight">
+                        <Award size={16} className="text-[#0eb59a]" /> Education & Credentials
+                      </h3>
+                      <div className="relative pl-6 border-l border-gray-100 space-y-8 ml-3">
+                        {displayEducation.map((edu, idx) => (
+                          <div key={idx} className="relative">
+                            {/* Timeline dot */}
+                            <div className="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-blue-500 border-2 border-white ring-4 ring-blue-50" />
+                            <div>
+                              <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                                <h4 className="font-black text-gray-900 text-sm">{edu.degree}</h4>
+                                <span className="text-[10px] font-black text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded">
+                                  {edu.year}
+                                </span>
+                              </div>
+                              <p className="text-xs text-blue-500 font-bold mb-1">{edu.institution}</p>
+                              {edu.grade && (
+                                <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-100 inline-flex items-center gap-1">
+                                  <Star size={10} fill="currentColor" /> {edu.grade}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
@@ -1611,53 +1810,79 @@ Bio: ${expert.bio}
                         <MessageSquare size={14} /> Send Message
                       </motion.button>
 
+                      {/* Follow + Connect row */}
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {/* Follow */}
+                        <motion.button
+                          whileHover={{ scale: 1.04, boxShadow: isFollowing ? '0 8px 20px rgba(19,78,64,0.3)' : '0 4px 12px rgba(0,0,0,0.1)' }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleFollow}
+                          animate={followBurst ? { scale: [1, 1.3, 0.9, 1.1, 1] } : { scale: 1 }}
+                          transition={{ duration: 0.4 }}
+                          className={`flex-1 py-2.5 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 relative overflow-hidden transition-all duration-300 ${
+                            isFollowing
+                              ? 'bg-[#134e40] text-white border border-[#134e40] shadow-md'
+                              : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-teal-50 hover:text-[#134e40] hover:border-teal-300'
+                          }`}
+                        >
+                          {isFollowing && (
+                            <motion.div
+                              initial={{ x: '-100%' }}
+                              animate={{ x: '250%' }}
+                              transition={{ duration: 0.7, ease: 'easeOut' }}
+                              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"
+                            />
+                          )}
+                          {isFollowing ? <UserCheck size={12} /> : <UserPlus size={12} />}
+                          {isFollowing ? 'Following' : 'Follow'}
+                        </motion.button>
+
+                        {/* Connect */}
+                        <motion.button
+                          whileHover={{ scale: connectStatus === 'none' ? 1.04 : 1, boxShadow: connectStatus === 'none' ? '0 4px 12px rgba(0,0,0,0.1)' : 'none' }}
+                          whileTap={{ scale: connectStatus === 'none' ? 0.95 : 1 }}
+                          onClick={handleConnect}
+                          className={`flex-1 py-2.5 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition-all duration-300 ${
+                            connectStatus === 'connected'
+                              ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                              : connectStatus === 'pending'
+                              ? 'bg-amber-50 text-amber-600 border border-amber-200'
+                              : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
+                          }`}
+                        >
+                          {connectStatus === 'connected'
+                            ? <><Check size={12} /> Connected</>
+                            : connectStatus === 'pending'
+                            ? <><motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}><RefreshCw size={12} /></motion.div> Pending</>
+                            : <><Link2 size={12} /> Connect</>
+                          }
+                        </motion.button>
+                      </div>
+
                       {/* Shortlist + Compare row */}
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <motion.button
-                          whileHover={{ scale: 1.05 }}
+                          whileHover={{ scale: 1.04, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => setIsShortlisted(!isShortlisted)}
-                          style={{
-                            flex: 1,
-                            padding: '10px',
-                            backgroundColor: isShortlisted ? '#FEF2F2' : '#F9FAFB',
-                            color: isShortlisted ? '#EF4444' : '#6B7280',
-                            fontSize: '13px',
-                            fontWeight: 900,
-                            borderRadius: '14px',
-                            border: `1px solid ${isShortlisted ? '#FECACA' : '#E5E7EB'}`,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                            transition: 'all 0.2s ease',
-                          }}
+                          className={`flex-1 py-2.5 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                            isShortlisted
+                              ? 'bg-rose-50 text-rose-500 border border-rose-200'
+                              : 'bg-gray-50 text-gray-500 border border-gray-200 hover:bg-rose-50 hover:text-rose-400 hover:border-rose-200'
+                          }`}
                         >
-                          <Heart size={13} fill={isShortlisted ? 'currentColor' : 'none'} />
+                          <motion.div animate={{ scale: isShortlisted ? [1, 1.4, 1] : 1 }} transition={{ duration: 0.3 }}>
+                            <Heart size={12} fill={isShortlisted ? 'currentColor' : 'none'} />
+                          </motion.div>
                           {isShortlisted ? 'Shortlisted' : 'Shortlist'}
                         </motion.button>
 
                         <motion.button
-                          whileHover={{ scale: 1.05, backgroundColor: '#EFF6FF', borderColor: '#93C5FD', color: '#3B82F6' }}
+                          whileHover={{ scale: 1.04, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
                           whileTap={{ scale: 0.95 }}
-                          style={{
-                            flex: 1,
-                            padding: '10px',
-                            backgroundColor: '#F9FAFB',
-                            color: '#6B7280',
-                            fontSize: '13px',
-                            fontWeight: 900,
-                            borderRadius: '14px',
-                            border: '1px solid #E5E7EB',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                          }}
+                          className="flex-1 py-2.5 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 bg-gray-50 text-gray-500 border border-gray-200 hover:bg-blue-50 hover:text-blue-500 hover:border-blue-200 transition-all duration-200"
                         >
-                          <BarChart2 size={13} /> Compare
+                          <BarChart2 size={12} /> Compare
                         </motion.button>
                       </div>
                     </>
@@ -1692,6 +1917,39 @@ Bio: ${expert.bio}
                   <p className="text-xs text-white/60 leading-relaxed">
                     Based on your Interim CFO requirement — skills, industry, and budget alignment.
                   </p>
+                </div>
+              </motion.div>
+
+              {/* Profile Views Card */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.35 }}
+                className="bg-white rounded-3xl p-5 relative overflow-hidden"
+                style={{ boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Profile Views</p>
+                  <div className="w-7 h-7 bg-teal-50 rounded-xl flex items-center justify-center">
+                    <Users size={13} className="text-[#0eb59a]" />
+                  </div>
+                </div>
+                <div className="flex items-end gap-2 mb-1">
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 300, delay: 0.4 }}
+                    className="text-3xl font-black text-[#134e40]"
+                  >
+                    {profileViews + 42}
+                  </motion.span>
+                  <span className="text-xs text-gray-400 font-semibold mb-1">this week</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-lg">
+                    <TrendingUp size={10} className="text-emerald-500" />
+                    <span className="text-[10px] font-black text-emerald-600">↑ 12 from last week</span>
+                  </div>
                 </div>
               </motion.div>
 

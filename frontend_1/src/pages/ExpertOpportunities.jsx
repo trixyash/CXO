@@ -65,8 +65,12 @@ const HoverPanel = ({ opp, panelSide }) => (
   >
     {/* Header */}
     <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100 text-left">
-      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${opp.logoColor} flex items-center justify-center shadow-sm shrink-0`}>
-        <span className="text-white font-black text-sm">{opp.logo}</span>
+      <div className={`w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-br ${opp.logoColor} flex items-center justify-center shadow-sm shrink-0`}>
+        {opp.logoUrl ? (
+          <img src={opp.logoUrl} alt={opp.company} className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-white font-black text-sm">{opp.logo}</span>
+        )}
       </div>
       <div className="min-w-0 flex-grow text-left">
         <p className="text-sm font-black text-[#1C3627] leading-tight truncate">
@@ -139,11 +143,154 @@ const HoverPanel = ({ opp, panelSide }) => (
   </motion.div>
 );
 
+const MOCK_OPPORTUNITIES = [
+  {
+    id: 1,
+    title: 'Fractional CFO',
+    company: 'HealthTech Startup',
+    companySize: 'Series A · 50-200 employees',
+    industry: 'Healthcare',
+    type: 'Fractional',
+    match: 96,
+    budget: '₹2L - ₹3L/mo',
+    budgetNum: 250000,
+    commitment: '20 hrs/wk',
+    duration: '6 months',
+    location: 'Remote',
+    postedDate: '2 days ago',
+    urgency: 'Immediate',
+    skills: ['Financial Modeling', 'Fundraising', 'M&A', 'Investor Relations'],
+    description: 'We are a Series A HealthTech company looking for an experienced CFO to lead our Series B fundraising and build our financial infrastructure. The ideal candidate has prior experience raising $10M+ rounds.',
+    logo: 'HT',
+    logoColor: 'from-teal-700 to-teal-500',
+    status: 'new',
+    applicants: 4,
+    verified: true,
+  },
+  {
+    id: 2,
+    title: 'Interim CFO',
+    company: 'D2C Brand',
+    companySize: 'Series B · 200-500 employees',
+    industry: 'E-commerce',
+    type: 'Interim',
+    match: 91,
+    budget: '₹2.5L - ₹4L/mo',
+    budgetNum: 350000,
+    commitment: '40 hrs/wk',
+    duration: '3 months',
+    location: 'Hybrid | Mumbai',
+    postedDate: '1 week ago',
+    urgency: 'Immediate',
+    skills: ['P&L Management', 'Investor Relations', 'IPO Readiness', 'Treasury'],
+    description: 'Fast-growing D2C brand looking for an Interim CFO to support our IPO preparation process. You will work closely with the founding team and investment bankers.',
+    logo: 'DC',
+    logoColor: 'from-[#134e40] to-[#0eb59a]',
+    status: 'featured',
+    applicants: 7,
+    verified: true,
+  },
+  {
+    id: 3,
+    title: 'Advisory Board — Finance',
+    company: 'Logistics Startup',
+    companySize: 'Seed · 10-50 employees',
+    industry: 'Logistics',
+    type: 'Advisory',
+    match: 88,
+    budget: '₹60K - ₹1L/mo',
+    budgetNum: 80000,
+    commitment: '8 hrs/wk',
+    duration: '12 months',
+    location: 'Remote',
+    postedDate: '3 days ago',
+    urgency: 'Planned',
+    skills: ['Supply Chain Finance', 'Working Capital', 'Unit Economics'],
+    description: 'Early-stage logistics startup seeking an experienced finance advisor to help us build our financial model and prepare for our Seed round.',
+    logo: 'LS',
+    logoColor: 'from-[#0eb59a] to-emerald-400',
+    status: 'new',
+    applicants: 2,
+    verified: false,
+  },
+  {
+    id: 4,
+    title: 'Fractional VP Finance',
+    company: 'SaaS Platform',
+    companySize: 'Series B · 100-300 employees',
+    industry: 'SaaS',
+    type: 'Fractional',
+    match: 84,
+    budget: '₹1.5L - ₹2.5L/mo',
+    budgetNum: 200000,
+    commitment: '15 hrs/wk',
+    duration: '9 months',
+    location: 'Remote',
+    postedDate: '5 days ago',
+    urgency: 'Planned',
+    skills: ['SaaS Metrics', 'Board Reporting', 'Revenue Forecasting', 'FP&A'],
+    description: 'B2B SaaS company looking for a Fractional VP Finance to own our financial planning, board reporting, and revenue operations.',
+    logo: 'SP',
+    logoColor: 'from-emerald-700 to-teal-500',
+    status: 'normal',
+    applicants: 9,
+    verified: true,
+  },
+  {
+    id: 5,
+    title: 'Interim Group CFO',
+    company: 'Manufacturing Conglomerate',
+    companySize: 'Listed · 1000+ employees',
+    industry: 'Manufacturing',
+    type: 'Interim',
+    match: 79,
+    budget: '₹5L - ₹8L/mo',
+    budgetNum: 650000,
+    commitment: '40 hrs/wk',
+    duration: '6 months',
+    location: 'In Office | Pune',
+    postedDate: '2 weeks ago',
+    urgency: 'Immediate',
+    skills: ['Group Finance', 'IFRS', 'M&A Integration', 'Capital Markets'],
+    description: 'Listed manufacturing group seeking a seasoned Group CFO for a 6-month interim engagement to manage a major acquisition integration.',
+    logo: 'MC',
+    logoColor: 'from-[#134e40] to-slate-600',
+    status: 'normal',
+    applicants: 12,
+    verified: true,
+  },
+  {
+    id: 6,
+    title: 'Finance Advisory — Pre-IPO',
+    company: 'EdTech Unicorn',
+    companySize: 'Series D · 500-1000 employees',
+    industry: 'EdTech',
+    type: 'Advisory',
+    match: 75,
+    budget: '₹1L - ₹1.8L/mo',
+    budgetNum: 140000,
+    commitment: '10 hrs/wk',
+    duration: '18 months',
+    location: 'Remote',
+    postedDate: '1 week ago',
+    urgency: 'Planned',
+    skills: ['IPO Preparation', 'Investor Relations', 'Regulatory Compliance', 'ESOP'],
+    description: 'India\'s leading EdTech platform preparing for IPO in 2026. Looking for a seasoned financial advisor with prior public market experience.',
+    logo: 'EU',
+    logoColor: 'from-teal-800 to-[#134e40]',
+    status: 'featured',
+    applicants: 15,
+    verified: true,
+  },
+];
+
 const ExpertOpportunities = () => {
   const navigate = useNavigate();
   const { opportunityId } = useParams();
 
   // ── STATE ──
+  const [opportunities, setOpportunities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('grid');
   const [activeFilter, setActiveFilter] = useState('All');
@@ -172,6 +319,8 @@ const ExpertOpportunities = () => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [gridOpen, setGridOpen] = useState(false);
   const gridRef = useRef(null);
+  const [profile, setProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   // Floating hover preview panel state
   const [hoveredCardId, setHoveredCardId] = useState(null);
@@ -188,147 +337,6 @@ const ExpertOpportunities = () => {
 
   // ── DATA ──
   const statusFilters = ['All', 'Best Match', 'New', 'Saved', 'Applied'];
-
-  const opportunities = [
-    {
-      id: 1,
-      title: 'Fractional CFO',
-      company: 'HealthTech Startup',
-      companySize: 'Series A · 50-200 employees',
-      industry: 'Healthcare',
-      type: 'Fractional',
-      match: 96,
-      budget: '₹2L - ₹3L/mo',
-      budgetNum: 250000,
-      commitment: '20 hrs/wk',
-      duration: '6 months',
-      location: 'Remote',
-      postedDate: '2 days ago',
-      urgency: 'Immediate',
-      skills: ['Financial Modeling', 'Fundraising', 'M&A', 'Investor Relations'],
-      description: 'We are a Series A HealthTech company looking for an experienced CFO to lead our Series B fundraising and build our financial infrastructure. The ideal candidate has prior experience raising $10M+ rounds.',
-      logo: 'HT',
-      logoColor: 'from-teal-700 to-teal-500',
-      status: 'new',
-      applicants: 4,
-      verified: true,
-    },
-    {
-      id: 2,
-      title: 'Interim CFO',
-      company: 'D2C Brand',
-      companySize: 'Series B · 200-500 employees',
-      industry: 'E-commerce',
-      type: 'Interim',
-      match: 91,
-      budget: '₹2.5L - ₹4L/mo',
-      budgetNum: 350000,
-      commitment: '40 hrs/wk',
-      duration: '3 months',
-      location: 'Hybrid | Mumbai',
-      postedDate: '1 week ago',
-      urgency: 'Immediate',
-      skills: ['P&L Management', 'Investor Relations', 'IPO Readiness', 'Treasury'],
-      description: 'Fast-growing D2C brand looking for an Interim CFO to support our IPO preparation process. You will work closely with the founding team and investment bankers.',
-      logo: 'DC',
-      logoColor: 'from-[#134e40] to-[#0eb59a]',
-      status: 'featured',
-      applicants: 7,
-      verified: true,
-    },
-    {
-      id: 3,
-      title: 'Advisory Board — Finance',
-      company: 'Logistics Startup',
-      companySize: 'Seed · 10-50 employees',
-      industry: 'Logistics',
-      type: 'Advisory',
-      match: 88,
-      budget: '₹60K - ₹1L/mo',
-      budgetNum: 80000,
-      commitment: '8 hrs/wk',
-      duration: '12 months',
-      location: 'Remote',
-      postedDate: '3 days ago',
-      urgency: 'Planned',
-      skills: ['Supply Chain Finance', 'Working Capital', 'Unit Economics'],
-      description: 'Early-stage logistics startup seeking an experienced finance advisor to help us build our financial model and prepare for our Seed round.',
-      logo: 'LS',
-      logoColor: 'from-[#0eb59a] to-emerald-400',
-      status: 'new',
-      applicants: 2,
-      verified: false,
-    },
-    {
-      id: 4,
-      title: 'Fractional VP Finance',
-      company: 'SaaS Platform',
-      companySize: 'Series B · 100-300 employees',
-      industry: 'SaaS',
-      type: 'Fractional',
-      match: 84,
-      budget: '₹1.5L - ₹2.5L/mo',
-      budgetNum: 200000,
-      commitment: '15 hrs/wk',
-      duration: '9 months',
-      location: 'Remote',
-      postedDate: '5 days ago',
-      urgency: 'Planned',
-      skills: ['SaaS Metrics', 'Board Reporting', 'Revenue Forecasting', 'FP&A'],
-      description: 'B2B SaaS company looking for a Fractional VP Finance to own our financial planning, board reporting, and revenue operations.',
-      logo: 'SP',
-      logoColor: 'from-emerald-700 to-teal-500',
-      status: 'normal',
-      applicants: 9,
-      verified: true,
-    },
-    {
-      id: 5,
-      title: 'Interim Group CFO',
-      company: 'Manufacturing Conglomerate',
-      companySize: 'Listed · 1000+ employees',
-      industry: 'Manufacturing',
-      type: 'Interim',
-      match: 79,
-      budget: '₹5L - ₹8L/mo',
-      budgetNum: 650000,
-      commitment: '40 hrs/wk',
-      duration: '6 months',
-      location: 'In Office | Pune',
-      postedDate: '2 weeks ago',
-      urgency: 'Immediate',
-      skills: ['Group Finance', 'IFRS', 'M&A Integration', 'Capital Markets'],
-      description: 'Listed manufacturing group seeking a seasoned Group CFO for a 6-month interim engagement to manage a major acquisition integration.',
-      logo: 'MC',
-      logoColor: 'from-[#134e40] to-slate-600',
-      status: 'normal',
-      applicants: 12,
-      verified: true,
-    },
-    {
-      id: 6,
-      title: 'Finance Advisory — Pre-IPO',
-      company: 'EdTech Unicorn',
-      companySize: 'Series D · 500-1000 employees',
-      industry: 'EdTech',
-      type: 'Advisory',
-      match: 75,
-      budget: '₹1L - ₹1.8L/mo',
-      budgetNum: 140000,
-      commitment: '10 hrs/wk',
-      duration: '18 months',
-      location: 'Remote',
-      postedDate: '1 week ago',
-      urgency: 'Planned',
-      skills: ['IPO Preparation', 'Investor Relations', 'Regulatory Compliance', 'ESOP'],
-      description: 'India\'s leading EdTech platform preparing for IPO in 2026. Looking for a seasoned financial advisor with prior public market experience.',
-      logo: 'EU',
-      logoColor: 'from-teal-800 to-[#134e40]',
-      status: 'featured',
-      applicants: 15,
-      verified: true,
-    },
-  ];
 
   const filterSections = [
     {
@@ -391,15 +399,75 @@ const ExpertOpportunities = () => {
   ];
 
   // ── EFFECTS ──
-  // Auth check
+  // Auth check and profile/opportunities fetch
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuthAndFetch = async () => {
+      const isDemo = localStorage.getItem('demo_expert') === 'true' || localStorage.getItem('sb-mock-auth') === 'true';
+      if (isDemo) {
+        setProfile({ full_name: 'David Chen' });
+        setOpportunities(MOCK_OPPORTUNITIES);
+        setLoadingProfile(false);
+        setIsLoading(false);
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) navigate('/signin?role=expert');
+      if (!session) {
+        navigate('/signin?role=expert');
+        return;
+      }
+
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+      // Fetch profile
+      try {
+        const response = await fetch(`${baseUrl}/api/expert/profile`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setProfile(data);
+        } else {
+          console.warn("No expert profile found, using defaults");
+        }
+      } catch (err) {
+        console.error("Error fetching expert profile:", err);
+      } finally {
+        setLoadingProfile(false);
+      }
+
+      // Fetch opportunities
+      try {
+        const response = await fetch(`${baseUrl}/api/expert/opportunities`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setOpportunities(data);
+        } else {
+          console.error("Failed to fetch opportunities from backend");
+        }
+      } catch (err) {
+        console.error("Error fetching opportunities:", err);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    checkAuth();
+
+    checkAuthAndFetch();
+
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_, session) => { if (!session) navigate('/signin?role=expert'); }
+      (_, session) => {
+        if (!session && localStorage.getItem('demo_expert') !== 'true') {
+          navigate('/signin?role=expert');
+        }
+      }
     );
     return () => listener?.subscription?.unsubscribe();
   }, [navigate]);
@@ -600,15 +668,13 @@ const ExpertOpportunities = () => {
             <div className="cursor-pointer" onClick={() => window.location.reload()}><Logo variant="dark" className="h-8" /></div>
           </motion.div>
           <motion.button
+            animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}
             whileHover={{ scale: 1.1, backgroundColor: '#f0fdf4' }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsSidebarOpen(s => !s)}
-            className={`w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-[#134e40] hover:bg-[#f0fdf4] transition-all cursor-pointer shrink-0 border border-gray-200 hover:border-[#0eb59a] ${isSidebarOpen ? 'ml-auto' : 'ml-2'}`}
+            className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-[#134e40] hover:bg-[#f0fdf4] transition-all cursor-pointer shrink-0 border border-gray-200 hover:border-[#0eb59a]"
           >
-            {isSidebarOpen
-              ? <ChevronLeft size={16} className="text-[#134e40]" />
-              : <Menu size={18} className="text-[#134e40]" strokeWidth={2.5} />
-            }
+            {isSidebarOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
           </motion.button>
         </div>
 
@@ -929,11 +995,15 @@ const ExpertOpportunities = () => {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/expert-settings')}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white font-black text-xs cursor-pointer shadow-md"
+                onClick={() => navigate('/expert-profile')}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white font-black text-xs cursor-pointer shadow-md overflow-hidden"
                 style={{ background: 'linear-gradient(135deg, #134e40, #0eb59a)' }}
               >
-                EX
+                {profile?.profile_url ? (
+                  <img src={profile.profile_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  profile?.full_name ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'EX'
+                )}
               </motion.div>
               <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white" />
             </div>
@@ -1252,7 +1322,18 @@ const ExpertOpportunities = () => {
 
               {/* Opportunities List/Grid */}
               <AnimatePresence mode="wait">
-                {filteredOpportunities.length === 0 ? (
+                {isLoading ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex flex-col items-center justify-center p-24 w-full bg-white rounded-3xl border border-gray-100 shadow-sm"
+                  >
+                    <div className="w-12 h-12 border-4 border-[#0eb59a] border-t-transparent rounded-full animate-spin mb-4" />
+                    <p className="text-gray-500 font-bold text-sm">Loading matched opportunities...</p>
+                  </motion.div>
+                ) : filteredOpportunities.length === 0 ? (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -1341,8 +1422,12 @@ const ExpertOpportunities = () => {
 
                               {/* Company + title */}
                               <div className="flex items-start gap-3">
-                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${opp.logoColor} flex items-center justify-center shadow-md shrink-0 group-hover:rotate-3 transition-transform duration-300`}>
-                                  <span className="text-white font-black text-sm">{opp.logo}</span>
+                                <div className={`w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br ${opp.logoColor} flex items-center justify-center shadow-md shrink-0 group-hover:rotate-3 transition-transform duration-300`}>
+                                  {opp.logoUrl ? (
+                                    <img src={opp.logoUrl} alt={opp.company} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <span className="text-white font-black text-sm">{opp.logo}</span>
+                                  )}
                                 </div>
                                 <div className="min-w-0 flex-grow text-left">
                                   <h3 className="font-black text-[#1C3627] text-base leading-tight">
@@ -1519,8 +1604,12 @@ const ExpertOpportunities = () => {
                       >
                         <FormalCardBorder />
                         {/* Logo */}
-                        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${opp.logoColor} flex items-center justify-center shadow-md shrink-0 group-hover:rotate-2 transition-transform duration-300`}>
-                          <span className="text-white font-black text-base">{opp.logo}</span>
+                        <div className={`w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br ${opp.logoColor} flex items-center justify-center shadow-md shrink-0 group-hover:rotate-2 transition-transform duration-300`}>
+                          {opp.logoUrl ? (
+                            <img src={opp.logoUrl} alt={opp.company} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-white font-black text-base">{opp.logo}</span>
+                          )}
                         </div>
 
                         {/* Content */}
@@ -1678,8 +1767,12 @@ const ExpertOpportunities = () => {
                   >
                     {/* Opportunity mini card */}
                     <div className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-r from-teal-50 to-white border border-teal-100 mb-6">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${showApplyModal.logoColor} flex items-center justify-center shadow-sm shrink-0`}>
-                        <span className="text-white font-black text-sm">{showApplyModal.logo}</span>
+                      <div className={`w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br ${showApplyModal.logoColor} flex items-center justify-center shadow-sm shrink-0`}>
+                        {showApplyModal.logoUrl ? (
+                          <img src={showApplyModal.logoUrl} alt={showApplyModal.company} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-white font-black text-sm">{showApplyModal.logo}</span>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-black text-gray-900 text-sm leading-tight">{showApplyModal.title}</h4>

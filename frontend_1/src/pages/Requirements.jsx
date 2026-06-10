@@ -118,6 +118,7 @@ const Requirements = () => {
         const { data, error } = await supabase
           .from('company_requirements')
           .select('*')
+          .eq('company_email', session.user.email)
           .order('created_at', { ascending: false });
         
         if (!error && data) {
@@ -187,13 +188,18 @@ const Requirements = () => {
     }
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('company_requirements')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select();
 
       if (error) {
         console.error("Error deleting requirement:", error);
+        alert(`Failed to delete requirement: ${error.message}`);
+      } else if (!data || data.length === 0) {
+        console.warn("Delete completed but no rows were affected. This is likely due to a Row-Level Security (RLS) policy violation.");
+        alert("Failed to delete requirement: You do not have permission to delete this record (RLS policy violation).");
       } else {
         setRequirements(prev => prev.filter(req => req.id !== id));
         if (selectedRequirement?.id === id) {
@@ -202,6 +208,7 @@ const Requirements = () => {
       }
     } catch (err) {
       console.error("Error executing delete:", err);
+      alert("An unexpected error occurred while deleting the requirement.");
     } finally {
       setShowDeleteModal(null);
     }
@@ -353,7 +360,7 @@ const Requirements = () => {
         className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed left-0 top-0 h-screen"
       >
         {/* Brand */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50 justify-between">
           <motion.div
             animate={{ width: isSidebarOpen ? 'auto' : 0, opacity: isSidebarOpen ? 1 : 0 }}
             transition={{ duration: 0.2 }}
@@ -362,7 +369,7 @@ const Requirements = () => {
             <div className="cursor-pointer" onClick={() => window.location.reload()}><Logo variant="dark" className="h-8" /></div>
           </motion.div>
           <motion.button
-            animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}
+            animate={{ marginLeft: isSidebarOpen ? 'auto' : 'auto' }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -430,10 +437,7 @@ const Requirements = () => {
             )}
             <Settings size={17} className="shrink-0" />
             <motion.span
-              animate={{ 
-                opacity: isSidebarOpen ? 1 : 0, 
-                width: isSidebarOpen ? 'auto' : 0 
-              }}
+              animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
               transition={{ duration: 0.2 }}
               className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
             >
@@ -441,36 +445,29 @@ const Requirements = () => {
             </motion.span>
           </motion.button>
 
-          {window.location.pathname === '/settings' && (
-            <motion.button
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ x: 2, transition: { duration: 0.15 } }}
-              whileTap={{ scale: 0.97 }}
-              onClick={async () => {
-                const isDemo = localStorage.getItem('demo_company') === 'true';
-                if (isDemo) {
-                  localStorage.removeItem('demo_company');
-                } else {
-                  await supabase.auth.signOut();
-                }
-                navigate('/signin?role=company');
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150 relative font-bold text-left"
+          <motion.button
+            whileHover={{ x: 2, transition: { duration: 0.15 } }}
+            whileTap={{ scale: 0.97 }}
+            onClick={async () => {
+              const isDemo = localStorage.getItem('demo_company') === 'true';
+              if (isDemo) {
+                localStorage.removeItem('demo_company');
+              } else {
+                await supabase.auth.signOut();
+              }
+              navigate('/signin?role=company');
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150 font-bold"
+          >
+            <LogOut size={17} className="shrink-0" />
+            <motion.span
+              animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
             >
-              <LogOut size={17} className="shrink-0" />
-              <motion.span
-                animate={{ 
-                  opacity: isSidebarOpen ? 1 : 0, 
-                  width: isSidebarOpen ? 'auto' : 0 
-                }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
-              >
-                Sign Out
-              </motion.span>
-            </motion.button>
-          )}
+              Sign Out
+            </motion.span>
+          </motion.button>
         </div>
       </motion.aside>
 

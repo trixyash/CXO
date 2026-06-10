@@ -213,6 +213,7 @@ const JoinCompany = () => {
 					admin_name: data.adminName, admin_email: data.adminEmail,
 					gstin: data.gstin, cin_number: data.cinNumber,
 					contact_number: data.contactNumber, company_age: data.companyAge,
+					founded_year: data.foundedYear,
 					linkedin: data.linkedin, additional_links: additionalLinks
 				}]);
 				dbError = response.error;
@@ -469,16 +470,29 @@ const JoinCompany = () => {
 										</div>
 									</div>
 
-									<div className="flex flex-col gap-1">
-										<label className={labelClass}>Company Age *</label>
-										<select className={inputClass} {...register("companyAge", { required: "Company Age is required" })}>
-											<option value="">Select Age...</option>
-											<option value="Just Started (0-1 year)">Just Started (0–1 year)</option>
-											<option value="1-3 Years">1–3 Years</option>
-											<option value="3-7 Years">3–7 Years</option>
-											<option value="7+ Years">7+ Years</option>
-										</select>
-										{errors.companyAge && <span className="text-red-500 text-xs">{errors.companyAge.message}</span>}
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+										<div className="flex flex-col gap-1">
+											<label className={labelClass}>Company Age *</label>
+											<select className={inputClass} {...register("companyAge", { required: "Company Age is required" })}>
+												<option value="">Select Age...</option>
+												<option value="Just Started (0-1 year)">Just Started (0–1 year)</option>
+												<option value="1-3 Years">1–3 Years</option>
+												<option value="3-7 Years">3–7 Years</option>
+												<option value="7+ Years">7+ Years</option>
+											</select>
+											{errors.companyAge && <span className="text-red-500 text-xs">{errors.companyAge.message}</span>}
+										</div>
+
+										<div className="flex flex-col gap-1">
+											<label className={labelClass}>Founded Year *</label>
+											<input type="text" className={inputClass} placeholder="e.g. 2020"
+												{...register("foundedYear", { 
+													required: "Founded Year is required",
+													pattern: { value: /^(19|20)\d{2}$/, message: "Enter a valid 4-digit year" }
+												})}
+											/>
+											{errors.foundedYear && <span className="text-red-500 text-xs">{errors.foundedYear.message}</span>}
+										</div>
 									</div>
 								</>
 							)}

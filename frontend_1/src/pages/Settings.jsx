@@ -61,6 +61,7 @@ const Settings = () => {
     description: 'Acme Corp is a B2B SaaS company building the next generation of enterprise workflow automation tools.',
     headquarters: 'Mumbai, Maharashtra',
     founded: '2020',
+    companyAge: '1-3 Years',
     gst: '27AAACA0000A1ZS',
     adminEmail: 'admin@acmecorp.com',
     adminPhone: '+91 98765 43210',
@@ -93,7 +94,7 @@ const Settings = () => {
       }
       
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/profile`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/profile`, {
           headers: {
             'Authorization': `Bearer ${session.access_token}`
           }
@@ -109,16 +110,23 @@ const Settings = () => {
             website: data.website || prev.website,
             linkedIn: data.linkedin || prev.linkedIn,
             description: data.about || prev.description,
-            founded: data.company_age || prev.founded, // using company_age for founded or similar
+            founded: data.founded_year || prev.founded,
+            companyAge: data.company_age || prev.companyAge,
             gst: data.gstin || prev.gst,
             adminEmail: data.admin_email || prev.adminEmail,
             adminPhone: data.contact_number || prev.adminPhone,
             logoUrl: data.logo_url || prev.logoUrl,
           }));
+        } else {
+          console.warn("Failed to fetch company profile from backend. Using dummy profile data.");
         }
+      } catch (error) {
+        console.warn("Could not connect to backend to fetch company profile. Using dummy profile data.");
+      }
 
+      try {
         // Fetch team members
-        const teamResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/team`, {
+        const teamResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/company/team`, {
           headers: {
             'Authorization': `Bearer ${session.access_token}`
           }
@@ -127,9 +135,19 @@ const Settings = () => {
         if (teamResponse.ok) {
           const teamData = await teamResponse.json();
           setTeamMembers(teamData);
+        } else {
+          console.warn("Failed to fetch team members from backend. Using dummy team data.");
+          setTeamMembers([
+            { id: 1, name: 'John Doe', email: 'john@acmecorp.com', role: 'Founder', avatar: 'https://i.pravatar.cc/150?u=john', status: 'Active', lastActive: '2 mins ago', isOwner: true },
+            { id: 2, name: 'Jane Smith', email: 'jane@acmecorp.com', role: 'HR', avatar: 'https://i.pravatar.cc/150?u=jane', status: 'Active', lastActive: '1 day ago', isOwner: false }
+          ]);
         }
       } catch (error) {
-        console.error("Error fetching company profile/team:", error);
+        console.warn("Could not connect to backend to fetch team members. Using dummy team data.");
+        setTeamMembers([
+          { id: 1, name: 'John Doe', email: 'john@acmecorp.com', role: 'Founder', avatar: 'https://i.pravatar.cc/150?u=john', status: 'Active', lastActive: '2 mins ago', isOwner: true },
+          { id: 2, name: 'Jane Smith', email: 'jane@acmecorp.com', role: 'HR', avatar: 'https://i.pravatar.cc/150?u=jane', status: 'Active', lastActive: '1 day ago', isOwner: false }
+        ]);
       } finally {
         setLoadingProfile(false);
       }
@@ -240,6 +258,13 @@ const Settings = () => {
   ];
 
   const roleOptions = ['Founder', 'HR', 'Finance', 'Strategy', 'Operations'];
+
+  const companyAgeOptions = [
+    'Just Started (0-1 year)',
+    '1-3 Years',
+    '3-7 Years',
+    '7+ Years'
+  ];
 
   const roleColors = {
     Founder: 'text-purple-700 bg-purple-50 border-purple-200',
@@ -355,7 +380,8 @@ const Settings = () => {
         website: profile.website,
         linkedin: profile.linkedIn,
         about: profile.description,
-        company_age: profile.founded,
+        company_age: profile.companyAge,
+        founded_year: profile.founded,
         gstin: profile.gst,
         contact_number: profile.adminPhone,
       };
@@ -417,7 +443,7 @@ const Settings = () => {
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed left-0 top-0 h-screen"
     >
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50 justify-between">
           <motion.div
             animate={{ width: isSidebarOpen ? 'auto' : 0, opacity: isSidebarOpen ? 1 : 0 }}
             transition={{ duration: 0.2 }}
@@ -426,7 +452,7 @@ const Settings = () => {
             <div className="cursor-pointer" onClick={() => window.location.reload()}><Logo variant="dark" className="h-8" /></div>
           </motion.div>
         <motion.button
-          animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}
+          animate={{ marginLeft: isSidebarOpen ? 'auto' : 'auto' }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -544,13 +570,9 @@ const Settings = () => {
       }}
     >
 
-      {/* ── TOP HEADER ── */}
       <header className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm px-6 py-3 flex items-center gap-4">
-        <div className="flex items-center gap-1.5 text-xs text-gray-400 flex-1">
-          <button onClick={() => navigate('/company-dashboard')} className="hover:text-[#134e40] font-semibold transition-colors">Dashboard</button>
-          <ChevronRight size={12} className="text-gray-300" />
-          <span className="text-[#134e40] font-bold">Settings</span>
-        </div>
+        <div className="flex-1" />
+
 
         {/* Save success toast */}
         <AnimatePresence>
@@ -808,11 +830,12 @@ const Settings = () => {
                     <h3 className="font-black text-[#1C3627] text-sm flex items-center gap-2 mb-4 text-left">
                       <Zap size={14} className="text-[#0eb59a]" /> Company Details
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                       {[
                         { label: 'Industry', key: 'industry', options: industryOptions },
                         { label: 'Company Size', key: 'size', options: sizeOptions },
                         { label: 'Funding Stage', key: 'fundingStage', options: fundingOptions },
+                        { label: 'Company Age', key: 'companyAge', options: companyAgeOptions },
                       ].map((field) => (
                         <div key={field.key}>
                           <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 text-left">

@@ -1,0 +1,124 @@
+[
+  {
+    "id": "m-1",
+    "engagement_id": "1",
+    "title": "Discovery & Assessment",
+    "desc": "Initial business assessment, stakeholder interviews, and financial health review",
+    "amount": 150000,
+    "status": "completed",
+    "paymentStatus": "released",
+    "due_date": "Feb 28, 2025",
+    "completed_date": "Feb 25, 2025",
+    "deliverables": [
+      {
+        "name": "Business Assessment Report.pdf",
+        "size": "2.4 MB",
+        "type": "pdf"
+      },
+      {
+        "name": "Financial Health Summary.xlsx",
+        "size": "1.1 MB",
+        "type": "excel"
+      }
+    ]
+  },
+  {
+    "id": "m-2",
+    "engagement_id": "1",
+    "title": "Financial Model Development",
+    "desc": "Build 3-year financial model, unit economics analysis, and fundraising materials",
+    "amount": 200000,
+    "status": "completed",
+    "paymentStatus": "released",
+    "due_date": "Mar 31, 2025",
+    "completed_date": "Mar 28, 2025",
+    "deliverables": [
+      {
+        "name": "Financial Model v2.xlsx",
+        "size": "3.8 MB",
+        "type": "excel"
+      },
+      {
+        "name": "Unit Economics Analysis.pdf",
+        "size": "1.6 MB",
+        "type": "pdf"
+      },
+      {
+        "name": "Fundraising Narrative.pptx",
+        "size": "5.2 MB",
+        "type": "ppt"
+      }
+    ]
+  },
+  {
+    "id": "m-3",
+    "engagement_id": "1",
+    "title": "Investor Deck & Data Room",
+    "desc": "Create investor presentation, prepare data room, and investor outreach list",
+    "amount": 250000,
+    "status": "completed",
+    "paymentStatus": "released",
+    "due_date": "Apr 30, 2025",
+    "completed_date": "Jun 8, 2026",
+    "deliverables": [
+      {
+        "name": "Investor Deck Final.pptx",
+        "size": "8.4 MB",
+        "type": "ppt"
+      },
+      {
+        "name": "Data Room Index.pdf",
+        "size": "0.8 MB",
+        "type": "pdf"
+      }
+    ]
+  },
+  {
+    "id": "m-4",
+    "engagement_id": "1",
+    "title": "Investor Outreach & Roadshow",
+    "desc": "Lead investor outreach, manage roadshow schedule, and prepare management for meetings",
+    "amount": 300000,
+    "status": "completed",
+    "paymentStatus": "released",
+    "due_date": "May 31, 2025",
+    "completed_date": "Jun 8, 2026",
+    "deliverables": []
+  },
+  {
+    "id": "m-5",
+    "engagement_id": "1",
+    "title": "Term Sheet & Due Diligence Support",
+    "desc": "Negotiate term sheets, support legal due diligence, and close the round",
+    "amount": 250000,
+    "status": "completed",
+    "paymentStatus": "released",
+    "due_date": "Jul 31, 2025",
+    "completed_date": "Jun 8, 2026",
+    "deliverables": []
+  },
+  {
+    "id": "m-6",
+    "engagement_id": "2",
+    "title": "Campaign Strategy",
+    "desc": "Create standard campaign roadmap",
+    "amount": 150000,
+    "status": "completed",
+    "paymentStatus": "released",
+    "due_date": "Apr 01, 2025",
+    "completed_date": "Apr 01, 2025",
+    "deliverables": []
+  },
+  {
+    "id": "m-7",
+    "engagement_id": "2",
+    "title": "Campaign Launch",
+    "desc": "Launch channels and track acquisitions",
+    "amount": 350000,
+    "status": "completed",
+    "paymentStatus": "released",
+    "due_date": "May 15, 2025",
+    "completed_date": "Jun 8, 2026",
+    "deliverables": []
+  }
+]

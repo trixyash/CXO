@@ -53,6 +53,13 @@ const createSupabaseClient = () => {
       order: () => chainableMock,
       then: (resolve) => resolve({ data: null, error: null })
     };
+    const mockChannel = {
+      on: () => mockChannel,
+      subscribe: (callback) => {
+        if (callback) callback("SUBSCRIBED");
+        return mockChannel;
+      },
+    };
     return {
       from: () => chainableMock,
       storage: {
@@ -62,6 +69,8 @@ const createSupabaseClient = () => {
         }),
       },
       auth: createMockAuth(),
+      channel: () => mockChannel,
+      removeChannel: () => {},
     };
   }
 };

@@ -86,6 +86,138 @@ const EngagementWorkspace = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [rating, setRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
+
+  // Dynamic Workspace State
+  const [engagement, setEngagement] = useState({
+    id: engagementId || '1',
+    title: 'Series B Funding Strategy',
+    status: 'IN PROGRESS',
+    statusColor: 'text-blue-600 bg-blue-50 border-blue-200',
+    expert: {
+      id: 2,
+      name: 'David Chen',
+      title: 'Interim CFO',
+      avatar: 'https://i.pravatar.cc/150?u=david',
+      rating: 5.0,
+      exRole: 'Ex-CFO at Meesho & OYO',
+    },
+    type: 'Interim',
+    startDate: '1 Feb 2025',
+    endDate: '31 Jul 2025',
+    duration: '6 months',
+    commitment: '40 hrs/wk',
+    budget: '₹3L/mo',
+    totalValue: '₹18L',
+    escrowBalance: '₹6L',
+    spent: '₹9L',
+    progress: 65,
+    nextMilestone: 'Financial Model Draft',
+    daysLeft: 87,
+    pmContact: 'Riya Sharma',
+    pmEmail: 'riya@cxoconnect.com',
+  });
+  const [milestones, setMilestones] = useState([]);
+  const [payments, setPayments] = useState([]);
+
+  const fetchEngagementData = async () => {
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    let token = "demo-token";
+    if (!isDemo) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      token = session.access_token;
+    }
+    const headers = { 'Authorization': `Bearer ${token}` };
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+    try {
+      const res = await fetch(`${baseUrl}/api/payments/engagement/${engagementId || '1'}`, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        setEngagement(data.engagement);
+        setMilestones(data.milestones);
+        setPayments(data.payments);
+      }
+    } catch (err) {
+      console.error("Error loading workspace data:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchEngagementData();
+  }, [companyProfile, engagementId]);
+
+  const handleApproveAndReleaseMilestone = async (milestone) => {
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    let token = "demo-token";
+    if (!isDemo) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      token = session.access_token;
+    }
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+    try {
+      const res = await fetch(`${baseUrl}/api/payments/escrow/release`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          engagementId: engagement.id,
+          milestoneId: milestone.id
+        })
+      });
+
+      if (res.ok) {
+        setShowApproveModal(null);
+        setRating(0);
+        fetchEngagementData();
+      } else {
+        const data = await res.json();
+        alert("Error releasing escrow: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handlePaymentRelease = async (payment) => {
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    let token = "demo-token";
+    if (!isDemo) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      token = session.access_token;
+    }
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+    try {
+      const res = await fetch(`${baseUrl}/api/payments/escrow/release`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          engagementId: engagement.id,
+          milestoneId: payment.dbMilestoneId
+        })
+      });
+
+      if (res.ok) {
+        setShowPaymentModal(null);
+        fetchEngagementData();
+      } else {
+        const data = await res.json();
+        alert("Error releasing escrow: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -158,102 +290,7 @@ const EngagementWorkspace = () => {
   ];
 
   // ── ENGAGEMENT DATA ──
-  const engagement = {
-    id: engagementId || '1',
-    title: 'Series B Funding Strategy',
-    status: 'IN PROGRESS',
-    statusColor: 'text-blue-600 bg-blue-50 border-blue-200',
-    expert: {
-      id: 2,
-      name: 'David Chen',
-      title: 'Interim CFO',
-      avatar: 'https://i.pravatar.cc/150?u=david',
-      rating: 5.0,
-      exRole: 'Ex-CFO at Meesho & OYO',
-    },
-    type: 'Interim',
-    startDate: '1 Feb 2025',
-    endDate: '31 Jul 2025',
-    duration: '6 months',
-    commitment: '40 hrs/wk',
-    budget: '₹3L/mo',
-    totalValue: '₹18L',
-    escrowBalance: '₹6L',
-    spent: '₹9L',
-    progress: 65,
-    nextMilestone: 'Financial Model Draft',
-    daysLeft: 87,
-    pmContact: 'Riya Sharma',
-    pmEmail: 'riya@cxoconnect.com',
-  };
-
-  const milestones = [
-    {
-      id: 1,
-      title: 'Discovery & Assessment',
-      desc: 'Initial business assessment, stakeholder interviews, and financial health review',
-      dueDate: 'Feb 28, 2025',
-      completedDate: 'Feb 25, 2025',
-      status: 'completed',
-      payment: '₹1.5L',
-      paymentStatus: 'released',
-      deliverables: [
-        { name: 'Business Assessment Report.pdf', size: '2.4 MB', type: 'pdf' },
-        { name: 'Financial Health Summary.xlsx', size: '1.1 MB', type: 'excel' },
-      ],
-    },
-    {
-      id: 2,
-      title: 'Financial Model Development',
-      desc: 'Build 3-year financial model, unit economics analysis, and fundraising materials',
-      dueDate: 'Mar 31, 2025',
-      completedDate: 'Mar 28, 2025',
-      status: 'completed',
-      payment: '₹2L',
-      paymentStatus: 'released',
-      deliverables: [
-        { name: 'Financial Model v2.xlsx', size: '3.8 MB', type: 'excel' },
-        { name: 'Unit Economics Analysis.pdf', size: '1.6 MB', type: 'pdf' },
-        { name: 'Fundraising Narrative.pptx', size: '5.2 MB', type: 'ppt' },
-      ],
-    },
-    {
-      id: 3,
-      title: 'Investor Deck & Data Room',
-      desc: 'Create investor presentation, prepare data room, and investor outreach list',
-      dueDate: 'Apr 30, 2025',
-      completedDate: null,
-      status: 'pending_approval',
-      payment: '₹2.5L',
-      paymentStatus: 'in_escrow',
-      deliverables: [
-        { name: 'Investor Deck Final.pptx', size: '8.4 MB', type: 'ppt' },
-        { name: 'Data Room Index.pdf', size: '0.8 MB', type: 'pdf' },
-      ],
-    },
-    {
-      id: 4,
-      title: 'Investor Outreach & Roadshow',
-      desc: 'Lead investor outreach, manage roadshow schedule, and prepare management for meetings',
-      dueDate: 'May 31, 2025',
-      completedDate: null,
-      status: 'in_progress',
-      payment: '₹3L',
-      paymentStatus: 'locked',
-      deliverables: [],
-    },
-    {
-      id: 5,
-      title: 'Term Sheet & Due Diligence Support',
-      desc: 'Negotiate term sheets, support legal due diligence, and close the round',
-      dueDate: 'Jul 31, 2025',
-      completedDate: null,
-      status: 'upcoming',
-      payment: '₹2.5L',
-      paymentStatus: 'locked',
-      deliverables: [],
-    },
-  ];
+  // Static engagement data, milestones, and payments have been converted to dynamic React state.
 
   const documents = [
     { id: 1, name: 'Engagement Agreement.pdf', size: '1.2 MB', type: 'pdf', uploadedBy: 'CXO Connect', date: 'Feb 1, 2025', category: 'Legal', signed: true },
@@ -262,14 +299,6 @@ const EngagementWorkspace = () => {
     { id: 4, name: 'Investor Deck Final.pptx', size: '8.4 MB', type: 'ppt', uploadedBy: 'David Chen', date: 'Apr 25, 2025', category: 'Deliverable', signed: false },
     { id: 5, name: 'Data Room Index.pdf', size: '0.8 MB', type: 'pdf', uploadedBy: 'David Chen', date: 'Apr 25, 2025', category: 'Deliverable', signed: false },
     { id: 6, name: 'Business Assessment Report.pdf', size: '2.4 MB', type: 'pdf', uploadedBy: 'David Chen', date: 'Feb 25, 2025', category: 'Deliverable', signed: false },
-  ];
-
-  const payments = [
-    { id: 1, milestone: 'Discovery & Assessment', amount: '₹1,50,000', date: 'Feb 25, 2025', status: 'released', txId: 'TXN-001-2025' },
-    { id: 2, milestone: 'Financial Model Development', amount: '₹2,00,000', date: 'Mar 28, 2025', status: 'released', txId: 'TXN-002-2025' },
-    { id: 3, milestone: 'Investor Deck & Data Room', amount: '₹2,50,000', date: '—', status: 'in_escrow', txId: 'TXN-003-2025' },
-    { id: 4, milestone: 'Investor Outreach & Roadshow', amount: '₹3,00,000', date: '—', status: 'locked', txId: '—' },
-    { id: 5, milestone: 'Term Sheet & Due Diligence', amount: '₹2,50,000', date: '—', status: 'locked', txId: '—' },
   ];
 
   // ── HELPERS ──
@@ -1522,7 +1551,7 @@ const EngagementWorkspace = () => {
                 <motion.button
                   whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(16,185,129,0.3)' }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => { setShowApproveModal(null); setRating(0); }}
+                  onClick={() => handleApproveAndReleaseMilestone(showApproveModal)}
                   className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-2xl shadow-md transition-all"
                 >
                   <Check size={15} className="inline mr-1.5" strokeWidth={3} />
@@ -1644,7 +1673,7 @@ const EngagementWorkspace = () => {
                 <motion.button
                   whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(16,185,129,0.3)' }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowPaymentModal(null)}
+                  onClick={() => handlePaymentRelease(showPaymentModal)}
                   className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-2xl shadow-md transition-all"
                 >
                   Confirm Release

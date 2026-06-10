@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
+import { ArrowLeft } from "lucide-react";
 import OTPBox from "../components/OTPBox";
 import { SignIn2 } from "@/components/ui/clean-minimal-sign-in";
 
@@ -17,6 +18,7 @@ const SignIn = () => {
 		if (isExpertMock || isCompanyDemo) {
 			localStorage.removeItem("sb-mock-auth");
 			localStorage.removeItem("demo_company");
+			localStorage.removeItem("demo_expert");
 			localStorage.removeItem("mock-role");
 			// Force a hard reload to re-initialize the Supabase client
 			window.location.reload();
@@ -74,62 +76,69 @@ const SignIn = () => {
 				let targetEmail = cleanEmail;
 				let backendVerified = false;
 
-				// Try to verify company email with the backend if available
+				// Try to verify company email using Supabase directly first (much faster, no backend cold starts or localhost timeout)
 				try {
-					const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
-					const res = await fetch(`${baseUrl}/api/auth/check-company-email`, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ email: cleanEmail })
-					});
+					const { data: sbData, error: sbError } = await supabase
+						.from("company_applications")
+						.select("admin_email")
+						.eq("admin_email", cleanEmail)
+						.limit(1)
+						.maybeSingle();
 
-					if (res.ok) {
-						const data = await res.json();
-						if (data && data.email) {
-							targetEmail = data.email.trim();
-							backendVerified = true;
-						}
+					if (sbError) {
+						throw sbError;
+					}
+
+					if (sbData && sbData.admin_email) {
+						targetEmail = sbData.admin_email.trim();
+						backendVerified = true;
 					} else {
-						// If backend explicitly says company not found (404), respect it
-						if (res.status === 404) {
-							throw new Error("Company not found");
-						}
-						console.warn(`Backend responded with status ${res.status}. Falling back.`);
+						// If query succeeded but returned no data, it means company not found
+						throw new Error("Company not found");
 					}
-				} catch (fetchErr) {
-					// If it was a "Company not found" error, propagate it
-					if (fetchErr.message === "Company not found") {
-						throw fetchErr;
+				} catch (sbErr) {
+					if (sbErr.message === "Company not found") {
+						throw sbErr;
 					}
 
-					console.warn("Backend fetch failed, trying direct Supabase check:", fetchErr);
+					console.warn("Direct Supabase query failed, falling back to backend check:", sbErr);
 
-					// Fallback to querying Supabase directly
+					// Fallback: try to verify company email with the backend if available
 					try {
-						const { data: sbData, error: sbError } = await supabase
-							.from("company_applications")
-							.select("admin_email")
-							.eq("admin_email", cleanEmail)
-							.limit(1)
-							.maybeSingle();
+						const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+						
+						// Set up a 2-second timeout to avoid long hangs on hosted site
+						const controller = new AbortController();
+						const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-						if (!sbError && sbData) {
-							if (sbData.admin_email) {
-								targetEmail = sbData.admin_email.trim();
+						const res = await fetch(`${baseUrl}/api/auth/check-company-email`, {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ email: cleanEmail }),
+							signal: controller.signal
+						});
+						clearTimeout(timeoutId);
+
+						if (res.ok) {
+							const data = await res.json();
+							if (data && data.email) {
+								targetEmail = data.email.trim();
 								backendVerified = true;
 							}
-						} else if (sbError) {
-							console.error("Supabase query error:", sbError);
 						} else {
-							// If query succeeded but returned no data, it means company not found
-							throw new Error("Company not found");
+							// If backend explicitly says company not found (404), respect it
+							if (res.status === 404) {
+								throw new Error("Company not found");
+							}
+							console.warn(`Backend responded with status ${res.status}.`);
 						}
-					} catch (sbErr) {
-						if (sbErr.message === "Company not found") {
-							throw sbErr;
+					} catch (fetchErr) {
+						// If it was a "Company not found" error, propagate it
+						if (fetchErr.message === "Company not found") {
+							throw fetchErr;
 						}
-						console.error("Supabase fallback query failed:", sbErr);
-						// If Supabase RLS blocked it or failed, we just proceed with cleanEmail to avoid blocking valid users
+						console.error("Backend check fallback failed:", fetchErr);
+						// Proceed with cleanEmail as a last resort to avoid blocking users
 					}
 				}
 
@@ -155,6 +164,7 @@ const SignIn = () => {
 				const cleanIdentifier = identifier.trim();
 				if (cleanIdentifier === "demo@cxo.com") {
 					localStorage.setItem("sb-mock-auth", "true");
+					localStorage.setItem("demo_expert", "true");
 					localStorage.setItem("mock-role", "expert");
 					localStorage.setItem('user_role', 'expert');
 					localStorage.removeItem('demo_company');
@@ -220,6 +230,15 @@ const SignIn = () => {
 
 	return (
 		<div className="relative min-h-screen bg-gray-50 flex items-center justify-center">
+			{/* Back Button */}
+			<button
+				onClick={() => navigate("/")}
+				className="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white hover:bg-teal-50 text-gray-600 hover:text-[#134e40] border border-gray-200 hover:border-teal-200 shadow-sm transition-all duration-300 hover:shadow-md group active:scale-95 min-h-[44px]"
+			>
+				<ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
+				<span className="text-xs font-bold tracking-wider uppercase">Back</span>
+			</button>
+
 			<SignIn2
 				email={identifier}
 				setEmail={setIdentifier}

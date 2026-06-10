@@ -66,7 +66,7 @@ const OTPBox = ({ email, role, onSuccess }) => {
       <h3 className="text-gray-900 text-xl font-bold mb-2">Enter OTP</h3>
       <p className="text-sm text-gray-500 mb-6">Enter the 6-digit code sent to your email</p>
 
-      <OTPInput otp={otp} setOtp={setOtp} />
+      <OTPInput otp={otp} setOtp={setOtp} onEnter={handleVerify} />
 
       <button
         onClick={handleVerify}

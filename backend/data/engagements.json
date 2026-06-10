@@ -1,0 +1,28 @@
+[
+  {
+    "id": "1",
+    "requirement_id": "req-1",
+    "company_email": "demo@cxo.com",
+    "company_name": "Acme Corp.",
+    "expert_id": "expert-1",
+    "expert_name": "David Chen",
+    "expert_avatar": "https://i.pravatar.cc/150?u=david",
+    "title": "Series B Funding Strategy",
+    "status": "Active",
+    "total_budget": 1800000,
+    "created_at": "2026-02-01T10:00:00.000Z"
+  },
+  {
+    "id": "2",
+    "requirement_id": "req-2",
+    "company_email": "demo@cxo.com",
+    "company_name": "Acme Corp.",
+    "expert_id": "expert-2",
+    "expert_name": "Sarah Jenkins",
+    "expert_avatar": "https://i.pravatar.cc/150?u=sarah",
+    "title": "Go-to-Market Expansion",
+    "status": "Active",
+    "total_budget": 900000,
+    "created_at": "2026-02-27T10:00:00.000Z"
+  }
+]

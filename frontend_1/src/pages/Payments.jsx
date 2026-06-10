@@ -87,11 +87,7 @@ const Payments = () => {
     { icon: Calendar, label: 'Scheduled Meetings', path: '/meetings' },
   ];
 
-  const notifications = [
-    { id: 1, title: 'Milestone Payment Pending', desc: 'Investor Deck & Data Room awaits payment release', time: '2 min ago', unread: true, color: 'bg-amber-500' },
-    { id: 2, title: 'Funds Added Successfully', desc: '₹9,00,000 added to Go-to-Market Expansion escrow', time: '2 days ago', unread: true, color: 'bg-emerald-500' },
-    { id: 3, title: 'Invoice Generated', desc: 'INV-2025-004 generated for Investor Deck milestone', time: '3 days ago', unread: false, color: 'bg-blue-500' },
-  ];
+  const [notifications, setNotifications] = useState([]);
   const unreadCount = notifications.filter(n => n.unread).length;
 
   // Add functional handlers:
@@ -131,216 +127,70 @@ const Payments = () => {
     URL.revokeObjectURL(url);
   };
 
-  const tabs = ['Overview', 'Transactions', 'Invoices', 'Escrow'];
+  const tabs = ['Overview', 'Transactions', 'Invoices', 'Escrow'];  // ── DATA STATE ──
+  const [escrowSummary, setEscrowSummary] = useState({
+    totalBalance: '₹0',
+    totalBalanceNum: 0,
+    totalSpent: '₹0',
+    totalSpentNum: 0,
+    pendingRelease: '₹0',
+    pendingReleaseNum: 0,
+    totalEngagementValue: '₹0',
+  });
+  const [escrowAccounts, setEscrowAccounts] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [invoices, setInvoices] = useState([]);
 
-  // ── DATA ──
-  const escrowSummary = {
-    totalBalance: '₹6,00,000',
-    totalBalanceNum: 600000,
-    totalSpent: '₹9,00,000',
-    totalSpentNum: 900000,
-    pendingRelease: '₹2,50,000',
-    pendingReleaseNum: 250000,
-    totalEngagementValue: '₹18,00,000',
+  const fetchPaymentData = async () => {
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    let token = "demo-token";
+    if (!isDemo) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      token = session.access_token;
+    }
+    const headers = { 'Authorization': `Bearer ${token}` };
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+    try {
+      const summaryRes = await fetch(`${baseUrl}/api/payments/summary`, { headers });
+      if (summaryRes.ok) setEscrowSummary(await summaryRes.json());
+
+      const escrowsRes = await fetch(`${baseUrl}/api/payments/escrows`, { headers });
+      if (escrowsRes.ok) setEscrowAccounts(await escrowsRes.json());
+
+      const txsRes = await fetch(`${baseUrl}/api/payments/transactions`, { headers });
+      if (txsRes.ok) setTransactions(await txsRes.json());
+
+      const invoicesRes = await fetch(`${baseUrl}/api/payments/invoices`, { headers });
+      if (invoicesRes.ok) setInvoices(await invoicesRes.json());
+
+      const notifsRes = await fetch(`${baseUrl}/api/notifications`, { headers });
+      if (notifsRes.ok) {
+        const data = await notifsRes.json();
+        const mapped = data.map(n => {
+          let color = "bg-blue-500";
+          if (n.type === "payment") color = "bg-amber-500";
+          else if (n.type === "contract") color = "bg-emerald-500";
+          return {
+            id: n.id,
+            title: n.title,
+            desc: n.description,
+            time: new Date(n.created_at).toLocaleDateString(),
+            unread: !n.is_read,
+            color
+          };
+        });
+        setNotifications(mapped);
+      }
+    } catch (err) {
+      console.error("Error loading payment info:", err);
+    }
   };
 
-  const escrowAccounts = [
-    {
-      id: 1,
-      engagement: 'Series B Funding Strategy',
-      expert: 'David Chen',
-      expertAvatar: 'https://i.pravatar.cc/150?u=david',
-      balance: '₹2,50,000',
-      balanceNum: 250000,
-      status: 'Active',
-      pendingMilestone: 'Investor Deck & Data Room',
-      totalValue: '₹18,00,000',
-      released: '₹3,50,000',
-    },
-    {
-      id: 2,
-      engagement: 'Go-to-Market Expansion',
-      expert: 'Sarah Jenkins',
-      expertAvatar: 'https://i.pravatar.cc/150?u=sarah',
-      balance: '₹3,50,000',
-      balanceNum: 350000,
-      status: 'Active',
-      pendingMilestone: 'Campaign Launch',
-      totalValue: '₹9,00,000',
-      released: '₹5,50,000',
-    },
-  ];
-
-  const transactions = [
-    {
-      id: 'TXN-005-2025',
-      type: 'milestone_release',
-      description: 'Milestone Payment — Financial Model Development',
-      engagement: 'Series B Funding Strategy',
-      expert: 'David Chen',
-      expertAvatar: 'https://i.pravatar.cc/150?u=david',
-      amount: '-₹2,00,000',
-      amountNum: -200000,
-      date: 'Mar 28, 2025',
-      time: '3:45 PM',
-      status: 'Completed',
-      method: 'Escrow Release',
-      txRef: 'TXN-005-2025',
-    },
-    {
-      id: 'TXN-004-2025',
-      type: 'escrow_add',
-      description: 'Funds Added to Escrow',
-      engagement: 'Go-to-Market Expansion',
-      expert: 'Sarah Jenkins',
-      expertAvatar: 'https://i.pravatar.cc/150?u=sarah',
-      amount: '+₹9,00,000',
-      amountNum: 900000,
-      date: 'Feb 27, 2025',
-      time: '11:20 AM',
-      status: 'Completed',
-      method: 'Net Banking',
-      txRef: 'TXN-004-2025',
-    },
-    {
-      id: 'TXN-003-2025',
-      type: 'milestone_release',
-      description: 'Milestone Payment — Discovery & Assessment',
-      engagement: 'Series B Funding Strategy',
-      expert: 'David Chen',
-      expertAvatar: 'https://i.pravatar.cc/150?u=david',
-      amount: '-₹1,50,000',
-      amountNum: -150000,
-      date: 'Feb 25, 2025',
-      time: '5:00 PM',
-      status: 'Completed',
-      method: 'Escrow Release',
-      txRef: 'TXN-003-2025',
-    },
-    {
-      id: 'TXN-002-2025',
-      type: 'escrow_add',
-      description: 'Funds Added to Escrow',
-      engagement: 'Series B Funding Strategy',
-      expert: 'David Chen',
-      expertAvatar: 'https://i.pravatar.cc/150?u=david',
-      amount: '+₹18,00,000',
-      amountNum: 1800000,
-      date: 'Feb 1, 2025',
-      time: '10:00 AM',
-      status: 'Completed',
-      method: 'NEFT',
-      txRef: 'TXN-002-2025',
-    },
-    {
-      id: 'TXN-001-2025',
-      type: 'platform_fee',
-      description: 'Platform Fee — Engagement Setup',
-      engagement: 'Series B Funding Strategy',
-      expert: '—',
-      expertAvatar: null,
-      amount: '-₹27,000',
-      amountNum: -27000,
-      date: 'Feb 1, 2025',
-      time: '10:05 AM',
-      status: 'Completed',
-      method: 'Auto-debit',
-      txRef: 'TXN-001-2025',
-    },
-    {
-      id: 'TXN-006-2025',
-      type: 'milestone_release',
-      description: 'Milestone Payment — Campaign Strategy',
-      engagement: 'Go-to-Market Expansion',
-      expert: 'Sarah Jenkins',
-      expertAvatar: 'https://i.pravatar.cc/150?u=sarah',
-      amount: '-₹1,50,000',
-      amountNum: -150000,
-      date: 'Apr 1, 2025',
-      time: '2:30 PM',
-      status: 'Completed',
-      method: 'Escrow Release',
-      txRef: 'TXN-006-2025',
-    },
-    {
-      id: 'TXN-007-2025',
-      type: 'milestone_release',
-      description: 'Milestone Payment — Pending Approval',
-      engagement: 'Series B Funding Strategy',
-      expert: 'David Chen',
-      expertAvatar: 'https://i.pravatar.cc/150?u=david',
-      amount: '-₹2,50,000',
-      amountNum: -250000,
-      date: '—',
-      time: '—',
-      status: 'Pending',
-      method: 'Escrow Release',
-      txRef: 'TXN-007-2025',
-    },
-  ];
-
-  const invoices = [
-    {
-      id: 'INV-2025-006',
-      title: 'March 2025 — Financial Model Development',
-      engagement: 'Series B Funding Strategy',
-      expert: 'David Chen',
-      expertAvatar: 'https://i.pravatar.cc/150?u=david',
-      amount: '₹2,00,000',
-      date: 'Mar 28, 2025',
-      dueDate: 'Mar 28, 2025',
-      status: 'Paid',
-      type: 'Milestone Invoice',
-    },
-    {
-      id: 'INV-2025-005',
-      title: 'Campaign Strategy Completion',
-      engagement: 'Go-to-Market Expansion',
-      expert: 'Sarah Jenkins',
-      expertAvatar: 'https://i.pravatar.cc/150?u=sarah',
-      amount: '₹1,50,000',
-      date: 'Apr 1, 2025',
-      dueDate: 'Apr 1, 2025',
-      status: 'Paid',
-      type: 'Milestone Invoice',
-    },
-    {
-      id: 'INV-2025-004',
-      title: 'Investor Deck & Data Room',
-      engagement: 'Series B Funding Strategy',
-      expert: 'David Chen',
-      expertAvatar: 'https://i.pravatar.cc/150?u=david',
-      amount: '₹2,50,000',
-      date: 'Apr 25, 2025',
-      dueDate: 'May 5, 2025',
-      status: 'Pending',
-      type: 'Milestone Invoice',
-    },
-    {
-      id: 'INV-2025-003',
-      title: 'Platform Service Fee — Q1 2025',
-      engagement: 'All Engagements',
-      expert: 'CXO Connect',
-      expertAvatar: null,
-      amount: '₹27,000',
-      date: 'Feb 1, 2025',
-      dueDate: 'Feb 1, 2025',
-      status: 'Paid',
-      type: 'Platform Fee',
-    },
-    {
-      id: 'INV-2025-002',
-      title: 'February 2025 — Discovery & Assessment',
-      engagement: 'Series B Funding Strategy',
-      expert: 'David Chen',
-      expertAvatar: 'https://i.pravatar.cc/150?u=david',
-      amount: '₹1,50,000',
-      date: 'Feb 25, 2025',
-      dueDate: 'Feb 25, 2025',
-      status: 'Paid',
-      type: 'Milestone Invoice',
-    },
-  ];
+  useEffect(() => {
+    fetchPaymentData();
+  }, [companyProfile]);
 
   const quickAmounts = ['₹1,0,000', '₹2,50,000', '₹5,0,000', '₹10,00,000'];
   const paymentMethods = [
@@ -378,23 +228,93 @@ const Payments = () => {
     return matchSearch && matchFilter;
   });
 
-  const handleAddFunds = () => {
+  const handleAddFunds = async () => {
     setAddFundsSent(true);
-    setTimeout(() => {
-      setShowAddFundsModal(false);
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    let token = "demo-token";
+    if (!isDemo) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      token = session.access_token;
+    }
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const rawAmt = selectedAmount || customAmount;
+    const cleanAmt = parseFloat(rawAmt.replace(/[₹,]/g, '')) || 0;
+    const engagementId = escrowAccounts[0]?.id || "1";
+
+    try {
+      const res = await fetch(`${baseUrl}/api/payments/escrow/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          engagementId,
+          amount: cleanAmt,
+          paymentMethod
+        })
+      });
+
+      if (res.ok) {
+        setTimeout(() => {
+          setShowAddFundsModal(false);
+          setAddFundsSent(false);
+          setSelectedAmount('');
+          setCustomAmount('');
+          setPaymentMethod('upi');
+          fetchPaymentData();
+        }, 2000);
+      } else {
+        const data = await res.json();
+        alert("Error funding: " + (data.error || "Unknown error"));
+        setAddFundsSent(false);
+      }
+    } catch (err) {
+      console.error(err);
       setAddFundsSent(false);
-      setSelectedAmount('');
-      setCustomAmount('');
-      setPaymentMethod('upi');
-    }, 2000);
+    }
   };
 
-  const handleRelease = () => {
+  const handleRelease = async () => {
     setReleaseSent(true);
-    setTimeout(() => {
-      setShowReleaseModal(null);
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    let token = "demo-token";
+    if (!isDemo) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      token = session.access_token;
+    }
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+    try {
+      const res = await fetch(`${baseUrl}/api/payments/escrow/release`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          engagementId: showReleaseModal.id,
+          milestoneId: showReleaseModal.pendingMilestoneId
+        })
+      });
+
+      if (res.ok) {
+        setTimeout(() => {
+          setShowReleaseModal(null);
+          setReleaseSent(false);
+          fetchPaymentData();
+        }, 2000);
+      } else {
+        const data = await res.json();
+        alert("Error releasing: " + (data.error || "Unknown error"));
+        setReleaseSent(false);
+      }
+    } catch (err) {
+      console.error(err);
       setReleaseSent(false);
-    }, 2000);
+    }
   };
 
   return (
@@ -407,7 +327,7 @@ const Payments = () => {
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed left-0 top-0 h-screen"
     >
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
+      <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50 justify-between">
           <motion.div
             animate={{ width: isSidebarOpen ? 'auto' : 0, opacity: isSidebarOpen ? 1 : 0 }}
             transition={{ duration: 0.2 }}
@@ -416,7 +336,7 @@ const Payments = () => {
             <div className="cursor-pointer" onClick={() => window.location.reload()}><Logo variant="dark" className="h-8" /></div>
           </motion.div>
         <motion.button
-          animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}
+          animate={{ marginLeft: isSidebarOpen ? 'auto' : 'auto' }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -486,10 +406,7 @@ const Payments = () => {
           )}
           <Settings size={17} className="shrink-0" />
           <motion.span
-            animate={{ 
-              opacity: isSidebarOpen ? 1 : 0, 
-              width: isSidebarOpen ? 'auto' : 0 
-            }}
+            animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
             transition={{ duration: 0.2 }}
             className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
           >
@@ -497,36 +414,29 @@ const Payments = () => {
           </motion.span>
         </motion.button>
 
-        {window.location.pathname === '/settings' && (
-          <motion.button
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ x: 2, transition: { duration: 0.15 } }}
-            whileTap={{ scale: 0.97 }}
-            onClick={async () => {
-              const isDemo = localStorage.getItem('demo_company') === 'true';
-              if (isDemo) {
-                localStorage.removeItem('demo_company');
-              } else {
-                await supabase.auth.signOut();
-              }
-              navigate('/signin?role=company');
-            }}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150 relative font-bold text-left"
+        <motion.button
+          whileHover={{ x: 2, transition: { duration: 0.15 } }}
+          whileTap={{ scale: 0.97 }}
+          onClick={async () => {
+            const isDemo = localStorage.getItem('demo_company') === 'true';
+            if (isDemo) {
+              localStorage.removeItem('demo_company');
+            } else {
+              await supabase.auth.signOut();
+            }
+            navigate('/signin?role=company');
+          }}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150 font-bold"
+        >
+          <LogOut size={17} className="shrink-0" />
+          <motion.span
+            animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
           >
-            <LogOut size={17} className="shrink-0" />
-            <motion.span
-              animate={{ 
-                opacity: isSidebarOpen ? 1 : 0, 
-                width: isSidebarOpen ? 'auto' : 0 
-              }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
-            >
-              Sign Out
-            </motion.span>
-          </motion.button>
-        )}
+            Sign Out
+          </motion.span>
+        </motion.button>
       </div>
     </motion.aside>
 
@@ -539,13 +449,9 @@ const Payments = () => {
       }}
     >
 
-      {/* ── TOP HEADER ── */}
       <header className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm px-6 py-3 flex items-center gap-4">
-        <div className="flex items-center gap-1.5 text-xs text-gray-400 flex-1">
-          <button onClick={() => navigate('/company-dashboard')} className="hover:text-[#134e40] font-semibold transition-colors">Dashboard</button>
-          <ChevronRight size={12} className="text-gray-300" />
-          <span className="text-[#134e40] font-bold">Payments & Escrow</span>
-        </div>
+        <div className="flex-1" />
+
 
         <div className="flex items-center gap-3">
           {/* Export */}
@@ -792,10 +698,20 @@ const Payments = () => {
                             Next: {account.pendingMilestone}
                           </span>
                           <motion.button
-                            whileHover={{ scale: 1.05, boxShadow: '0 6px 15px rgba(14,181,154,0.25)' }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setShowReleaseModal(account)}
-                            className="text-xs font-black text-[#0eb59a] hover:text-white hover:bg-[#0eb59a] border border-teal-200 bg-teal-50 px-3 py-1.5 rounded-xl transition-all duration-200"
+                            whileHover={account.pendingMilestoneId && account.pendingMilestone !== "None" ? { scale: 1.05, boxShadow: '0 6px 15px rgba(14,181,154,0.25)' } : {}}
+                            whileTap={account.pendingMilestoneId && account.pendingMilestone !== "None" ? { scale: 0.95 } : {}}
+                            onClick={() => {
+                              if (!account.pendingMilestoneId || account.pendingMilestone === "None") {
+                                alert("No pending milestone to release for this engagement.");
+                                return;
+                              }
+                              setShowReleaseModal(account);
+                            }}
+                            className={`text-xs font-black px-3 py-1.5 rounded-xl transition-all duration-200 border ${
+                              account.pendingMilestoneId && account.pendingMilestone !== "None"
+                                ? 'text-[#0eb59a] hover:text-white hover:bg-[#0eb59a] border-teal-200 bg-teal-50'
+                                : 'text-gray-300 border-gray-100 bg-gray-50 cursor-not-allowed'
+                            }`}
                           >
                             Release Payment →
                           </motion.button>
@@ -1265,10 +1181,20 @@ const Payments = () => {
 
                     <div className="flex gap-3">
                       <motion.button
-                        whileHover={{ scale: 1.03, boxShadow: '0 8px 20px rgba(16,185,129,0.25)' }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => setShowReleaseModal(account)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-black rounded-xl shadow-md transition-all"
+                        whileHover={account.pendingMilestoneId && account.pendingMilestone !== "None" ? { scale: 1.03, boxShadow: '0 8px 20px rgba(16,185,129,0.25)' } : {}}
+                        whileTap={account.pendingMilestoneId && account.pendingMilestone !== "None" ? { scale: 0.97 } : {}}
+                        onClick={() => {
+                          if (!account.pendingMilestoneId || account.pendingMilestone === "None") {
+                            alert("No pending milestone to release for this engagement.");
+                            return;
+                          }
+                          setShowReleaseModal(account);
+                        }}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-black rounded-xl transition-all ${
+                          account.pendingMilestoneId && account.pendingMilestone !== "None"
+                            ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                        }`}
                       >
                         <Unlock size={14} /> Release Milestone Payment
                       </motion.button>
@@ -1539,7 +1465,7 @@ const Payments = () => {
                     {/* Amount display */}
                     <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100 text-center mb-5">
                       <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Releasing to {showReleaseModal.expert}</p>
-                      <p className="text-4xl font-black text-emerald-700">{showReleaseModal.balance}</p>
+                      <p className="text-4xl font-black text-emerald-700">{showReleaseModal.pendingMilestoneAmount}</p>
                     </div>
 
                     <div className="space-y-2 text-xs mb-5">
@@ -1601,7 +1527,7 @@ const Payments = () => {
                   </motion.div>
                   <h3 className="text-xl font-black text-[#1C3627] mb-2">Payment Released!</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    {showReleaseModal?.balance} will be transferred to {showReleaseModal?.expert} within 24 hours.
+                    {showReleaseModal?.pendingMilestoneAmount} will be transferred to {showReleaseModal?.expert} within 24 hours.
                   </p>
                 </motion.div>
               )}

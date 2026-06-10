@@ -152,11 +152,10 @@ const ExpertCard = ({ expert }) => {
             e.stopPropagation();
             setIsHearted(!isHearted);
           }}
-          className={`w-8 h-8 flex-shrink-0 border rounded-xl flex items-center justify-center transition-colors duration-200 cursor-pointer ${
-            isHearted
-              ? 'bg-rose-50 border-rose-200 text-rose-500'
-              : 'bg-white border-gray-300 text-gray-400 hover:border-rose-400 hover:text-rose-400'
-          }`}
+          className={`w-8 h-8 flex-shrink-0 border rounded-xl flex items-center justify-center transition-colors duration-200 cursor-pointer ${isHearted
+            ? 'bg-rose-50 border-rose-200 text-rose-500'
+            : 'bg-white border-gray-300 text-gray-400 hover:border-rose-400 hover:text-rose-400'
+            }`}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill={isHearted ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.5">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -173,7 +172,39 @@ const CompanyDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(3);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [notifications, setNotifications] = useState([
+    {
+      id: '1',
+      title: 'Risk Alert: Budget Overrun',
+      desc: 'Your Series B Funding engagement with David Chen has exceeded the approved budget by 12%. Immediate review and reallocation is recommended to avoid project delays.',
+      time: '5 min ago', unread: true, color: 'bg-red-500', iconBg: 'bg-red-50', tag: 'Finance', action: 'Review Budget',
+    },
+    {
+      id: '2',
+      title: 'Milestone Overdue',
+      desc: 'The Investor Deck milestone under the Series B engagement is now 3 days past its scheduled delivery date. Expert David Chen has not submitted the deliverable yet.',
+      time: '2 hours ago', unread: true, color: 'bg-amber-500', iconBg: 'bg-amber-50', tag: 'Delivery', action: 'Send Reminder',
+    },
+    {
+      id: '3',
+      title: 'PMO Report Ready',
+      desc: 'Your Q1 2025 governance and compliance report is now available. It covers SLA adherence at 92%, expert performance scores, and escrow utilisation across all active engagements.',
+      time: '1 day ago', unread: true, color: 'bg-[#0eb59a]', iconBg: 'bg-teal-50', tag: 'PMO', action: 'View Report',
+    },
+    {
+      id: '4',
+      title: 'New Expert Match: 98% Score',
+      desc: 'Sarah Jenkins (Fractional CMO) has been AI-matched to your Go-to-Market Expansion requirement with a 98% compatibility score. She is available to start within 7 days.',
+      time: '2 days ago', unread: false, color: 'bg-blue-500', iconBg: 'bg-blue-50', tag: 'Expert Match', action: 'View Profile',
+    },
+    {
+      id: '5',
+      title: 'Payment Released',
+      desc: '₹2,00,000 has been successfully released from escrow to David Chen for completing the Financial Model Development milestone ahead of schedule. Tax invoice is attached.',
+      time: '3 days ago', unread: false, color: 'bg-purple-500', iconBg: 'bg-purple-50', tag: 'Payment', action: 'View Invoice',
+    },
+  ]);
   const [mounted, setMounted] = useState(false);
   const [companyProfile, setCompanyProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -308,33 +339,161 @@ const CompanyDashboard = () => {
     { icon: Calendar, label: 'Scheduled Meetings', path: '/meetings' },
   ];
 
-  const notifications = [
-    {
-      title: 'Risk Alert: Budget Overrun',
-      desc: 'Your Series B Funding engagement with David Chen has exceeded the approved budget by 12%. Immediate review and reallocation is recommended to avoid project delays.',
-      time: '5 min ago', unread: true, color: 'bg-red-500', iconBg: 'bg-red-50', tag: 'Finance', action: 'Review Budget',
-    },
-    {
-      title: 'Milestone Overdue',
-      desc: 'The Investor Deck milestone under the Series B engagement is now 3 days past its scheduled delivery date. Expert David Chen has not submitted the deliverable yet.',
-      time: '2 hours ago', unread: true, color: 'bg-amber-500', iconBg: 'bg-amber-50', tag: 'Delivery', action: 'Send Reminder',
-    },
-    {
-      title: 'PMO Report Ready',
-      desc: 'Your Q1 2025 governance and compliance report is now available. It covers SLA adherence at 92%, expert performance scores, and escrow utilisation across all active engagements.',
-      time: '1 day ago', unread: true, color: 'bg-[#0eb59a]', iconBg: 'bg-teal-50', tag: 'PMO', action: 'View Report',
-    },
-    {
-      title: 'New Expert Match: 98% Score',
-      desc: 'Sarah Jenkins (Fractional CMO) has been AI-matched to your Go-to-Market Expansion requirement with a 98% compatibility score. She is available to start within 7 days.',
-      time: '2 days ago', unread: false, color: 'bg-blue-500', iconBg: 'bg-blue-50', tag: 'Expert Match', action: 'View Profile',
-    },
-    {
-      title: 'Payment Released',
-      desc: '₹2,00,000 has been successfully released from escrow to David Chen for completing the Financial Model Development milestone ahead of schedule. Tax invoice is attached.',
-      time: '3 days ago', unread: false, color: 'bg-purple-500', iconBg: 'bg-purple-50', tag: 'Payment', action: 'View Invoice',
-    },
-  ];
+  const getNotificationColor = (type) => {
+    switch (type) {
+      case 'match': return 'bg-teal-500';
+      case 'milestone': return 'bg-blue-500';
+      case 'contract': return 'bg-purple-500';
+      case 'payment': return 'bg-emerald-500';
+      default: return 'bg-slate-400';
+    }
+  };
+
+  const formatNotificationTime = (timeStr) => {
+    if (!timeStr) return '';
+    if (timeStr.includes('ago') || timeStr.includes('day')) return timeStr;
+    try {
+      const date = new Date(timeStr);
+      const diffMs = Date.now() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins} min ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } catch (e) {
+      return timeStr;
+    }
+  };
+
+  const handleMarkAsRead = async (notifId) => {
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    
+    setNotifications(prev =>
+      prev.map(n => n.id === notifId ? { ...n, is_read: true, unread: false } : n)
+    );
+    setNotificationCount(prev => Math.max(0, prev - 1));
+
+    if (isDemo || typeof notifId === 'number' || notifId.length < 10) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      await fetch(`${baseUrl}/api/notifications/${notifId}/read`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (err) {
+      console.error("Failed to sync read status with backend:", err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    
+    setNotifications(prev =>
+      prev.map(n => ({ ...n, is_read: true, unread: false }))
+    );
+    setNotificationCount(0);
+
+    if (isDemo) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      await fetch(`${baseUrl}/api/notifications/mark-all-read`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (err) {
+      console.error("Failed to sync mark all read with backend:", err);
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    let channel;
+
+    const isDemo = localStorage.getItem('demo_company') === 'true';
+    if (isDemo) {
+      setNotificationCount(notifications.filter(n => n.unread).length);
+      return;
+    }
+
+    const fetchNotifications = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !isMounted) return;
+
+      try {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const response = await fetch(`${baseUrl}/api/notifications`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (response.ok && isMounted) {
+          const data = await response.json();
+          setNotifications(data);
+          setNotificationCount(data.filter(n => !n.is_read).length);
+        }
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
+      }
+    };
+
+    fetchNotifications();
+
+    const setupSubscription = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.user || !isMounted) return;
+
+      // Use a unique channel name per mount to prevent caching conflicts in Strict Mode
+      const channelName = `company-notifications-${session.user.id}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
+      channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${session.user.id}`
+          },
+          (payload) => {
+            if (isMounted) {
+              setNotifications(prev => [payload.new, ...prev]);
+              setNotificationCount(count => count + 1);
+            }
+          }
+        );
+
+      channel.subscribe((status) => {
+        console.log(`Notification channel status:`, status);
+      });
+    };
+
+    setupSubscription();
+
+    return () => {
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, []);
 
   const MOCK_EXPERTS = [
     { id: 1, name: "Sarah Jenkins", role: "Ex-CMO at TechCorp", initials: "SJ", color: "bg-purple-500", match: 98, rating: 4.9, rate: "₹1.5L - ₹2.5L/mo", availability: "20 hrs/week", location: "Remote" },
@@ -462,7 +621,7 @@ const CompanyDashboard = () => {
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         className="bg-white border-r border-gray-100 flex flex-col z-50 overflow-hidden shrink-0 shadow-sm fixed left-0 top-0 h-screen"
       >
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-50 justify-between">
           <motion.div
             animate={{ width: isSidebarOpen ? 'auto' : 0, opacity: isSidebarOpen ? 1 : 0 }}
             transition={{ duration: 0.2 }}
@@ -471,7 +630,7 @@ const CompanyDashboard = () => {
             <div className="cursor-pointer" onClick={() => window.location.reload()}><Logo variant="dark" className="h-8" /></div>
           </motion.div>
           <motion.button
-            animate={{ marginLeft: isSidebarOpen ? 'auto' : 0 }}
+            animate={{ marginLeft: isSidebarOpen ? 'auto' : 'auto' }}
             whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:text-[#134e40] hover:bg-gray-100 transition-all shrink-0"
@@ -481,7 +640,7 @@ const CompanyDashboard = () => {
         </div>
         <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-hidden">
           {isSidebarOpen && (
-            <p className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2">Main Menu</p>
+            <p className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2">Main Menu</p>
           )}
           {navItems.map((item) => (
             <motion.button
@@ -489,11 +648,10 @@ const CompanyDashboard = () => {
               whileHover={{ x: 2, transition: { duration: 0.15 } }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${
-                item.active
-                  ? 'bg-[#134e40] text-white shadow-md'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
-              }`}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${item.active
+                ? 'bg-[#134e40] text-white shadow-md'
+                : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
+                }`}
             >
               {item.active && (
                 <motion.div
@@ -503,9 +661,9 @@ const CompanyDashboard = () => {
               )}
               <item.icon size={17} className="shrink-0" />
               <motion.span
-                animate={{ 
-                  opacity: isSidebarOpen ? 1 : 0, 
-                  width: isSidebarOpen ? 'auto' : 0 
+                animate={{
+                  opacity: isSidebarOpen ? 1 : 0,
+                  width: isSidebarOpen ? 'auto' : 0
                 }}
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
@@ -522,11 +680,10 @@ const CompanyDashboard = () => {
             whileHover={{ x: 2, transition: { duration: 0.15 } }}
             whileTap={{ scale: 0.97 }}
             onClick={() => navigate('/settings')}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${
-              window.location.pathname === '/settings'
-                ? 'bg-[#134e40] text-white shadow-md'
-                : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-150 relative ${window.location.pathname === '/settings'
+              ? 'bg-[#134e40] text-white shadow-md'
+              : 'text-gray-500 hover:bg-gray-50 hover:text-[#134e40]'
+              }`}
           >
             {window.location.pathname === '/settings' && (
               <motion.div
@@ -536,10 +693,7 @@ const CompanyDashboard = () => {
             )}
             <Settings size={17} className="shrink-0" />
             <motion.span
-              animate={{ 
-                opacity: isSidebarOpen ? 1 : 0, 
-                width: isSidebarOpen ? 'auto' : 0 
-              }}
+              animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
               transition={{ duration: 0.2 }}
               className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
             >
@@ -547,36 +701,29 @@ const CompanyDashboard = () => {
             </motion.span>
           </motion.button>
 
-          {window.location.pathname === '/settings' && (
-            <motion.button
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ x: 2, transition: { duration: 0.15 } }}
-              whileTap={{ scale: 0.97 }}
-              onClick={async () => {
-                const isDemo = localStorage.getItem('demo_company') === 'true';
-                if (isDemo) {
-                  localStorage.removeItem('demo_company');
-                } else {
-                  await supabase.auth.signOut();
-                }
-                navigate('/signin?role=company');
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150 relative font-bold text-left"
+          <motion.button
+            whileHover={{ x: 2, transition: { duration: 0.15 } }}
+            whileTap={{ scale: 0.97 }}
+            onClick={async () => {
+              const isDemo = localStorage.getItem('demo_company') === 'true';
+              if (isDemo) {
+                localStorage.removeItem('demo_company');
+              } else {
+                await supabase.auth.signOut();
+              }
+              navigate('/signin?role=company');
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-150 font-bold"
+          >
+            <LogOut size={17} className="shrink-0" />
+            <motion.span
+              animate={{ opacity: isSidebarOpen ? 1 : 0, width: isSidebarOpen ? 'auto' : 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
             >
-              <LogOut size={17} className="shrink-0" />
-              <motion.span
-                animate={{ 
-                  opacity: isSidebarOpen ? 1 : 0, 
-                  width: isSidebarOpen ? 'auto' : 0 
-                }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden whitespace-nowrap text-sm font-bold text-left"
-              >
-                Sign Out
-              </motion.span>
-            </motion.button>
-          )}
+              Sign Out
+            </motion.span>
+          </motion.button>
         </div>
       </motion.aside>
 
@@ -825,74 +972,112 @@ const CompanyDashboard = () => {
                       transition={{ duration: 0.3, type: "tween" }}
                       className="fixed right-0 top-16 bottom-0 w-96 bg-white shadow-2xl border-l border-gray-100 z-50 overflow-hidden flex flex-col"
                     >
-                      {/* Header */}
                       <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-teal-50/60 to-white shrink-0">
                         <div>
-                          <h3 className="font-black text-gray-900 text-sm">Notifications</h3>
-                          <p className="text-[10px] text-gray-400 font-semibold mt-0.5">All caught up — {notifications.length} total</p>
+                          <h3 className="font-black text-gray-900 text-sm text-left">Notifications</h3>
+                          <p className="text-[10px] text-gray-400 font-semibold mt-0.5 text-left">
+                            {notifications.length} total
+                          </p>
                         </div>
-                        <motion.button
-                          whileHover={{ scale: 1.1, backgroundColor: '#f3f4f6' }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => setShowNotifications(false)}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors"
-                        >
-                          <X size={14} />
-                        </motion.button>
+                        <div className="flex items-center gap-3">
+                          <button onClick={handleMarkAllRead} className="text-xs font-bold text-[#0eb59a] hover:text-[#134e40] transition-colors text-left bg-transparent border-0 cursor-pointer">
+                            Mark all read
+                          </button>
+                          <motion.button
+                            whileHover={{ scale: 1.1, backgroundColor: '#f3f4f6' }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => setShowNotifications(false)}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors bg-transparent border-0 cursor-pointer"
+                          >
+                            <X size={14} />
+                          </motion.button>
+                        </div>
                       </div>
 
                       {/* Notification list */}
                       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden">
-                        {notifications.map((notif, idx) => (
-                          <motion.div key={idx}
-                            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.06 }}
-                            className={`px-5 py-4 border-b border-gray-50 cursor-pointer transition-colors group ${
-                              notif.unread ? 'bg-gradient-to-r from-teal-50/30 to-transparent hover:from-teal-50/50' : 'hover:bg-gray-50/70'
-                            }`}
-                          >
-                            <div className="flex gap-3">
-                              {/* Icon */}
-                              <div className={`w-9 h-9 rounded-xl ${notif.iconBg} flex items-center justify-center shrink-0 mt-0.5`}>
-                                <div className={`w-2.5 h-2.5 rounded-full ${notif.color}`} />
-                              </div>
+                        {notifications.length === 0 ? (
+                          <div className="text-center py-8 text-gray-400 text-xs font-medium">No notifications yet</div>
+                        ) : (
+                          notifications.map((notif, idx) => {
+                            const isUnread = notif.unread ?? !notif.is_read;
+                            const descText = notif.desc || notif.description;
+                            const timeText = formatNotificationTime(notif.time || notif.created_at);
+                            const dotColor = notif.color || getNotificationColor(notif.type);
+                            const iconBg = notif.iconBg || (
+                              dotColor === 'bg-red-500' ? 'bg-red-50' :
+                              dotColor === 'bg-amber-500' ? 'bg-amber-50' :
+                              dotColor === 'bg-[#0eb59a]' ? 'bg-teal-50' :
+                              dotColor === 'bg-blue-500' ? 'bg-blue-50' :
+                              'bg-purple-50'
+                            );
+                            const tagText = notif.tag || (
+                              notif.type === 'match' ? 'Expert Match' :
+                              notif.type === 'milestone' ? 'Delivery' :
+                              notif.type === 'contract' ? 'Contract' :
+                              notif.type === 'payment' ? 'Payment' :
+                              'General'
+                            );
+                            const actionText = notif.action;
 
-                              {/* Content */}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-2 mb-1">
-                                  <p className="text-sm font-black text-gray-900 leading-tight">{notif.title}</p>
-                                  {notif.unread && (
-                                    <span className="w-2 h-2 rounded-full bg-[#0eb59a] shrink-0 mt-1.5" />
-                                  )}
+                            return (
+                              <motion.div key={notif.id || idx}
+                                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                onClick={() => handleMarkAsRead(notif.id)}
+                                className={`px-5 py-4 border-b border-gray-50 cursor-pointer transition-colors group ${
+                                  isUnread ? 'bg-gradient-to-r from-teal-50/30 to-transparent hover:from-teal-50/50' : 'hover:bg-gray-50/70'
+                                }`}
+                              >
+                                <div className="flex gap-3">
+                                  {/* Icon / dot */}
+                                  <div className={`w-9 h-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0 mt-0.5`}>
+                                    <div className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
+                                  </div>
+
+                                  {/* Content */}
+                                  <div className="flex-1 min-w-0 text-left">
+                                    <div className="flex items-start justify-between gap-2 mb-1">
+                                      <p className="text-sm font-black text-gray-900 leading-tight text-left">{notif.title}</p>
+                                      {isUnread && (
+                                        <span className="w-2 h-2 rounded-full bg-[#0eb59a] shrink-0 mt-1.5" />
+                                      )}
+                                    </div>
+                                    
+                                    <span className={`inline-block text-[9px] font-black px-1.5 py-0.5 rounded-md mb-1.5 ${
+                                      dotColor === 'bg-red-500' ? 'bg-red-50 text-red-600' :
+                                      dotColor === 'bg-amber-500' ? 'bg-amber-50 text-amber-600' :
+                                      dotColor === 'bg-[#0eb59a]' || dotColor === 'bg-emerald-500' ? 'bg-teal-50 text-teal-700' :
+                                      dotColor === 'bg-blue-500' ? 'bg-blue-50 text-blue-600' :
+                                      'bg-purple-50 text-purple-600'
+                                    }`}>{tagText}</span>
+
+                                    <p className="text-xs text-gray-500 leading-relaxed text-left">{descText}</p>
+                                    
+                                    <div className="flex items-center justify-between mt-2.5">
+                                      <span className="text-[10px] text-gray-300 font-semibold text-left">{timeText}</span>
+                                      {actionText && (
+                                        <motion.button
+                                          whileHover={{ scale: 1.04 }}
+                                          whileTap={{ scale: 0.96 }}
+                                          className={`text-[10px] font-black px-2.5 py-1 rounded-lg border transition-all ${
+                                            dotColor === 'bg-red-500' ? 'text-red-600 border-red-200 bg-red-50 hover:bg-red-500 hover:text-white' :
+                                            dotColor === 'bg-amber-500' ? 'text-amber-600 border-amber-200 bg-amber-50 hover:bg-amber-500 hover:text-white' :
+                                            dotColor === 'bg-[#0eb59a]' || dotColor === 'bg-emerald-500' ? 'text-teal-700 border-teal-200 bg-teal-50 hover:bg-[#0eb59a] hover:text-white' :
+                                            dotColor === 'bg-blue-500' ? 'text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-500 hover:text-white' :
+                                            'text-purple-600 border-purple-200 bg-purple-50 hover:bg-purple-500 hover:text-white'
+                                          }`}
+                                        >
+                                          {actionText}
+                                        </motion.button>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                                <span className={`inline-block text-[9px] font-black px-1.5 py-0.5 rounded-md mb-1.5 ${
-                                  notif.color === 'bg-red-500' ? 'bg-red-50 text-red-600' :
-                                  notif.color === 'bg-amber-500' ? 'bg-amber-50 text-amber-600' :
-                                  notif.color === 'bg-[#0eb59a]' ? 'bg-teal-50 text-teal-700' :
-                                  notif.color === 'bg-blue-500' ? 'bg-blue-50 text-blue-600' :
-                                  'bg-purple-50 text-purple-600'
-                                }`}>{notif.tag}</span>
-                                <p className="text-[11px] text-gray-500 leading-relaxed">{notif.desc}</p>
-                                <div className="flex items-center justify-between mt-2.5">
-                                  <span className="text-[10px] text-gray-300 font-semibold">{notif.time}</span>
-                                  <motion.button
-                                    whileHover={{ scale: 1.04 }}
-                                    whileTap={{ scale: 0.96 }}
-                                    className={`text-[10px] font-black px-2.5 py-1 rounded-lg border transition-all ${
-                                      notif.color === 'bg-red-500' ? 'text-red-600 border-red-200 bg-red-50 hover:bg-red-500 hover:text-white' :
-                                      notif.color === 'bg-amber-500' ? 'text-amber-600 border-amber-200 bg-amber-50 hover:bg-amber-500 hover:text-white' :
-                                      notif.color === 'bg-[#0eb59a]' ? 'text-teal-700 border-teal-200 bg-teal-50 hover:bg-[#0eb59a] hover:text-white' :
-                                      notif.color === 'bg-blue-500' ? 'text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-500 hover:text-white' :
-                                      'text-purple-600 border-purple-200 bg-purple-50 hover:bg-purple-500 hover:text-white'
-                                    }`}
-                                  >
-                                    {notif.action}
-                                  </motion.button>
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))}
+                              </motion.div>
+                            );
+                          })
+                        )}
                       </div>
                     </motion.div>
                   </>
