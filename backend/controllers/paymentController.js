@@ -302,12 +302,14 @@ export const getEscrows = async (req, res) => {
       });
 
       let pendingMilestoneAmountVal = 0;
+      let pendingMilestoneStatusVal = "None";
       engMilestones.forEach(m => {
         if (m.paymentStatus === "in_escrow") {
-          if (pendingMilestone === "None" || m.status === "pending_approval") {
+          if (pendingMilestone === "None" || m.status === "pending_approval" || m.status === "pending_admin_release") {
             pendingMilestone = m.title;
             pendingMilestoneId = m.id;
             pendingMilestoneAmountVal = m.amount;
+            pendingMilestoneStatusVal = m.status;
           }
         }
       });
@@ -324,6 +326,7 @@ export const getEscrows = async (req, res) => {
         pendingMilestoneId,
         pendingMilestoneAmount: formatCurrency(pendingMilestoneAmountVal),
         pendingMilestoneAmountNum: pendingMilestoneAmountVal,
+        pendingMilestoneStatus: pendingMilestoneStatusVal,
         totalValue: formatCurrency(eng.total_budget),
         released: formatCurrency(releasedNum)
       });
@@ -464,6 +467,38 @@ export const createEscrow = async (req, res) => {
   } catch (err) {
     console.error("createEscrow error:", err);
     res.status(500).json({ error: "Failed to fund escrow account" });
+  }
+};
+
+// ================= REQUEST ESCROW RELEASE =================
+export const requestReleaseEscrow = async (req, res) => {
+  try {
+    const { engagementId, milestoneId } = req.body;
+
+    if (!engagementId || !milestoneId) {
+      return res.status(400).json({ error: "Engagement ID and Milestone ID are required" });
+    }
+
+    const milestones = await readJsonFile("milestones.json");
+    const milestone = milestones.find(m => m.id === milestoneId && m.engagement_id === engagementId);
+
+    if (!milestone) {
+      return res.status(404).json({ error: "Milestone not found" });
+    }
+
+    if (milestone.paymentStatus !== "in_escrow") {
+      return res.status(400).json({ error: "Milestone is not funded or already released" });
+    }
+
+    // Set milestone status to pending_admin_release
+    milestone.status = "pending_admin_release";
+
+    await writeJsonFile("milestones.json", milestones);
+
+    res.json({ success: true, milestone });
+  } catch (err) {
+    console.error("requestReleaseEscrow error:", err);
+    res.status(500).json({ error: "Failed to request milestone release" });
   }
 };
 

@@ -158,7 +158,7 @@ const EngagementWorkspace = () => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     try {
-      const res = await fetch(`${baseUrl}/api/payments/escrow/release`, {
+      const res = await fetch(`${baseUrl}/api/payments/escrow/request-release`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -176,7 +176,7 @@ const EngagementWorkspace = () => {
         fetchEngagementData();
       } else {
         const data = await res.json();
-        alert("Error releasing escrow: " + (data.error || "Unknown error"));
+        alert("Error requesting release: " + (data.error || "Unknown error"));
       }
     } catch (err) {
       console.error(err);
@@ -194,7 +194,7 @@ const EngagementWorkspace = () => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     try {
-      const res = await fetch(`${baseUrl}/api/payments/escrow/release`, {
+      const res = await fetch(`${baseUrl}/api/payments/escrow/request-release`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -211,7 +211,7 @@ const EngagementWorkspace = () => {
         fetchEngagementData();
       } else {
         const data = await res.json();
-        alert("Error releasing escrow: " + (data.error || "Unknown error"));
+        alert("Error requesting release: " + (data.error || "Unknown error"));
       }
     } catch (err) {
       console.error(err);
@@ -306,6 +306,7 @@ const EngagementWorkspace = () => {
     switch (status) {
       case 'completed': return { label: 'Completed', color: 'text-emerald-600 bg-emerald-50 border-emerald-200', icon: CheckCircle };
       case 'pending_approval': return { label: 'Pending Approval', color: 'text-amber-600 bg-amber-50 border-amber-200', icon: AlertCircle };
+      case 'pending_admin_release': return { label: 'Awaiting Admin Release', color: 'text-amber-650 bg-amber-50 border-amber-200 text-amber-600', icon: AlertCircle };
       case 'in_progress': return { label: 'In Progress', color: 'text-blue-600 bg-blue-50 border-blue-200', icon: Clock };
       case 'upcoming': return { label: 'Upcoming', color: 'text-gray-400 bg-gray-50 border-gray-200', icon: Circle };
       default: return { label: status, color: 'text-gray-400 bg-gray-50', icon: Circle };
@@ -1154,7 +1155,7 @@ const EngagementWorkspace = () => {
                                   onClick={() => setShowApproveModal(ms)}
                                   className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-black rounded-xl transition-all shadow-md"
                                 >
-                                  <Check size={14} strokeWidth={3} /> Approve & Release {ms.payment}
+                                  <Check size={14} strokeWidth={3} /> Approve & Request Release {ms.payment}
                                 </motion.button>
                                 <motion.button
                                   whileHover={{ scale: 1.03, backgroundColor: '#FEE2E2' }}
@@ -1164,6 +1165,16 @@ const EngagementWorkspace = () => {
                                 >
                                   <X size={14} /> Reject
                                 </motion.button>
+                              </div>
+                            )}
+                            {ms.status === 'pending_admin_release' && (
+                              <div className="flex gap-3 justify-end mt-4">
+                                <button
+                                  disabled
+                                  className="flex items-center gap-2 px-5 py-2.5 bg-amber-50 border border-amber-200 text-amber-600 text-xs font-black rounded-xl cursor-not-allowed"
+                                >
+                                  <Clock size={13} /> Awaiting Admin Release ({ms.payment})
+                                </button>
                               </div>
                             )}
                           </div>
@@ -1489,7 +1500,7 @@ const EngagementWorkspace = () => {
       </div>
 
       {/* ── ALL MODALS — Keep exactly as-is ── */}
-      {/* Approve Modal — paste unchanged */}
+      {/* Approve Modal */}
       <AnimatePresence>
         {showApproveModal && (
           <motion.div
@@ -1511,7 +1522,7 @@ const EngagementWorkspace = () => {
               <h3 className="text-xl font-black text-gray-900 text-center mb-2">Approve Milestone</h3>
               <p className="text-sm text-gray-400 text-center mb-4 leading-relaxed">
                 You are approving <span className="font-bold text-gray-700">{showApproveModal.title}</span>.
-                This will release <span className="font-bold text-emerald-600">{showApproveModal.payment}</span> from escrow to {engagement.expert.name}.
+                This will submit a request to the Escrow Agent (Admin) to release <span className="font-bold text-emerald-600">{showApproveModal.payment}</span> from escrow to {engagement.expert.name}.
               </p>
 
               {/* Rating */}
@@ -1555,7 +1566,7 @@ const EngagementWorkspace = () => {
                   className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-2xl shadow-md transition-all"
                 >
                   <Check size={15} className="inline mr-1.5" strokeWidth={3} />
-                  Approve & Release
+                  Approve & Request Release
                 </motion.button>
               </div>
             </motion.div>
@@ -1563,7 +1574,7 @@ const EngagementWorkspace = () => {
         )}
       </AnimatePresence>
 
-      {/* Reject Modal — paste unchanged */}
+      {/* Reject Modal */}
       <AnimatePresence>
         {showRejectModal && (
           <motion.div
@@ -1629,7 +1640,7 @@ const EngagementWorkspace = () => {
         )}
       </AnimatePresence>
 
-      {/* Release Payment Modal — paste unchanged */}
+      {/* Release Payment Modal */}
       <AnimatePresence>
         {showPaymentModal && (
           <motion.div
@@ -1648,16 +1659,16 @@ const EngagementWorkspace = () => {
               <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-emerald-100">
                 <DollarSign size={28} className="text-emerald-500" />
               </div>
-              <h3 className="text-xl font-black text-gray-900 text-center mb-2">Release Payment</h3>
+              <h3 className="text-xl font-black text-gray-900 text-center mb-2">Request Payment Release</h3>
               <p className="text-sm text-gray-400 text-center mb-2 leading-relaxed">
-                Release escrow payment for
+                Request escrow payment release for
               </p>
               <p className="text-center font-black text-gray-800 text-base mb-1">{showPaymentModal.milestone}</p>
               <p className="text-center text-3xl font-black text-emerald-600 mb-6">{showPaymentModal.amount}</p>
 
-              <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 mb-5 text-center">
-                <p className="text-xs text-emerald-700 font-semibold leading-relaxed">
-                  Funds will be transferred to {engagement.expert.name}'s account within 24 hours after release.
+              <div className="bg-[#134e40]/5 rounded-2xl p-4 border border-[#134e40]/10 mb-5 text-center">
+                <p className="text-xs text-[#134e40] font-semibold leading-relaxed">
+                  Escrow Agent (Admin) will be requested to authorize this release request.
                 </p>
               </div>
 
@@ -1671,12 +1682,12 @@ const EngagementWorkspace = () => {
                   Cancel
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(16,185,129,0.3)' }}
+                  whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(19,78,64,0.3)' }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handlePaymentRelease(showPaymentModal)}
-                  className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-2xl shadow-md transition-all"
+                  className="flex-1 py-3 bg-[#134e40] hover:bg-[#0eb59a] text-white text-sm font-bold rounded-2xl shadow-md transition-all"
                 >
-                  Confirm Release
+                  Request Release
                 </motion.button>
               </div>
             </motion.div>

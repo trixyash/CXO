@@ -1,5 +1,47 @@
 [
   {
+    "id": "INV-6087",
+    "title": "Investor Outreach & Roadshow - Funded",
+    "engagement": "Series B Funding Strategy",
+    "engagement_id": "1",
+    "expert": "David Chen",
+    "expertAvatar": "https://i.pravatar.cc/150?u=david",
+    "amount": "₹2,50,000",
+    "amountNum": 250000,
+    "date": "Jun 11, 2026",
+    "dueDate": "Jun 10, 2026",
+    "status": "Paid",
+    "type": "Milestone Invoice"
+  },
+  {
+    "id": "INV-4607",
+    "title": "Escrow Wallet Deposit",
+    "engagement": "Series B Funding Strategy",
+    "engagement_id": "1",
+    "expert": "David Chen",
+    "expertAvatar": "https://i.pravatar.cc/150?u=david",
+    "amount": "₹50,000",
+    "amountNum": 50000,
+    "date": "Jun 10, 2026",
+    "dueDate": "Jun 10, 2026",
+    "status": "Paid",
+    "type": "Wallet Deposit Invoice"
+  },
+  {
+    "id": "INV-6200",
+    "title": "Investor Outreach & Roadshow - Funded",
+    "engagement": "Series B Funding Strategy",
+    "engagement_id": "1",
+    "expert": "David Chen",
+    "expertAvatar": "https://i.pravatar.cc/150?u=david",
+    "amount": "₹3,00,000",
+    "amountNum": 300000,
+    "date": "Jun 10, 2026",
+    "dueDate": "Jun 10, 2026",
+    "status": "Paid",
+    "type": "Milestone Invoice"
+  },
+  {
     "id": "INV-6969",
     "title": "Campaign Launch",
     "engagement": "Go-to-Market Expansion",

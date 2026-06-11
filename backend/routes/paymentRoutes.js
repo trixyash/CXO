@@ -6,6 +6,7 @@ import {
   getInvoices, 
   getEscrows, 
   createEscrow, 
+  requestReleaseEscrow,
   releaseEscrow,
   getEngagementDetails
 } from "../controllers/paymentController.js";
@@ -22,6 +23,7 @@ router.get("/escrows", getEscrows);
 router.get("/engagement/:engagementId", getEngagementDetails);
 
 router.post("/escrow/create", createEscrow);
+router.post("/escrow/request-release", requestReleaseEscrow);
 router.post("/escrow/release", releaseEscrow);
 
 export default router;

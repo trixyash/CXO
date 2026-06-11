@@ -58,10 +58,31 @@ const AdminDashboard = () => {
   const [escrowReleased, setEscrowReleased] = useState(false);
   const [moderations, setModerations] = useState(INITIAL_MODERATION);
   const [selectedDispute, setSelectedDispute] = useState(null);
+  const [escrows, setEscrows] = useState([]);
+  const [selectedEscrow, setSelectedEscrow] = useState(null);
 
   // Trust Tab State
   const [timeRange, setTimeRange] = useState('30D');
   const [audits, setAudits] = useState(INITIAL_AUDITS);
+
+  const fetchEscrows = async () => {
+    try {
+      const token = "demo-token";
+      const res = await fetch("http://localhost:5000/api/payments/escrows", {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEscrows(data);
+        const pending = data.find(e => e.pendingMilestoneStatus === "pending_admin_release") || data[0];
+        setSelectedEscrow(pending);
+        // Reset escrowReleased state if switching to a new pending one
+        setEscrowReleased(false);
+      }
+    } catch (err) {
+      console.error("fetchEscrows error:", err);
+    }
+  };
 
   useEffect(() => {
     // Authenticate and check role
@@ -83,6 +104,7 @@ const AdminDashboard = () => {
       }
     };
     fetchSession();
+    fetchEscrows();
   }, [navigate]);
 
   const triggerToast = (message, type = 'success') => {
@@ -127,9 +149,37 @@ const AdminDashboard = () => {
   };
 
   // Escrow Watch Release
-  const handleReleaseEscrow = () => {
-    setEscrowReleased(true);
-    triggerToast('Escrow funds authorized and released successfully.');
+  const handleReleaseEscrow = async () => {
+    if (!selectedEscrow || !selectedEscrow.pendingMilestoneId) {
+      triggerToast('No pending milestone to release.', 'warning');
+      return;
+    }
+    const token = "demo-token";
+    try {
+      const res = await fetch("http://localhost:5000/api/payments/escrow/release", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          engagementId: selectedEscrow.id,
+          milestoneId: selectedEscrow.pendingMilestoneId
+        })
+      });
+
+      if (res.ok) {
+        setEscrowReleased(true);
+        triggerToast('Escrow funds authorized and released successfully.');
+        fetchEscrows();
+      } else {
+        const data = await res.json();
+        triggerToast('Error: ' + (data.error || 'Failed to release escrow'), 'warning');
+      }
+    } catch (err) {
+      console.error(err);
+      triggerToast('Network error during escrow authorization', 'warning');
+    }
   };
 
   // Review Actions
@@ -942,38 +992,56 @@ const AdminDashboard = () => {
                       <div className="space-y-4">
                         <div>
                           <span className="text-[10px] text-gray-500 block mb-0.5">Project ID</span>
-                          <span className="text-white font-extrabold text-sm block">PROJECT #PR-441</span>
-                          <h4 className="text-2xl font-black font-mono text-white tracking-tight mt-1">$12,450.00 <span className="text-xs text-gray-500 font-sans font-bold">USD</span></h4>
+                          <span className="text-white font-extrabold text-sm block">
+                            {selectedEscrow ? `PROJECT #ENG-${selectedEscrow.id}` : 'PROJECT #PR-441'}
+                          </span>
+                          <h4 className="text-2xl font-black font-mono text-white tracking-tight mt-1">
+                            {selectedEscrow ? selectedEscrow.pendingMilestoneAmount : '₹0.00'}
+                          </h4>
                         </div>
 
                         <div className="p-3 bg-[#0d1612] border border-[#152e25] rounded-xl text-[10px] leading-relaxed">
-                          <span className="font-extrabold text-white block mb-1">Milestone: Frontend Beta Release</span>
-                          <p className="text-gray-400 font-light">Milestone validation complete. Verification by administrator required for final payout escrow authorization release.</p>
+                          <span className="font-extrabold text-white block mb-1">
+                            {selectedEscrow ? `Milestone: ${selectedEscrow.pendingMilestone}` : 'Milestone: None'}
+                          </span>
+                          <p className="text-gray-400 font-light">
+                            {selectedEscrow && selectedEscrow.pendingMilestoneStatus === "pending_admin_release"
+                              ? `Milestone approval request submitted by company. Verification by administrator required for final payout escrow authorization release to ${selectedEscrow.expert}.`
+                              : selectedEscrow && selectedEscrow.pendingMilestone !== "None"
+                              ? `Milestone is currently active (${selectedEscrow.pendingMilestoneStatus}). Awaiting company approval.`
+                              : "No pending escrow release requests found for this engagement."}
+                          </p>
                         </div>
 
-                        {!escrowReleased ? (
-                          <button
-                            onClick={handleReleaseEscrow}
-                            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#134e40] to-[#0eb59a] border border-[#0eb59a]/20 hover:brightness-110 text-white font-bold text-xs tracking-wider uppercase transition-all shadow-md shadow-[#0eb59a]/5 cursor-pointer flex items-center justify-center gap-1.5"
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Authorize Release</span>
-                          </button>
-                        ) : (
-                          <div className="w-full py-2.5 rounded-xl border border-emerald-500/35 bg-emerald-500/10 text-emerald-400 font-bold text-xs tracking-wider uppercase text-center flex items-center justify-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Escrow Released</span>
-                          </div>
+                        {selectedEscrow && selectedEscrow.pendingMilestoneStatus === "pending_admin_release" && (
+                          !escrowReleased ? (
+                            <button
+                              onClick={() => handleReleaseEscrow(selectedEscrow.id)}
+                              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#134e40] to-[#0eb59a] border border-[#0eb59a]/20 hover:brightness-110 text-white font-bold text-xs tracking-wider uppercase transition-all shadow-md shadow-[#0eb59a]/5 cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Authorize Release</span>
+                            </button>
+                          ) : (
+                            <div className="w-full py-2.5 rounded-xl border border-emerald-500/35 bg-emerald-500/10 text-emerald-450 font-bold text-xs tracking-wider uppercase text-center flex items-center justify-center gap-1.5">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Escrow Released</span>
+                            </div>
+                          )
                         )}
 
                         <div className="grid grid-cols-2 gap-2 border-t border-[#15231c] pt-4 text-center">
                           <div>
                             <span className="text-[9px] text-gray-500 block">Total Managed</span>
-                            <span className="text-xs font-bold text-white font-mono">$4.2M</span>
+                            <span className="text-xs font-bold text-white font-mono">
+                              ₹{escrows.reduce((acc, curr) => acc + (curr.balanceNum || 0), 0).toLocaleString("en-IN")}
+                            </span>
                           </div>
                           <div>
                             <span className="text-[9px] text-gray-500 block">Pending Releases</span>
-                            <span className="text-xs font-bold text-[#0eb59a] font-mono">08</span>
+                            <span className="text-xs font-bold text-[#0eb59a] font-mono">
+                              {escrows.filter(e => e.pendingMilestoneStatus === "pending_admin_release").length.toString().padStart(2, '0')}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -1322,45 +1390,44 @@ const AdminDashboard = () => {
                       <thead className="bg-[#080c0a] text-gray-500 font-bold uppercase tracking-[0.08em] border-b border-[#15231c]">
                         <tr>
                           <th className="px-6 py-3.5">Engagement ID</th>
-                          <th className="px-6 py-3.5">Partner</th>
-                          <th className="px-6 py-3.5">Type</th>
-                          <th className="px-6 py-3.5">Value</th>
+                          <th className="px-6 py-3.5">Expert Partner</th>
+                          <th className="px-6 py-3.5">Project / Engagement</th>
+                          <th className="px-6 py-3.5">Escrow Balance</th>
                           <th className="px-6 py-3.5">Escrow Status</th>
                           <th className="px-6 py-3.5">Vetting</th>
                           <th className="px-6 py-3.5 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#15231c] text-gray-300">
-                        {audits.map((audit, idx) => (
+                        {escrows.map((escrow, idx) => (
                           <tr key={idx} className="hover:bg-[#0c1310]/30 transition-colors">
-                            <td className="px-6 py-4 font-mono font-bold text-white">{audit.id}</td>
-                            <td className="px-6 py-4 font-semibold text-white">{audit.partner}</td>
-                            <td className="px-6 py-4 text-gray-400 font-medium">{audit.type}</td>
-                            <td className="px-6 py-4 font-mono font-medium">{audit.value}</td>
+                            <td className="px-6 py-4 font-mono font-bold text-white">#ENG-{escrow.id}</td>
+                            <td className="px-6 py-4 font-semibold text-white">{escrow.expert}</td>
+                            <td className="px-6 py-4 text-gray-400 font-medium">{escrow.engagement}</td>
+                            <td className="px-6 py-4 font-mono font-medium">{escrow.balance}</td>
                             <td className="px-6 py-4">
                               <span className={`px-2 py-0.5 rounded border text-[9px] font-extrabold tracking-wider uppercase ${
-                                audit.escrow === 'VERIFIED' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' :
-                                audit.escrow === 'FLAGGED' ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' :
-                                'text-orange-400 bg-orange-500/10 border-orange-500/20'
+                                escrow.pendingMilestoneStatus === 'pending_admin_release' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' :
+                                'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
                               }`}>
-                                {audit.escrow}
+                                {escrow.pendingMilestoneStatus === 'pending_admin_release' ? 'PENDING ADMIN ACTION' : 'SECURED'}
                               </span>
                             </td>
                             <td className="px-6 py-4">
-                              <span className={`px-2 py-0.5 rounded border text-[9px] font-extrabold tracking-wider uppercase ${
-                                audit.vetting === 'Cleared' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' :
-                                audit.vetting === 'Reviewing' ? 'text-teal-400 bg-teal-500/10 border-teal-500/20' :
-                                'text-orange-400 bg-orange-500/10 border-orange-500/25'
-                              }`}>
-                                {audit.vetting}
+                              <span className="px-2 py-0.5 rounded border text-[9px] font-extrabold tracking-wider uppercase text-emerald-400 bg-emerald-500/10 border-emerald-500/20">
+                                Verified
                               </span>
                             </td>
                             <td className="px-6 py-4 text-right">
                               <button 
-                                onClick={() => triggerToast(`Opening audit details ledger for ${audit.id}...`)}
+                                onClick={() => {
+                                  setSelectedEscrow(escrow);
+                                  setEscrowReleased(false);
+                                  triggerToast(`Selected engagement #ENG-${escrow.id} details.`);
+                                }}
                                 className="px-3 py-1.5 border border-[#1b2520] hover:border-[#0eb59a] bg-[#0c0f0d] hover:bg-[#134e40]/20 text-gray-400 hover:text-white rounded-lg text-[9px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer"
                               >
-                                Audit Detail
+                                View Escrow
                               </button>
                             </td>
                           </tr>

@@ -288,7 +288,7 @@ const Payments = () => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     try {
-      const res = await fetch(`${baseUrl}/api/payments/escrow/release`, {
+      const res = await fetch(`${baseUrl}/api/payments/escrow/request-release`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -308,7 +308,7 @@ const Payments = () => {
         }, 2000);
       } else {
         const data = await res.json();
-        alert("Error releasing: " + (data.error || "Unknown error"));
+        alert("Error requesting release: " + (data.error || "Unknown error"));
         setReleaseSent(false);
       }
     } catch (err) {
@@ -1181,7 +1181,7 @@ const Payments = () => {
 
                     <div className="flex gap-3">
                       <motion.button
-                        whileHover={account.pendingMilestoneId && account.pendingMilestone !== "None" ? { scale: 1.03, boxShadow: '0 8px 20px rgba(16,185,129,0.25)' } : {}}
+                        whileHover={account.pendingMilestoneId && account.pendingMilestone !== "None" ? { scale: 1.03, boxShadow: '0 8px 20px rgba(19,78,64,0.25)' } : {}}
                         whileTap={account.pendingMilestoneId && account.pendingMilestone !== "None" ? { scale: 0.97 } : {}}
                         onClick={() => {
                           if (!account.pendingMilestoneId || account.pendingMilestone === "None") {
@@ -1192,11 +1192,11 @@ const Payments = () => {
                         }}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-black rounded-xl transition-all ${
                           account.pendingMilestoneId && account.pendingMilestone !== "None"
-                            ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-md'
+                            ? 'bg-[#134e40] hover:bg-[#0eb59a] text-white shadow-md'
                             : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
                         }`}
                       >
-                        <Unlock size={14} /> Release Milestone Payment
+                        <Clock size={14} /> Request Milestone Release
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.03, backgroundColor: '#F0FDF4', borderColor: '#0eb59a' }}
@@ -1453,9 +1453,9 @@ const Payments = () => {
                       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                       className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3"
                     >
-                      <Unlock size={28} className="text-white" />
+                      <Clock size={28} className="text-white" />
                     </motion.div>
-                    <h3 className="text-lg font-black text-white">Release Payment</h3>
+                    <h3 className="text-lg font-black text-white">Request Release</h3>
                     <p className="text-white/70 text-xs mt-1">
                       {showReleaseModal.engagement}
                     </p>
@@ -1463,20 +1463,20 @@ const Payments = () => {
 
                   <div className="p-6">
                     {/* Amount display */}
-                    <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100 text-center mb-5">
-                      <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Releasing to {showReleaseModal.expert}</p>
-                      <p className="text-4xl font-black text-emerald-700">{showReleaseModal.pendingMilestoneAmount}</p>
+                    <div className="bg-[#134e40]/5 rounded-2xl p-5 border border-[#134e40]/10 text-center mb-5">
+                      <p className="text-[10px] font-black text-[#134e40] uppercase tracking-widest mb-1">Requesting Release to {showReleaseModal.expert}</p>
+                      <p className="text-4xl font-black text-[#134e40]">{showReleaseModal.pendingMilestoneAmount}</p>
                     </div>
 
                     <div className="space-y-2 text-xs mb-5">
                       {[
                         { label: 'Milestone', value: showReleaseModal.pendingMilestone },
                         { label: 'Expert', value: showReleaseModal.expert },
-                        { label: 'Estimated arrival', value: 'Within 24 hours' },
+                        { label: 'Escrow Agent (Admin)', value: 'Required for release' },
                       ].map((item, idx) => (
                         <div key={idx} className="flex justify-between py-1.5 border-b border-gray-50 last:border-0">
                           <span className="text-gray-400 font-semibold text-left">{item.label}</span>
-                          <span className={`font-bold text-right ${item.label === 'Estimated arrival' ? 'text-emerald-600' : 'text-[#1C3627]'}`}>
+                          <span className={`font-bold text-right ${item.label === 'Escrow Agent (Admin)' ? 'text-amber-600' : 'text-[#1C3627]'}`}>
                             {item.value}
                           </span>
                         </div>
@@ -1493,12 +1493,12 @@ const Payments = () => {
                         Cancel
                       </motion.button>
                       <motion.button
-                        whileHover={{ scale: 1.03, boxShadow: '0 8px 25px rgba(16,185,129,0.35)' }}
+                        whileHover={{ scale: 1.03, boxShadow: '0 8px 25px rgba(19,78,64,0.35)' }}
                         whileTap={{ scale: 0.97 }}
                         onClick={handleRelease}
-                        className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-black rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"
+                        className="flex-1 py-3 bg-[#134e40] hover:bg-[#0eb59a] text-white text-sm font-black rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"
                       >
-                        <Unlock size={14} /> Confirm Release
+                        <Clock size={14} /> Request Release
                       </motion.button>
                     </div>
                   </div>
@@ -1516,18 +1516,18 @@ const Payments = () => {
                     transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
                     style={{
                       width: '80px', height: '80px',
-                      background: 'linear-gradient(135deg, #065f46, #059669)',
+                      background: 'linear-gradient(135deg, #134e40, #0eb59a)',
                       borderRadius: '50%',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       margin: '0 auto 20px',
-                      boxShadow: '0 12px 40px rgba(16,185,129,0.3)',
+                      boxShadow: '0 12px 40px rgba(14,181,154,0.3)',
                     }}
                   >
                     <Check size={36} color="white" strokeWidth={3} />
                   </motion.div>
-                  <h3 className="text-xl font-black text-[#1C3627] mb-2">Payment Released!</h3>
+                  <h3 className="text-xl font-black text-[#1C3627] mb-2">Release Requested!</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    {showReleaseModal?.pendingMilestoneAmount} will be transferred to {showReleaseModal?.expert} within 24 hours.
+                    A release request for {showReleaseModal?.pendingMilestoneAmount} has been sent to the Escrow Agent (Admin) for final authorization.
                   </p>
                 </motion.div>
               )}

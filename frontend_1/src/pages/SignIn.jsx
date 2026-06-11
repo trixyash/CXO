@@ -286,12 +286,56 @@ const SignIn = () => {
 				onOAuthSignIn={handleOAuthSignIn}
 				showOtp={showOtp}
 			>
-				{showOtp && (
+				{showOtp ? (
 					<OTPBox
 						email={role === "company" ? resolvedEmail : identifier}
 						role={role}
 						onSuccess={() => navigate(role === "company" ? "/company-dashboard" : "/expert-dashboard")}
 					/>
+				) : (
+					<div className="mt-2 p-3 bg-[#0eb59a]/10 border border-[#0eb59a]/20 rounded-2xl text-left w-full">
+						<p className="text-[10px] font-black text-[#0a8c77] uppercase tracking-wider mb-2 flex items-center gap-1">
+							<span>💡</span> Demo Quick Fill
+						</p>
+						{role === "admin" && (
+							<button
+								onClick={(e) => {
+									e.preventDefault();
+									setIdentifier("admin@cxo.com");
+									setPassword("admin12345");
+								}}
+								className="w-full text-xs text-[#0a8c77] hover:text-[#0eb59a] font-bold text-left bg-white border border-[#0eb59a]/25 p-2.5 rounded-xl flex flex-col gap-0.5 hover:shadow-sm transition-all"
+							>
+								<span className="text-[9px] text-gray-400 font-medium">Click to fill Admin:</span>
+								<span>Email: admin@cxo.com</span>
+								<span>Password: admin12345</span>
+							</button>
+						)}
+						{role === "company" && (
+							<button
+								onClick={(e) => {
+									e.preventDefault();
+									setIdentifier("demo@cxo.com");
+								}}
+								className="w-full text-xs text-[#0a8c77] hover:text-[#0eb59a] font-bold text-left bg-white border border-[#0eb59a]/25 p-2.5 rounded-xl flex flex-col gap-0.5 hover:shadow-sm transition-all"
+							>
+								<span className="text-[9px] text-gray-400 font-medium">Click to fill Company:</span>
+								<span>Email: demo@cxo.com</span>
+							</button>
+						)}
+						{role === "expert" && (
+							<button
+								onClick={(e) => {
+									e.preventDefault();
+									setIdentifier("demo@cxo.com");
+								}}
+								className="w-full text-xs text-[#0a8c77] hover:text-[#0eb59a] font-bold text-left bg-white border border-[#0eb59a]/25 p-2.5 rounded-xl flex flex-col gap-0.5 hover:shadow-sm transition-all"
+							>
+								<span className="text-[9px] text-gray-400 font-medium">Click to fill Expert:</span>
+								<span>Email: demo@cxo.com</span>
+							</button>
+						)}
+					</div>
 				)}
 			</SignIn2>
 		</div>
