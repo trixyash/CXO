@@ -10,8 +10,8 @@ A Digital Platform Connecting Companies with Experienced CXOs, Advisors, and Con
 <h2>1. Introduction</h2>
 
 <p>
-CXOConnect is a digital marketplace platform designed to connect organizations with
-experienced senior professionals such as CXOs, advisors, consultants and directors.
+ExigentCX is a digital marketplace platform designed to connect organizations with
+experienced senior professionals such as CXOs, advisors, consultants, and directors.
 Many companies, especially startups and small to medium enterprises, require strategic
 leadership but cannot afford to hire full-time executives. At the same time, many
 experienced professionals seek flexible opportunities to provide advisory and consulting
@@ -19,7 +19,7 @@ services.
 </p>
 
 <p>
-The CXOConnect platform bridges this gap by creating a trusted ecosystem where
+The ExigentCX platform bridges this gap by creating a trusted ecosystem where
 companies can discover and engage experienced professionals for fractional leadership,
 interim roles, and strategic consulting assignments.
 </p>
@@ -71,7 +71,7 @@ deliverables, and payments securely.
 <h2>4. Platform Concept</h2>
 
 <p>
-The CXOConnect platform functions as a two-sided marketplace where companies and
+The ExigentCX platform functions as a two-sided marketplace where companies and
 professionals interact through a structured digital environment.
 </p>
 
@@ -121,7 +121,7 @@ managing escrow payments, and resolving disputes between parties.
 <h2>6. System Architecture</h2>
 
 <p>
-The CXOConnect platform is built using a multi-layered architecture consisting of the
+The ExigentCX platform is built using a multi-layered architecture consisting of the
 following components:
 </p>
 
@@ -171,7 +171,7 @@ following components:
 <h2>8. Development Methodology</h2>
 
 <p>
-The development of the CXOConnect platform follows the Agile Scrum methodology.
+The development of the ExigentCX platform follows the Agile Scrum methodology.
 Agile development enables iterative improvement of the platform through continuous
 feedback from users and stakeholders.
 </p>
@@ -187,7 +187,7 @@ continuous refinement of the product.
 <h2>9. Technology Stack</h2>
 
 <p>
-The CXOConnect platform is built using modern web technologies that support
+The ExigentCX platform is built using modern web technologies that support
 scalability, security, and efficient real-time communication.
 </p>
 
@@ -280,7 +280,7 @@ scalability, security, and efficient real-time communication.
 <h2>13. Conclusion</h2>
 
 <p>
-CXOConnect aims to transform how organizations access leadership expertise by
+ExigentCX aims to transform how organizations access leadership expertise by
 providing a trusted and structured digital marketplace for consulting and advisory
 engagements. By integrating governance mechanisms, milestone-based workflows and
 secure payment systems, the platform ensures reliability and transparency for both
