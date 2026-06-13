@@ -1,5 +1,41 @@
 [
   {
+    "id": "notif-1781328874427-525",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited general funds of ₹2,50,000 to the escrow wallet for engagement \"Series B Funding Strategy\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1"
+    },
+    "is_read": false,
+    "created_at": "2026-06-13T05:34:34.427Z"
+  },
+  {
+    "id": "notif-1781326073971-978",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited general funds of ₹2,50,000 to the escrow wallet for engagement \"Series B Funding Strategy\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1"
+    },
+    "is_read": false,
+    "created_at": "2026-06-13T04:47:53.971Z"
+  },
+  {
+    "id": "notif-1781322244747-63",
+    "user_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Funds Deposited to Escrow",
+    "description": "Successfully deposited general funds of ₹10,000 to the escrow wallet for engagement \"Series B Funding Strategy\".",
+    "type": "payment",
+    "metadata": {
+      "engagementId": "1"
+    },
+    "is_read": false,
+    "created_at": "2026-06-13T03:44:04.748Z"
+  },
+  {
     "id": "notif-1781155392428-318",
     "user_id": "00000000-0000-0000-0000-000000000000",
     "title": "Escrow Release Approved",

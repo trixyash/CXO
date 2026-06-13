@@ -6,7 +6,7 @@ import {
   ChevronRight, LogOut, Filter, Plus, Search, Bell, Settings, 
   Share2, MoreVertical, Clock, ArrowUpRight, CheckCircle2, 
   XCircle, Star, Server, ExternalLink, Shield, Gavel, 
-  DollarSign, ChevronDown, Check, ArrowRight
+  DollarSign, ChevronDown, Check, ArrowRight, RefreshCw
 } from 'lucide-react';
 import Logo from '../components/Logo';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -261,7 +261,12 @@ const AdminDashboard = () => {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  if (tab.id === 'governance' || tab.id === 'trust') {
+                    fetchEscrows();
+                  }
+                }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative font-medium text-sm group ${
                   activeTab === tab.id 
                     ? 'bg-[#134e40]/45 text-white shadow-[0_0_15px_rgba(14,181,154,0.08)] border border-[#0eb59a]/30'
@@ -909,6 +914,10 @@ const AdminDashboard = () => {
                   </div>
                   
                   <div className="flex gap-3">
+                    <button onClick={() => { fetchEscrows(); triggerToast('Escrow data refreshed.', 'success'); }} className="px-4 py-2 border border-[#1b2520] bg-[#0c0f0d] hover:border-[#0eb59a]/35 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer text-white">
+                      <RefreshCw className="w-3.5 h-3.5 text-[#0eb59a]" />
+                      <span>Refresh</span>
+                    </button>
                     <button onClick={() => triggerToast('Governance Audit log exported.')} className="px-4 py-2 border border-[#1b2520] bg-[#0c0f0d] hover:border-[#0eb59a]/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
                       <ExternalLink className="w-3.5 h-3.5 text-gray-500" />
                       <span>Export Audit Log</span>
@@ -1246,6 +1255,10 @@ const AdminDashboard = () => {
                       ))}
                     </div>
                     
+                    <button onClick={() => { fetchEscrows(); triggerToast('Audits list refreshed.', 'success'); }} className="px-3.5 py-1.5 border border-[#1b2520] bg-[#0c0f0d] hover:border-[#0eb59a]/35 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer text-white">
+                      <RefreshCw className="w-3.5 h-3.5 text-[#0eb59a]" />
+                      <span>Refresh</span>
+                    </button>
                     <button onClick={() => triggerToast('Advanced audit filters activated.')} className="px-3.5 py-1.5 border border-[#1b2520] bg-[#0c0f0d] hover:border-[#0eb59a]/30 rounded-xl text-xs font-semibold flex items-center gap-1 cursor-pointer">
                       <Filter className="w-3.5 h-3.5 text-gray-500" />
                       <span>Advanced Filters</span>
@@ -1261,7 +1274,7 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
                   {[
                     { label: 'Gross Revenue', val: '$1,248,300.00', sub: '12.4% vs last period', color: 'text-white' },
-                    { label: 'Escrow Liquidity', val: '$452,120.50', sub: '99.8% Secured', color: 'text-white' },
+                    { label: 'Escrow Liquidity', val: `₹${escrows.reduce((acc, curr) => acc + (curr.balanceNum || 0), 0).toLocaleString('en-IN')}`, sub: '100% Secured', color: 'text-[#0eb59a]' },
                     { label: 'Successful Placement', val: '87.5%', sub: '4.2% Growth Rate', color: 'text-white' },
                     { label: 'Active Engagements', val: '312', sub: '14 pending vetting', color: 'text-[#0eb59a]' }
                   ].map((card, i) => (
